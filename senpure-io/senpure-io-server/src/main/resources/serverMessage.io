@@ -79,7 +79,7 @@ message SC Heart 66 {
 
 //服务器内部错误提示
 message SC InnerError 100 {
-    String    result;                     //错误码
+    String    code;                       //错误码
     String    message;                    //提示内容
     String [] args;                       //参数
 }
