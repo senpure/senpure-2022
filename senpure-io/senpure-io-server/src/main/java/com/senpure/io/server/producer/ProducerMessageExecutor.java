@@ -1,27 +1,24 @@
 package com.senpure.io.server.producer;
 
 import com.senpure.executor.TaskLoopGroup;
+import com.senpure.io.server.Constant;
 import com.senpure.io.server.producer.handler.ProducerMessageHandler;
+import com.senpure.io.server.protocol.message.SCInnerErrorMessage;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.ScheduledExecutorService;
 
 
 public class ProducerMessageExecutor {
     private Logger logger = LoggerFactory.getLogger(ProducerMessageExecutor.class);
     private TaskLoopGroup service;
-    private int serviceRefCount = 0;
+
     private GatewayManager gatewayManager;
 
     public ProducerMessageExecutor() {
 
     }
 
-    public ScheduledExecutorService getService() {
-        return service;
-    }
 
     public TaskLoopGroup getTaskLoopGroup() {
         return service;
@@ -46,7 +43,11 @@ public class ProducerMessageExecutor {
             ProducerMessageHandler handler = ProducerMessageHandlerUtil.getHandler(frame.getMessageId());
             if (handler == null) {
                 logger.warn("没有找到消息处理程序{} userId:{}", frame.getMessageId(), userId);
-               //todo 错误返回
+                SCInnerErrorMessage scInnerErrorMessage = new SCInnerErrorMessage();
+                scInnerErrorMessage.setCode(Constant.ERROR_NOT_HANDLE_REQUEST);
+                scInnerErrorMessage.setMessage("服务器没有处理程序:" + frame.getMessageId());
+                scInnerErrorMessage.getArgs().add(String.valueOf(frame.getMessageId()));
+                gatewayManager.sendMessage2GatewayByToken(frame.getToken(), scInnerErrorMessage);
                 return;
             }
             try {
@@ -54,7 +55,13 @@ public class ProducerMessageExecutor {
                 handler.execute(channel, frame.getToken(), userId, frame.getMessage());
             } catch (Exception e) {
                 logger.error("执行handler[" + handler.getClass().getName() + "]逻辑出错 ", e);
-                //todo 错误返回
+                SCInnerErrorMessage scInnerErrorMessage = new SCInnerErrorMessage();
+                scInnerErrorMessage.setMessage("服务器执行错误:" + frame.getMessage().getClass().getSimpleName()
+                        + "[" + frame.getMessageId() + "]:" +
+                        e.getMessage());
+                scInnerErrorMessage.setCode(Constant.ERROR_SERVER_ERROR);
+                scInnerErrorMessage.getArgs().add(String.valueOf(frame.getMessageId()));
+                gatewayManager.sendMessage2GatewayByToken(frame.getToken(), scInnerErrorMessage);
             } finally {
                 GatewayManager.clearRequestId();
             }
@@ -62,30 +69,5 @@ public class ProducerMessageExecutor {
         });
     }
 
-    /**
-     * 引用计数+1
-     */
-    public void retainService() {
-        serviceRefCount++;
-    }
 
-    public void releaseService() {
-        serviceRefCount--;
-
-    }
-
-    public void releaseAndTryShutdownService() {
-        serviceRefCount--;
-        if (serviceRefCount <= 0) {
-            service.shutdownGracefully();
-        }
-    }
-
-    public void shutdownService() {
-        if (serviceRefCount <= 0) {
-            service.shutdownGracefully();
-        } else {
-            logger.warn("server 持有引用{}，请先释放后关闭", serviceRefCount);
-        }
-    }
 }

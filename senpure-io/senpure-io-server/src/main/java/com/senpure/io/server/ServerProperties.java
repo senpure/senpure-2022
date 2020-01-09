@@ -1,11 +1,14 @@
 package com.senpure.io.server;
 
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
 /**
  * ServerProperties
  *
  * @author senpure
  * @time 2020-01-06 11:26:30
  */
+@ConfigurationProperties("server.io")
 public class ServerProperties {
     private String name;
 

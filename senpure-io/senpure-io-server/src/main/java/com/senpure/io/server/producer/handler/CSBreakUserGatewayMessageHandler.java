@@ -1,9 +1,11 @@
 package com.senpure.io.server.producer.handler;
 
-import com.senpure.io.message.CSBreakUserGatewayMessage;
-import com.senpure.io.producer.GatewayManager;
+
+import com.senpure.io.server.producer.GatewayManager;
+import com.senpure.io.server.protocol.message.CSBreakUserGatewayMessage;
 import io.netty.channel.Channel;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
 
 /**
  * 断开用户与网关处理器
@@ -12,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @time 2018-10-19 16:14:32
  */
 public class CSBreakUserGatewayMessageHandler extends AbstractInnerMessageHandler<CSBreakUserGatewayMessage> {
-    @Autowired
+    @Resource
     private GatewayManager gatewayManager;
 
     @Override

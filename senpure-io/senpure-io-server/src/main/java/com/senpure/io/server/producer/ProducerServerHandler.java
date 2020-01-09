@@ -1,8 +1,8 @@
 package com.senpure.io.server.producer;
 
 
-import com.senpure.io.ChannelAttributeUtil;
-import com.senpure.io.message.SCHeartMessage;
+import com.senpure.io.server.ChannelAttributeUtil;
+import com.senpure.io.server.protocol.message.SCHeartMessage;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -26,22 +26,22 @@ public class ProducerServerHandler extends SimpleChannelInboundHandler<Gateway2P
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, Gateway2ProducerMessage msg) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, Gateway2ProducerMessage msg)  {
         messageExecutor.execute(ctx.channel(), msg);
     }
 
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    public void channelInactive(ChannelHandlerContext ctx)  {
         logger.info("{} :{} 网关连接断开 ", ChannelAttributeUtil.getRemoteServerKey(ctx.channel()), ctx.channel());
         gatewayManager.getGatewayChannelServer(ChannelAttributeUtil.getRemoteServerKey(ctx.channel())).removeChannel(ctx.channel());
     }
 
     @Override
-    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+    public void channelReadComplete(ChannelHandlerContext ctx) {
         //解决强断的错误 远程主机强迫关闭了一个现有的连接
-        //ctx.flush();
-        super.channelReadComplete(ctx);
+        ctx.flush();
+
     }
 
     @Override

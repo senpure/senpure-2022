@@ -1,7 +1,7 @@
 package com.senpure.io.server.producer;
 
 import com.senpure.base.util.Assert;
-import com.senpure.io.protocol.Bean;
+import com.senpure.io.protocol.CompressBean;
 import com.senpure.io.protocol.Message;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -23,7 +23,7 @@ public class ProducerMessageDecoder extends ByteToMessageDecoder {
 
         in.markReaderIndex();
         int preIndex = in.readerIndex();
-        int packageLength = Bean.tryReadVar32(in);
+        int packageLength = CompressBean.tryReadVar32(in);
         if (preIndex == in.readerIndex()) {
             return;
         }
@@ -36,10 +36,10 @@ public class ProducerMessageDecoder extends ByteToMessageDecoder {
             in.resetReaderIndex();
         } else {
             int endIndex = in.readerIndex() + packageLength;
-            int requestId = Bean.readVar32(in);
-            int messageId = Bean.readVar32(in);
-            long channelToken = Bean.readVar64(in);
-            long userId = Bean.readVar64(in);
+            int requestId =CompressBean.readVar32(in);
+            int messageId = CompressBean.readVar32(in);
+            long channelToken = CompressBean.readVar64(in);
+            long userId = CompressBean.readVar64(in);
 
             Message message = ProducerMessageHandlerUtil.getEmptyMessage(messageId);
             Gateway2ProducerMessage frame = new Gateway2ProducerMessage();
@@ -48,11 +48,11 @@ public class ProducerMessageDecoder extends ByteToMessageDecoder {
             frame.setToken(channelToken);
             frame.setUserId(userId);
             if (message == null) {
-                int headSize = Bean.computeVar32Size(requestId);
-                headSize += Bean.computeVar32Size(messageId);
+                int headSize = CompressBean.computeVar32Size(requestId);
+                headSize += CompressBean.computeVar32Size(messageId);
 
-                headSize += Bean.computeVar64Size(channelToken);
-                headSize += Bean.computeVar64Size(userId);
+                headSize += CompressBean.computeVar64Size(channelToken);
+                headSize +=CompressBean.computeVar64Size(userId);
                 int messageLen = packageLength - headSize;
                 in.skipBytes(messageLen);
                 logger.warn("没有找到消息处理程序{} token:{} userId:{}", channelToken, messageId, userId);
@@ -66,50 +66,6 @@ public class ProducerMessageDecoder extends ByteToMessageDecoder {
 
     }
 
-    protected void decode2(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-
-        int rl = in.readableBytes();
-
-        if (rl < 4) {
-            this.logger.debug("数据过短 {}", rl);
-        } else {
-            in.markReaderIndex();
-            int packageLength = in.readInt();
-            if (packageLength == 0) {
-                Assert.error("错误，数据包长度不能为0");
-            }
-            if (packageLength > in.readableBytes()) {
-                if (packageLength > 2000000) {
-                    ctx.close().sync();
-                    return;
-                }
-                this.logger.info("数据不够一个数据包 packageLength ={} ,readableBytes={}", packageLength, in.readableBytes());
-                in.resetReaderIndex();
-            } else {
-                int requestId = in.readInt();
-                int messageId = in.readInt();
-                long channelToken = in.readLong();
-                long userId = in.readLong();
-                int messageLen = packageLength - 24;
-                Message message = ProducerMessageHandlerUtil.getEmptyMessage(messageId);
-                if (message == null) {
-                    logger.warn("没有找到消息处理程序{} token:{} userId:{}", channelToken, messageId, userId);
-                    in.skipBytes(messageLen);
-                    return;
-                }
-                message.read(in, in.readerIndex() + messageLen);
-                Gateway2ProducerMessage frame = new Gateway2ProducerMessage();
-                frame.setRequestId(requestId);
-                frame.setMessageId(messageId);
-                frame.setToken(channelToken);
-                frame.setUserId(userId);
-                frame.setMessage(message);
-                out.add(frame);
-
-            }
-
-        }
-    }
 
 
 }

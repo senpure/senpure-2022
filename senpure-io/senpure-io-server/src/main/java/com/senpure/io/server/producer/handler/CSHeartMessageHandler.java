@@ -1,6 +1,7 @@
 package com.senpure.io.server.producer.handler;
 
-import com.senpure.io.message.CSHeartMessage;
+
+import com.senpure.io.server.protocol.message.CSHeartMessage;
 import io.netty.channel.Channel;
 
 /**

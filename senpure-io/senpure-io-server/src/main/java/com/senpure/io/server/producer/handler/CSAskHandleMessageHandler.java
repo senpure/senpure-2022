@@ -1,10 +1,10 @@
 package com.senpure.io.server.producer.handler;
 
 
-import com.senpure.io.message.CSAskHandleMessage;
-import com.senpure.io.message.SCAskHandleMessage;
-import com.senpure.io.producer.Producer2GatewayMessage;
-import com.senpure.io.producer.ProducerMessageHandlerUtil;
+import com.senpure.io.server.producer.Producer2GatewayMessage;
+import com.senpure.io.server.producer.ProducerMessageHandlerUtil;
+import com.senpure.io.server.protocol.message.CSAskHandleMessage;
+import com.senpure.io.server.protocol.message.SCAskHandleMessage;
 import io.netty.channel.Channel;
 
 /**
@@ -23,15 +23,15 @@ public class CSAskHandleMessageHandler extends AbstractInnerMessageHandler<CSAsk
         boolean handle = false;
         if (producerMessageHandler instanceof ProducerAskMessageHandler) {
             askMessageHandler = (ProducerAskMessageHandler) producerMessageHandler;
-            handle = askMessageHandler.ask(message.getValue());
+            handle = askMessageHandler.ask(message.getAskValue());
         } else {
             logger.warn("{} 没有实现 ProducerAskMessageHandler", producerMessageHandler.getClass().getName());
         }
         SCAskHandleMessage scAskHandleMessage = new SCAskHandleMessage();
         scAskHandleMessage.setFromMessageId(message.getFromMessageId());
         scAskHandleMessage.setHandle(handle);
-        scAskHandleMessage.setToken(message.getToken());
-        scAskHandleMessage.setValue(message.getValue());
+        scAskHandleMessage.setAskToken(message.getAskToken());
+        scAskHandleMessage.setAskValue(message.getAskValue());
         Producer2GatewayMessage toGateway = new Producer2GatewayMessage();
         toGateway.setToken(token);
         toGateway.setUserIds(new Long[0]);

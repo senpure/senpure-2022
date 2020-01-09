@@ -1,9 +1,9 @@
 package com.senpure.io.server.producer;
 
 
-import com.senpure.io.message.SCBreakUserGatewayMessage;
-import com.senpure.io.message.SCKickOffMessage;
 import com.senpure.io.protocol.Message;
+import com.senpure.io.server.protocol.message.SCBreakUserGatewayMessage;
+import com.senpure.io.server.protocol.message.SCKickOffMessage;
 import io.netty.util.concurrent.FastThreadLocal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -165,23 +165,24 @@ public class GatewayManager {
 
 
     /**
-     * 
      * 用户主动离开该服务器后，调用该方法，断线不要调用
-     * 与bytoken 调用一个就可以了
+     * 与byToken 调用一个就可以了
      *
      * @param userId
      */
     public void sendBreakGatewayMessage2Gateway(Long userId) {
+
         sendMessage2Gateway(userId, new SCBreakUserGatewayMessage());
     }
 
     /**
      * 用户主动离开该服务器后，调用该方法，断线不要调用
-     * 与userid 调用一个就可以了
+     * 与userId 调用一个就可以了
      *
      * @param token
      */
     public void sendBreakGatewayMessage2GatewayByToken(Long token) {
+
         sendMessage2GatewayByToken(token, new SCBreakUserGatewayMessage());
     }
 
@@ -205,6 +206,7 @@ public class GatewayManager {
         SCKickOffMessage message = new SCKickOffMessage();
         message.setToken(token);
         sendMessage2GatewayByToken(token, message);
+
     }
 
 

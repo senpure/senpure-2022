@@ -32,19 +32,19 @@ message SC IdName 104 {
 
 //关联用户与网关
 message CS RelationUserGateway 105 {
-    long channelToken  = 1;               // channel token
+    long token         = 1;               // channel token
     long userId        = 2;               //userId
     long relationToken = 3;               //relation token
 }
 
 message SC RelationUserGateway 106 {
-    long channelToken  = 1;               // channel token
+    long token         = 1;               // channel token
     long userId        = 2;               //userId
     long relationToken = 3;               //relation token
 }
 
 message CS BreakUserGateway 107 {
-    long   channelToken  = 1;             //channel token
+    long   token         = 1;             //channel token
     long   userId        = 2;             //用户Id
     long   relationToken = 3;             //relation token
     String type          = 4;             //error,userChange,userOffline
@@ -65,6 +65,11 @@ message SC AskHandle 110 {
     long    askToken      = 2;            // token
     int     fromMessageId = 3;
     String  askValue      = 4;            //值
+}
+
+message SC KickOff 112 {
+    long token;                           // token
+    long userId;                          //userId
 }
 
 #以下是客户端会用到的

@@ -1,8 +1,8 @@
 package com.senpure.io.server.producer.handler;
 
 import com.senpure.base.util.Spring;
-import com.senpure.io.ChannelAttributeUtil;
-import com.senpure.io.message.CSRegServerHandleMessageMessage;
+import com.senpure.io.server.ChannelAttributeUtil;
+import com.senpure.io.server.protocol.message.CSRegServerHandleMessageMessage;
 import io.netty.channel.Channel;
 
 /**

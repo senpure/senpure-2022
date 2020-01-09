@@ -1,11 +1,13 @@
 package com.senpure.io.server.producer.handler;
 
-import com.senpure.io.ChannelAttributeUtil;
-import com.senpure.io.message.CSRelationUserGatewayMessage;
-import com.senpure.io.message.SCRelationUserGatewayMessage;
-import com.senpure.io.producer.GatewayManager;
+
+import com.senpure.io.server.ChannelAttributeUtil;
+import com.senpure.io.server.producer.GatewayManager;
+import com.senpure.io.server.protocol.message.CSRelationUserGatewayMessage;
+import com.senpure.io.server.protocol.message.SCRelationUserGatewayMessage;
 import io.netty.channel.Channel;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
 
 /**
  * 关联用户与网关处理器
@@ -15,7 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CSRelationUserGatewayMessageHandler extends AbstractInnerMessageHandler<CSRelationUserGatewayMessage> {
 
-    @Autowired
+    @Resource
     private GatewayManager gatewayManager;
 
     @Override
@@ -25,7 +27,7 @@ public class CSRelationUserGatewayMessageHandler extends AbstractInnerMessageHan
         if (message.getUserId() > 0) {
             gatewayManager.relationUser(gatewayKey, message.getUserId(), message.getRelationToken());
         }
-        if (message.getToken() != 0) {
+        if (message.getToken()!= 0) {
             gatewayManager.relationToken(gatewayKey, message.getToken(), message.getRelationToken());
         }
         SCRelationUserGatewayMessage scMessage = new SCRelationUserGatewayMessage();

@@ -1,20 +1,21 @@
 package com.senpure.io.server.producer.handler;
 
 
-import com.senpure.io.producer.GatewayManager;
-import com.senpure.io.producer.ProducerMessageHandlerUtil;
 import com.senpure.io.protocol.Message;
+import com.senpure.io.server.producer.GatewayManager;
+import com.senpure.io.server.producer.ProducerMessageHandlerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
 
 
 public abstract class AbstractProducerMessageHandler<T extends Message> implements ProducerMessageHandler<T>, InitializingBean {
     protected Logger logger;
    // protected Class<T> messageClass;
    // protected T IdMessage;
-    @Autowired
+    @Resource
     protected GatewayManager gatewayManager;
 
     public AbstractProducerMessageHandler() {

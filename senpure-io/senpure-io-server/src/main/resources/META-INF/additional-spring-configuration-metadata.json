@@ -1,0 +1,70 @@
+{
+  "hints": [
+    {
+      "name": "server.io.gateway.cs-reader-idle-time",
+      "values": [
+        {
+          "value": 10000
+        },
+        {
+          "value": 20000
+        },
+        {
+          "value": 30000
+        },
+        {
+          "value": 60000
+        }
+      ],
+      "providers": [
+        {
+          "name": "any"
+        }
+      ]
+    },
+    {
+      "name": "server.io.gateway.sc-reader-idle-time",
+      "values": [
+        {
+          "value": 10000
+        },
+        {
+          "value": 20000
+        },
+        {
+          "value": 30000
+        },
+        {
+          "value": 60000
+        }
+      ],
+      "providers": [
+        {
+          "name": "any"
+        }
+      ]
+    },
+    {
+      "name": "server.io.producer.writer-idle-time",
+      "values": [
+        {
+          "value": 5000
+        },
+        {
+          "value": 10000
+        },
+        {
+          "value": 15000
+        },
+        {
+          "value": 30000
+        }
+      ],
+      "providers": [
+        {
+          "name": "any"
+        }
+      ]
+    }
+  ]
+}
