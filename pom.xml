@@ -17,6 +17,7 @@
         <module>senpure-web</module>
     </modules>
     <repositories>
+        <!--
         <repository>
             <id>spring-milestones</id>
             <name>Spring Milestones</name>
@@ -25,20 +26,41 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
+<mirror>
+	<mirrorOf>central</mirrorOf>
+    <id>alimaven</id>
+    <name>aliyun maven</name>
+    <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+</mirror>
+<mirror>
+    <mirrorOf>central</mirrorOf>
+    <id>central-repos</id>
+    <name>Central Repository</name>
+    <url>http://repo.maven.apache.org/maven2</url>
+</mirror>
+<mirror>
+    <mirrorOf>central</mirrorOf>
+    <id>springsource-repos</id>
+    <name>SpringSource Repository</name>
+    <url>http://repo.spring.io/release/</url>
+</mirror>
+        -->
     </repositories>
     <dependencyManagement>
         <dependencies>
+            <!-- -->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>2.2.2.RELEASE</version>
+                <version>2.2.5.RELEASE</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
-                <version>Hoxton.M3</version>
+                <version>Hoxton.SR3</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
