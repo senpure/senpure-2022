@@ -17,39 +17,9 @@
         <module>senpure-web</module>
         <module>senpure-database</module>
         <module>senpure-dispatcher-bean</module>
-        <module>senpure-dispatcher</module>
+        <module>senpure-dispathcer</module>
         <module>senpure-code-generator</module>
     </modules>
-    <repositories>
-        <!--
-        <repository>
-            <id>spring-milestones</id>
-            <name>Spring Milestones</name>
-            <url>http://repo.spring.io/milestone</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-<mirror>
-	<mirrorOf>central</mirrorOf>
-    <id>alimaven</id>
-    <name>aliyun maven</name>
-    <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
-</mirror>
-<mirror>
-    <mirrorOf>central</mirrorOf>
-    <id>central-repos</id>
-    <name>Central Repository</name>
-    <url>http://repo.maven.apache.org/maven2</url>
-</mirror>
-<mirror>
-    <mirrorOf>central</mirrorOf>
-    <id>springsource-repos</id>
-    <name>SpringSource Repository</name>
-    <url>http://repo.spring.io/release/</url>
-</mirror>
-        -->
-    </repositories>
     <dependencyManagement>
         <dependencies>
             <!-- -->
