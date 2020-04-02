@@ -11,6 +11,13 @@
 
     <artifactId>senpure-database</artifactId>
 
+    <properties>
+        <env.JAVA_HOME>C:\Program Files\Java\jdk1.8.0_121</env.JAVA_HOME>
+        <toolsjar>${env.JAVA_HOME}/lib/tools.jar</toolsjar>
+        <jconsolejar>C:\Program Files\Java\jdk1.8.0_121\lib\jconsole.jar</jconsolejar>
+    </properties>
+
+
     <dependencies>
         <dependency>
             <groupId>com.senpure</groupId>
