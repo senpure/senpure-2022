@@ -1,36 +1,25 @@
 package com.senpure.io.server.support.annotation;
 
+
 import com.senpure.io.server.ServerProperties;
-import com.senpure.io.server.support.configuration.BreakUserSelector;
-import com.senpure.io.server.support.configuration.ProducerAutoConfiguration;
+import com.senpure.io.server.support.configuration.GatewayAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.annotation.AliasFor;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * EnableProducer
+ * EnableGateway
  *
  * @author senpure
- * @time 2020-01-09 15:14:07
+ * @time 2019-03-01 11:49:08
  */
 @Retention(value = java.lang.annotation.RetentionPolicy.RUNTIME)
 @Target(value = {java.lang.annotation.ElementType.TYPE})
 @Documented
 @EnableConfigurationProperties({ServerProperties.class})
-@Import({ProducerAutoConfiguration.class, BreakUserSelector.class})
-public @interface EnableProducer {
-    /**
-     * 注册断开处理器
-     *
-     * @return
-     */
-    @AliasFor("value")
-    boolean breakUser() default true;
-
-    @AliasFor(value = "breakUser")
-    boolean value() default true;
+@Import({GatewayAutoConfiguration.class})
+public @interface EnableGateway {
 }

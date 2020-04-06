@@ -1,5 +1,6 @@
 package com.senpure.io.server;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -10,8 +11,11 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @ConfigurationProperties("server.io")
 public class ServerProperties {
+    /**
+     * 该值不用配置读取spring.application.name
+     */
+    @Value("${spring.application.name:}")
     private String name;
-
     private Consumer consumer = new Consumer();
     private Direct direct = new Direct();
     private Gateway gateway = new Gateway();
@@ -195,7 +199,7 @@ public class ServerProperties {
         /**
          * 与目标建立的channel 数量(手动连接时自己处理)
          */
-        private int remoteChannel = 2;
+        private int remoteChannel = 1;
         /**
          * 服务器名
          */
@@ -435,7 +439,7 @@ public class ServerProperties {
         /**
          * 与网关建立的channel 数量
          */
-        private int gatewayChannel = 2;
+        private int gatewayChannel = 1;
         /**
          * 没有channel时下一个可用channel重发消息的时间限制
          */

@@ -6,6 +6,7 @@ import com.senpure.io.server.protocol.message.CSBreakUserGatewayMessage;
 import io.netty.channel.Channel;
 
 import javax.annotation.Resource;
+import java.util.function.Consumer;
 
 /**
  * 断开用户与网关处理器
@@ -15,7 +16,8 @@ import javax.annotation.Resource;
  */
 public class CSBreakUserGatewayMessageHandler extends AbstractInnerMessageHandler<CSBreakUserGatewayMessage> {
     @Resource
-    private GatewayManager gatewayManager;
+    protected GatewayManager gatewayManager;
+
 
     @Override
     public void execute(Channel channel, long token, long userId, CSBreakUserGatewayMessage message) {
@@ -23,8 +25,8 @@ public class CSBreakUserGatewayMessageHandler extends AbstractInnerMessageHandle
             gatewayManager.breakToken(message.getToken(), message.getRelationToken());
         }
         gatewayManager.breakUser(message.getUserId(), message.getRelationToken());
-
     }
+
 
     @Override
     public int handlerId() {
@@ -35,4 +37,6 @@ public class CSBreakUserGatewayMessageHandler extends AbstractInnerMessageHandle
     public CSBreakUserGatewayMessage getEmptyMessage() {
         return new CSBreakUserGatewayMessage();
     }
+
+
 }

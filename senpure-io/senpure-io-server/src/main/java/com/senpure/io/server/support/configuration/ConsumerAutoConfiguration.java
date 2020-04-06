@@ -90,7 +90,7 @@ public class ConsumerAutoConfiguration {
     }
 
     @Bean
-    public ConsumerMessageExecutor messageExecutor() {
+    public ConsumerMessageExecutor consumerMessageExecutor() {
 
         return new ConsumerMessageExecutor(serverProperties.getConsumer());
     }

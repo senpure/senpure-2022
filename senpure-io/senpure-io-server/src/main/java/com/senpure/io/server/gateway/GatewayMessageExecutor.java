@@ -249,7 +249,7 @@ public class GatewayMessageExecutor {
     }
 
     /**
-     * 登陆服务不用取消关联
+     * 登陆认证服务已经有了该账户的关联，不能取消token关联
      *
      * @param channel
      * @param token

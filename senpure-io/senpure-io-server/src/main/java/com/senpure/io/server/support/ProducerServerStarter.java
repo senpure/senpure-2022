@@ -119,11 +119,12 @@ public class ProducerServerStarter implements ApplicationRunner {
         service.scheduleWithFixedDelay(() -> {
             List<ServiceInstance> serviceInstances = discoveryClient.getInstances(producer.getGatewayName());
             for (ServiceInstance instance : serviceInstances) {
+                boolean useDefault=false;
                 String portStr = instance.getMetadata().get("scPort");
                 int port = 0;
                 if (portStr == null) {
-                    logger.info("网关 [{}] {} {} 没有 没有配置sc socket端口,使用默认端口 {}", producer.getGatewayName(), instance.getHost(), instance.getUri(), gateway.getScPort());
-                    port = gateway.getScPort();
+                    useDefault=true;
+                       port = gateway.getScPort();
                 } else {
                     port = Integer.parseInt(portStr);
                 }
@@ -144,6 +145,9 @@ public class ProducerServerStarter implements ApplicationRunner {
                         }
                     }
                     if (start) {
+                        if (useDefault) {
+                            logger.info("网关 [{}] {} {} 没有 没有配置sc socket端口,使用默认端口 {}", producer.getGatewayName(), instance.getHost(), instance.getUri(), gateway.getScPort());
+                        }
                         gatewayChannelManager.setConnecting(true);
                         ProducerServer producerServer = new ProducerServer();
                         producerServer.setGatewayManager(gatewayManager);
