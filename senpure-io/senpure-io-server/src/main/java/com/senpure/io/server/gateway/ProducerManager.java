@@ -6,8 +6,6 @@ import com.senpure.io.server.protocol.message.CSBreakUserGatewayMessage;
 import com.senpure.io.server.protocol.message.CSRelationUserGatewayMessage;
 import com.senpure.io.server.protocol.message.SCInnerErrorMessage;
 import com.senpure.io.server.support.MessageIdReader;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +30,7 @@ public class ProducerManager {
     }
 
 
-    private int csRelationMessageId = new CSRelationUserGatewayMessage().getMessageId();
+
 
     private ConcurrentMap<Long, ServerRelation> tokenServerChannelManagerMap = new ConcurrentHashMap<>();
 
@@ -64,7 +62,7 @@ public class ProducerManager {
                 errorMessage.setCode(Constant.ERROR_NOT_FOUND_SERVER);
                 errorMessage.getArgs().add(String.valueOf(client2GatewayMessage.getMessageId()));
                 errorMessage.setMessage("没有服务器处理" + MessageIdReader.read(client2GatewayMessage.getMessageId()));
-                messageExecutor.sendMessage2Client(client2GatewayMessage.getRequestId(),errorMessage, client2GatewayMessage.getToken());
+                messageExecutor.sendMessage2Client(client2GatewayMessage.getRequestId(), errorMessage, client2GatewayMessage.getToken());
             } else {
                 relationAndWaitSendMessage(serverChannelManager, client2GatewayMessage);
             }
@@ -75,25 +73,30 @@ public class ProducerManager {
         }
     }
 
-    public void relationAndWaitSendMessage(ProducerChannelManager serverChannelManager, Client2GatewayMessage client2GatewayMessage) {
-        Long relationToken = messageExecutor.idGenerator.nextId();
-        CSRelationUserGatewayMessage message = new CSRelationUserGatewayMessage();
-        message.setToken(client2GatewayMessage.getToken());
-        message.setUserId(client2GatewayMessage.getUserId());
-        message.setRelationToken(relationToken);
-        Client2GatewayMessage toMessage = new Client2GatewayMessage();
-        toMessage.setMessageId(csRelationMessageId);
-        ByteBuf buf = Unpooled.buffer(message.getSerializedSize());
-        message.write(buf);
-        byte[] data = new byte[message.getSerializedSize()];
-        buf.readBytes(data);
-        toMessage.setData(data);
+    /**
+     * @param serverChannelManager
+     * @param relationToken
+     * @param client2GatewayMessage 可以为空
+     */
+    private void waitRelationTask(ProducerChannelManager serverChannelManager,
+                                  Long relationToken,
+                                  Client2GatewayMessage client2GatewayMessage) {
         WaitRelationTask waitRelationTask = new WaitRelationTask();
         waitRelationTask.setRelationToken(relationToken);
         waitRelationTask.setMessage(client2GatewayMessage);
         waitRelationTask.setServerChannelManager(serverChannelManager);
         waitRelationTask.setServerManager(this);
         messageExecutor.waitRelationMap.put(relationToken, waitRelationTask);
+    }
+
+    public void relationAndWaitSendMessage(ProducerChannelManager serverChannelManager, Client2GatewayMessage client2GatewayMessage) {
+        long relationToken = messageExecutor.idGenerator.nextId();
+        CSRelationUserGatewayMessage message = new CSRelationUserGatewayMessage();
+        message.setToken(client2GatewayMessage.getToken());
+        message.setUserId(client2GatewayMessage.getUserId());
+        message.setRelationToken(relationToken);
+        Client2GatewayMessage toMessage = messageExecutor.createMessage(message);
+        waitRelationTask(serverChannelManager, relationToken, client2GatewayMessage);
         serverChannelManager.sendMessage(toMessage);
     }
 
@@ -138,18 +141,22 @@ public class ProducerManager {
                 }
             }
         }
-//        for (int i = 0; i < channelManagers.size(); i++) {
-////            ProducerChannelManager serverChannelManager = channelManagers.get(i);
-////            if (serverChannelManager.offline(channel)) {
-////                if (!serverChannelManager.isActive()) {
-////                    channelManagers.remove(i);
-////                    clearRelation(serverChannelManager);
-////                }
-////            }
-////        }
+
 
     }
 
+    public void afterUserAuthorize(long channelToken, long userId) {
+        ServerRelation serverRelation = tokenServerChannelManagerMap.get(channelToken);
+        if (serverRelation != null) {
+            logger.info("对 {} --> {} 进行userId关联", serverName, serverRelation.serverChannelManager.getServerKey());
+            CSRelationUserGatewayMessage message = new CSRelationUserGatewayMessage();
+            message.setUserId(userId);
+            message.setRelationToken(serverRelation.relationToken);
+            Client2GatewayMessage toMessage = messageExecutor.createMessage(message);
+            waitRelationTask(serverRelation.serverChannelManager, serverRelation.relationToken, null);
+            serverRelation.serverChannelManager.sendMessage(toMessage);
+        }
+    }
 
     public void breakUserGateway(Channel clientChannel, Long token, Long userId, String type) {
         breakUserGateway(clientChannel, token, userId, type, true);
@@ -163,17 +170,12 @@ public class ProducerManager {
             CSBreakUserGatewayMessage breakUserGatewayMessage = new CSBreakUserGatewayMessage();
             breakUserGatewayMessage.setRelationToken(serverRelation.relationToken);
             breakUserGatewayMessage.setUserId(userId);
-            breakUserGatewayMessage.setToken(localRemove?token:0);
+            breakUserGatewayMessage.setToken(localRemove ? token : 0);
             breakUserGatewayMessage.setType(type);
-            Client2GatewayMessage client2GatewayMessage = new Client2GatewayMessage();
+            Client2GatewayMessage client2GatewayMessage = messageExecutor.createMessage(breakUserGatewayMessage);
             client2GatewayMessage.setMessageId(breakUserGatewayMessage.getMessageId());
             client2GatewayMessage.setUserId(breakUserGatewayMessage.getUserId());
             client2GatewayMessage.setToken(breakUserGatewayMessage.getToken());
-            ByteBuf buf = Unpooled.buffer(breakUserGatewayMessage.getSerializedSize());
-            breakUserGatewayMessage.write(buf);
-            byte[] data = new byte[breakUserGatewayMessage.getSerializedSize()];
-            buf.readBytes(data);
-            client2GatewayMessage.setData(data);
             serverRelation.serverChannelManager.sendMessage(client2GatewayMessage);
         } else {
             logger.info("{} 没有对{} 有关联 :token{} userId:{} ",
@@ -244,7 +246,7 @@ public class ProducerManager {
         return handleIdsMap.get(messageId) != null;
     }
 
-    class ServerRelation {
+    static class ServerRelation {
         ProducerChannelManager serverChannelManager;
         Long relationToken;
     }

@@ -14,9 +14,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.IntSupplier;
 
 public class GatewayManager {
-
+    public static IntSupplier ZERO_REQUEST_ID_SUPPLIER = () -> 0;
     private Logger logger = LoggerFactory.getLogger(getClass());
     private final static FastThreadLocal<Integer> requestIdLocal = new FastThreadLocal<Integer>() {
         @Override
@@ -228,19 +229,23 @@ public class GatewayManager {
         }
     }
 
-    public void sendMessage2GatewayByToken(Long token, Message message) {
+    public void sendMessage2GatewayByToken(Long token, Message message, IntSupplier requestIdSupplier) {
         Producer2GatewayMessage toGateway = new Producer2GatewayMessage();
         toGateway.setToken(token);
         toGateway.setUserIds(new Long[0]);
         toGateway.setMessage(message);
         toGateway.setMessageId(message.getMessageId());
-        toGateway.setRequestId(GatewayManager.getRequestId());
+        toGateway.setRequestId(requestIdSupplier.getAsInt());
         GatewayRelation gatewayRelation = tokenGatewayMap.get(token);
         if (gatewayRelation != null) {
             gatewayRelation.gatewayChannelManager.sendMessage(toGateway);
         } else {
             logger.warn("token {} 不存在 GatewayRelation", token);
         }
+    }
+
+    public void sendMessage2GatewayByToken(Long token, Message message) {
+        sendMessage2GatewayByToken(token, message, GatewayManager::getRequestId);
     }
 
 

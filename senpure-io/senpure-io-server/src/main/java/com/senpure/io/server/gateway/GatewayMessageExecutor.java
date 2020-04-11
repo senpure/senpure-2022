@@ -241,6 +241,7 @@ public class GatewayMessageExecutor {
     }
 
 
+
     private void userOffline(Channel channel, Long token, Long userId) {
         for (Map.Entry<String, ProducerManager> entry : serverInstanceMap.entrySet()) {
             ProducerManager producerManager = entry.getValue();
@@ -379,7 +380,7 @@ public class GatewayMessageExecutor {
         return true;
     }
 
-    private Client2GatewayMessage createMessage(Message message) {
+    public Client2GatewayMessage createMessage(Message message) {
         Client2GatewayMessage toMessage = new Client2GatewayMessage();
         toMessage.setMessageId(message.getMessageId());
         ByteBuf buf = Unpooled.buffer(message.getSerializedSize());
@@ -481,19 +482,25 @@ public class GatewayMessageExecutor {
     private boolean loginMessage(Server2GatewayMessage message) {
         long userId = message.getUserIds()[0];
         Channel clientChannel = prepLoginChannels.remove(message.getToken());
+
         if (clientChannel != null) {
+            Long token = ChannelAttributeUtil.getToken(clientChannel);
             Long oldUserId = ChannelAttributeUtil.getUserId(clientChannel);
             if (oldUserId != null) {
                 if (oldUserId == userId) {
                     logger.info("{}重复登陆 {} 不做额外的处理", clientChannel, userId);
                 } else {
                     logger.info("{}切换账号{}  -》  {} ", clientChannel, oldUserId, userId);
-                    Long token = ChannelAttributeUtil.getToken(clientChannel);
                     userChange(clientChannel, token, oldUserId);
                 }
             }
             ChannelAttributeUtil.setUserId(clientChannel, userId);
             userClientChannel.put(userId, clientChannel);
+            for (Map.Entry<String, ProducerManager> entry : serverInstanceMap.entrySet()) {
+                ProducerManager producerManager = entry.getValue();
+                producerManager.afterUserAuthorize(token,userId);
+
+            }
         } else {
             logger.warn("登录成功 userId:{} channel缺失 token{}", userId, message.getToken());
         }

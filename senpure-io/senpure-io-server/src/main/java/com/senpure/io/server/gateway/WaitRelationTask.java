@@ -42,8 +42,11 @@ public class WaitRelationTask {
 
 
     public void sendMessage() {
-        serverManager.bind(message.getToken(),relationToken, serverChannelManager);
-        serverManager.sendMessage(message);
+        if (message != null) {
+            serverManager.bind(message.getToken(), relationToken, serverChannelManager);
+            serverManager.sendMessage(message);
+        }
+
     }
 
     public void sendCancelMessage(GatewayMessageExecutor messageExecutor) {
