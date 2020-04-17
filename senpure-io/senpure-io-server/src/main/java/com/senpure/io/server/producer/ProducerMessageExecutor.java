@@ -47,7 +47,7 @@ public class ProducerMessageExecutor {
                 scInnerErrorMessage.setCode(Constant.ERROR_NOT_HANDLE_REQUEST);
                 scInnerErrorMessage.setMessage("服务器没有处理程序:" + frame.getMessageId());
                 scInnerErrorMessage.getArgs().add(String.valueOf(frame.getMessageId()));
-                gatewayManager.sendMessage2GatewayByToken(frame.getToken(), scInnerErrorMessage);
+                gatewayManager.sendMessageByToken(frame.getToken(), scInnerErrorMessage);
                 return;
             }
             try {
@@ -61,7 +61,7 @@ public class ProducerMessageExecutor {
                         e.getMessage());
                 scInnerErrorMessage.setCode(Constant.ERROR_SERVER_ERROR);
                 scInnerErrorMessage.getArgs().add(String.valueOf(frame.getMessageId()));
-                gatewayManager.sendMessage2GatewayByToken(frame.getToken(), scInnerErrorMessage);
+                gatewayManager.sendMessageByToken(frame.getToken(), scInnerErrorMessage);
             } finally {
                 GatewayManager.clearRequestId();
             }

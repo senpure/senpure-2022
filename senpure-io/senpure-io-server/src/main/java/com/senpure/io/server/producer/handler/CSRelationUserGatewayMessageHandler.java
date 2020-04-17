@@ -35,9 +35,9 @@ public class CSRelationUserGatewayMessageHandler extends AbstractInnerMessageHan
         scMessage.setToken(message.getToken());
         scMessage.setUserId(message.getUserId());
         if (message.getUserId() > 0) {
-            gatewayManager.sendMessage2Gateway(message.getUserId(), scMessage);
+            gatewayManager.sendMessage(message.getUserId(), scMessage);
         } else {
-            gatewayManager.sendMessage2GatewayByToken(message.getToken(), scMessage);
+            gatewayManager.sendMessageByToken(message.getToken(), scMessage);
         }
 
     }
