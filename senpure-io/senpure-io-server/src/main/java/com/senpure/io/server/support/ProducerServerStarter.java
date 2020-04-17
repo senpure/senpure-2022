@@ -119,17 +119,23 @@ public class ProducerServerStarter implements ApplicationRunner {
         service.scheduleWithFixedDelay(() -> {
             List<ServiceInstance> serviceInstances = discoveryClient.getInstances(producer.getGatewayName());
             for (ServiceInstance instance : serviceInstances) {
-                boolean useDefault=false;
+                boolean useDefault = false;
                 String portStr = instance.getMetadata().get("scPort");
-                int port = 0;
+
+                int port;
                 if (portStr == null) {
-                    useDefault=true;
-                       port = gateway.getScPort();
+                    useDefault = true;
+                    port = gateway.getScPort();
                 } else {
                     port = Integer.parseInt(portStr);
                 }
                 String gatewayKey = gatewayManager.getGatewayKey(instance.getHost(), port);
                 GatewayChannelManager gatewayChannelManager = gatewayManager.getGatewayChannelServer(gatewayKey);
+
+                if (gatewayChannelManager == null) {
+                    gatewayChannelManager = new GatewayChannelManager(gatewayKey, producer.getGatewayChannel());
+                    gatewayChannelManager = gatewayManager.addGatewayChannelServer(gatewayChannelManager);
+                }
                 if (gatewayChannelManager.isConnecting()) {
                     continue;
                 }

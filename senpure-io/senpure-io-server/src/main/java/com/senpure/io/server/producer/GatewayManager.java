@@ -8,6 +8,8 @@ import io.netty.util.concurrent.FastThreadLocal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,15 +49,15 @@ public class GatewayManager {
         return host + ":" + port;
     }
 
-    public synchronized GatewayChannelManager getGatewayChannelServer(String gatewayKey) {
+    @Nullable
+    public GatewayChannelManager getGatewayChannelServer(String gatewayKey) {
+        return gatewayChannelMap.get(gatewayKey);
+    }
 
-        GatewayChannelManager manager = gatewayChannelMap.get(gatewayKey);
-        if (manager == null) {
-            manager = new GatewayChannelManager(gatewayKey);
-            gatewayChannelMap.put(gatewayKey, manager);
-            return gatewayChannelMap.get(gatewayKey);
-        }
-        return manager;
+    @Nonnull
+    public GatewayChannelManager addGatewayChannelServer(@Nonnull GatewayChannelManager gatewayChannelManager) {
+        gatewayChannelMap.putIfAbsent(gatewayChannelManager.getGatewayKey(), gatewayChannelManager);
+        return gatewayChannelMap.get(gatewayChannelManager.getGatewayKey());
     }
 
     public void report() {

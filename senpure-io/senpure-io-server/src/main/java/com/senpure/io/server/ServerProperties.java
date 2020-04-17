@@ -437,7 +437,7 @@ public class ServerProperties {
          */
         private long connectFailInterval = 20000;
         /**
-         * 与网关建立的channel 数量
+         * 与网关建立的channel 数量，多条channel在高并发下消息可能会有乱序问题
          */
         private int gatewayChannel = 1;
         /**
