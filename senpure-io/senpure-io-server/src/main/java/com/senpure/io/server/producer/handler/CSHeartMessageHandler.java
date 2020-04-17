@@ -5,7 +5,7 @@ import com.senpure.io.server.protocol.message.CSHeartMessage;
 import io.netty.channel.Channel;
 
 /**
- * 询问服务器是否可以处理该值得请求处理器
+ * 心跳
  *
  * @author senpure
  * @time 2018-10-17 14:59:15
