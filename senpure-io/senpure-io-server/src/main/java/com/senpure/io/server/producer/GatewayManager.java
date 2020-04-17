@@ -14,10 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.function.IntSupplier;
 
 public class GatewayManager {
-    public static IntSupplier ZERO_REQUEST_ID_SUPPLIER = () -> 0;
+
     private Logger logger = LoggerFactory.getLogger(getClass());
     private final static FastThreadLocal<Integer> requestIdLocal = new FastThreadLocal<Integer>() {
         @Override
@@ -229,13 +228,13 @@ public class GatewayManager {
         }
     }
 
-    public void sendMessage2GatewayByToken(Long token, Message message, IntSupplier requestIdSupplier) {
+    public void sendMessage2GatewayByToken(Long token, Message message, int requestId) {
         Producer2GatewayMessage toGateway = new Producer2GatewayMessage();
         toGateway.setToken(token);
         toGateway.setUserIds(new Long[0]);
         toGateway.setMessage(message);
         toGateway.setMessageId(message.getMessageId());
-        toGateway.setRequestId(requestIdSupplier.getAsInt());
+        toGateway.setRequestId(requestId);
         GatewayRelation gatewayRelation = tokenGatewayMap.get(token);
         if (gatewayRelation != null) {
             gatewayRelation.gatewayChannelManager.sendMessage(toGateway);
@@ -245,7 +244,7 @@ public class GatewayManager {
     }
 
     public void sendMessage2GatewayByToken(Long token, Message message) {
-        sendMessage2GatewayByToken(token, message, GatewayManager::getRequestId);
+        sendMessage2GatewayByToken(token, message, getRequestId());
     }
 
 
