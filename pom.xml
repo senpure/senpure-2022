@@ -16,9 +16,8 @@
         <module>senpure-result</module>
         <module>senpure-web</module>
         <module>senpure-database</module>
-        <module>senpure-dispatcher-bean</module>
-        <module>senpure-dispathcer</module>
         <module>senpure-code-generator</module>
+        <module>senpure-dispathcer</module>
     </modules>
     <dependencyManagement>
         <dependencies>
