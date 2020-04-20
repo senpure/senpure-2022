@@ -10,7 +10,7 @@ import java.io.File;
 
 
 public class TemplateUtil {
-    private static Logger logger
+    private static final Logger logger
             = LoggerFactory.getLogger(TemplateUtil.class);
     private static File templateDir;
 
@@ -20,11 +20,7 @@ public class TemplateUtil {
         }
         String root = AppEvn.getClassRootPath();
 
-        if (AppEvn.classInJar(AppEvn.getStartClass())) {
-            templateDir = new File(root, "template");
-        } else {
-            templateDir = new File(root, "template");
-        }
+        templateDir = new File(root, "template");
         logger.debug("模板文件路径{}",templateDir.getAbsolutePath());
         return templateDir;
     }

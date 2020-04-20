@@ -38,7 +38,7 @@ public class UiBoot extends AbstractJavaFxApplicationSupport {
     public static void main(String[] args) {
 
 
-        launch(UiBoot.class, MainView.class,
+        AbstractJavaFxApplicationSupport.launch(UiBoot.class, MainView.class,
                 args
 
         );

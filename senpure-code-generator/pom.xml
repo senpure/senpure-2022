@@ -10,9 +10,6 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>senpure-code-generator</artifactId>
-<properties>
-    <my.java.home>C:\Program Files\Java\jdk1.8.0_121</my.java.home>
-</properties>
     <dependencies>
         <dependency>
             <groupId>com.senpure</groupId>
@@ -29,7 +26,8 @@
             <artifactId>jdk.tools</artifactId>
             <version>${java.version}</version>
             <scope>system</scope>
-            <systemPath>${my.java.home}/lib/tools.jar</systemPath>
+                <!--如果报错可填写本机绝对路径-->
+            <systemPath>${java.home}/../lib/tools.jar</systemPath>
         </dependency>
 
     </dependencies>

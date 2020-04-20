@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 /**
@@ -30,7 +31,7 @@ public class HabitUtil {
             return newHabit();
         }
         try {
-            String config = FileUtils.readFileToString(save);
+            String config = FileUtils.readFileToString(save, StandardCharsets.UTF_8);
             Habit habit = JSON.parseObject(config, Habit.class);
             if (habit == null) {
                 return newHabit();

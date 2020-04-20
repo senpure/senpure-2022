@@ -13,9 +13,10 @@ import org.springframework.core.env.ConfigurableEnvironment;
 
 public class CurrentSpringApplicationRunListener implements SpringApplicationRunListener, ApplicationRunner {
 
-    Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private static boolean done=false;
+    private static boolean done = false;
+
     public CurrentSpringApplicationRunListener(SpringApplication springApplication, String[] args) {
 
     }
@@ -33,17 +34,17 @@ public class CurrentSpringApplicationRunListener implements SpringApplicationRun
         if (done) {
             return;
         }
-        done=true;
-        Class clazz = AppEvn.getStartClass();
+        done = true;
+        Class<?> clazz = AppEvn.getStartClass();
         if (clazz == null) {
-            StackTraceElement[] statcks = Thread.currentThread().getStackTrace();
-            StackTraceElement statck = statcks[statcks.length - 1];
+            StackTraceElement[] stacks = Thread.currentThread().getStackTrace();
+            StackTraceElement stack = stacks[stacks.length - 1];
             try {
-                clazz = Class.forName(statck.getClassName());
+                clazz = Class.forName(stack.getClassName());
                 AppEvn.markStartClass(clazz);
 
             } catch (Exception e) {
-                logger.error("error", e);
+                logger.error("", e);
             }
         }
         AppEvn.markClassRootPath(clazz);

@@ -20,12 +20,17 @@ import java.net.URL;
  */
 public class AppEvn {
     static {
-        System.setProperty("PID", AppEvn.getPid());
+
+        String pid = AppEvn.getPid();
+        if (pid == null) {
+            pid = "pid";
+        }
+        System.setProperty("PID", pid);
     }
 
     private static String classRootPath;
-    private static Class startClass;
-    private static Logger logger = LoggerFactory.getLogger(AppEvn.class);
+    private static Class<?> startClass;
+    private static final Logger logger = LoggerFactory.getLogger(AppEvn.class);
 
     private static boolean installedAnsi = false;
 
@@ -48,7 +53,7 @@ public class AppEvn {
      *
      * @return
      */
-    public static String getClassRootPath(Class clazz) {
+    public static String getClassRootPath(Class<?> clazz) {
         String classRootPath = null;
         try {
             URL url = clazz.getResource(clazz.getSimpleName() + ".class");
@@ -113,29 +118,27 @@ public class AppEvn {
         if (classRootPath != null) {
             return;
         }
-        Class clazz = startClass;
+        Class<?> clazz = startClass;
         try {
             if (clazz == null) {
-                StackTraceElement[] statcks = Thread.currentThread()
+                StackTraceElement[] stacks = Thread.currentThread()
                         .getStackTrace();
-                clazz = Class.forName(statcks[statcks.length - 1].getClassName());
+                clazz = Class.forName(stacks[stacks.length - 1].getClassName());
             }
-            if (clazz != null) {
-                markClassRootPath(clazz);
-            }
+            markClassRootPath(clazz);
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            logger.error("",e);
         }
     }
 
     public static void markClassRootPath() {
-        Class clazz = startClass;
+        Class<?> clazz = startClass;
         try {
             if (clazz == null) {
-                StackTraceElement[] statcks = Thread.currentThread()
+                StackTraceElement[] stacks = Thread.currentThread()
                         .getStackTrace();
-                StackTraceElement statck = statcks[2];
-                clazz = Class.forName(statck.getClassName());
+                StackTraceElement stack= stacks[2];
+                clazz = Class.forName(stack.getClassName());
             }
             markClassRootPath(clazz);
         } catch (ClassNotFoundException e) {
@@ -143,7 +146,7 @@ public class AppEvn {
         }
     }
 
-    public static void markClassRootPath(Class clazz) {
+    public static void markClassRootPath(Class<?> clazz) {
         String oldClassRootPath = classRootPath;
         classRootPath = getClassRootPath(clazz);
         if (oldClassRootPath != null && !classRootPath.equals(oldClassRootPath)) {
@@ -156,12 +159,12 @@ public class AppEvn {
         }
     }
 
-    public static void markStartClass(Class clazz) {
+    public static void markStartClass(Class<?> clazz) {
         Assert.isNull(startClass);
         startClass = clazz;
     }
 
-    public static Class getStartClass() {
+    public static Class<?> getStartClass() {
         return startClass;
     }
 
@@ -169,13 +172,13 @@ public class AppEvn {
         return getClassRootPath(getCallerClass());
     }
 
-    public static Class getCallerClass() {
-        StackTraceElement[] statcks = Thread.currentThread()
+    public static Class<?> getCallerClass() {
+        StackTraceElement[] stacks = Thread.currentThread()
                 .getStackTrace();
-        StackTraceElement statck = statcks[3];
-        Class clazz = null;
+        StackTraceElement stack= stacks[3];
+        Class<?> clazz = null;
         try {
-            clazz = Class.forName(statck.getClassName());
+            clazz = Class.forName(stack.getClassName());
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -186,11 +189,11 @@ public class AppEvn {
      * @param clazz 不能是AppEvn.class
      * @return
      */
-    public static boolean classInJar(Class clazz) {
+    public static boolean classInJar(Class<?> clazz) {
         return classInJar(clazz, true);
     }
 
-    private static boolean classInJar(Class clazz, boolean log) {
+    private static boolean classInJar(Class<?> clazz, boolean log) {
         URL url = clazz.getResource("");
         if (log) {
             logger.trace("clazz {}  url {}", url, clazz.getName());
@@ -228,7 +231,7 @@ public class AppEvn {
         return location;
     }
 
-    public static String getClassPath(Class clazz) {
+    public static String getClassPath(Class<?> clazz) {
         URL url = clazz.getResource("");
         try {
             URI uri = url.toURI();
@@ -275,7 +278,7 @@ public class AppEvn {
         }
     }
 
-    public static void installAnsiConsole(Class clazz) {
+    public static void installAnsiConsole(Class<?> clazz) {
         if (installedAnsi) {
             return;
         }
@@ -293,12 +296,12 @@ public class AppEvn {
 
     public static void installAnsiConsole() {
 
-        StackTraceElement[] statcks = Thread.currentThread()
+        StackTraceElement[] stacks = Thread.currentThread()
                 .getStackTrace();
-        StackTraceElement statck = statcks[2];
-        Class clazz = null;
+        StackTraceElement stack= stacks[2];
+        Class<?> clazz;
         try {
-            clazz = Class.forName(statck.getClassName());
+            clazz = Class.forName(stack.getClassName());
 
             installAnsiConsole(clazz);
         } catch (ClassNotFoundException e) {
@@ -307,21 +310,15 @@ public class AppEvn {
 
     }
 
-    public static void WaitForGodot() {
-
-        while (true) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+   
 
     public static void main(String[] args) {
 
         System.out.println(Rsa.class.getSimpleName());
         markClassRootPath(SpringApplication.class);
         System.out.println(getClassRootPath());
+
+        System.out.println("pid:" + System.getProperty("PID"));
+    
     }
 }

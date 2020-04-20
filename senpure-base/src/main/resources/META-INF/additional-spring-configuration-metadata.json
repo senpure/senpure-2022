@@ -1,0 +1,10 @@
+{
+  "properties": [
+    {
+      "name": "default.banner",
+      "type": "java.lang.Boolean",
+      "description": "spring启动完成之后是否打印banner.",
+      "defaultValue": true
+    }
+  ]
+}

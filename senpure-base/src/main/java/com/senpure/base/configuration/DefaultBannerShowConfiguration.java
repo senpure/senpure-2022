@@ -12,23 +12,20 @@ import org.springframework.core.annotation.Order;
 public class DefaultBannerShowConfiguration {
 
     @Value("${default.banner:true}")
-    private String banner;
+    private boolean banner = true;
 
     @Bean
     @Order
     public DefaultBannerShow defaultBannerShow() {
         return new DefaultBannerShow();
     }
+
     class DefaultBannerShow implements ApplicationRunner {
 
         @Override
         public void run(ApplicationArguments applicationArguments) throws Exception {
 
-            boolean show = true;
-            if (banner != null && !Boolean.parseBoolean(banner)) {
-                show = false;
-            }
-            if (show) {
+            if (banner) {
                 BannerShow.show();
                 Thread.sleep(1500);
             }
