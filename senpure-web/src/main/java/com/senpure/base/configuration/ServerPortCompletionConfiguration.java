@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringApplicationRunListener;
+import org.springframework.boot.env.OriginTrackedMapPropertySource;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
@@ -42,6 +43,7 @@ public class ServerPortCompletionConfiguration implements SpringApplicationRunLi
 
     @Override
     public void environmentPrepared(ConfigurableEnvironment environment) {
+
         boolean current = false;
         for (PropertySource<?> propertySource : environment.getPropertySources()) {
             // logger.debug(propertySource.getClass().toString());
@@ -62,7 +64,7 @@ public class ServerPortCompletionConfiguration implements SpringApplicationRunLi
                 String ports = environment.getProperty("server.ports");
                 List<Integer> portList = new ArrayList<>();
                 if (ports != null) {
-                    String portsStr[] = ports.split(",");
+                    String[] portsStr = ports.split(",");
                     for (String s : portsStr) {
                         try {
                             portList.add(Integer.valueOf(s));
@@ -72,16 +74,18 @@ public class ServerPortCompletionConfiguration implements SpringApplicationRunLi
                     }
                 }
                 port = getPort(portList);
-                logger.info("{} 没有配置端口使用随机端口{}",  environment.getProperty("spring.application.name"), port);
+                logger.info("{} 没2有配置端口使用随机端口{}",  environment.getProperty("spring.application.name"), port);
                 Map<String, Object> map = new HashMap<>();
                 map.put("server.port", port);
-                PropertySource propertySource = new MapPropertySource("serverPort", map);
+                PropertySource<?> propertySource = new MapPropertySource("serverPort", map);
                 //其他框架可能会更改该值所以放在相对靠后的位置
                 for (PropertySource<?> temp : environment.getPropertySources()) {
                     if (temp.containsProperty("server.port")) {
-                        logger.info("addBefore {} {}{}", temp.getName(), propertySource.getName(), port);
-                        environment.getPropertySources().addBefore(temp.getName(), propertySource);
-                        break;
+                        if (temp instanceof OriginTrackedMapPropertySource) {
+                            logger.info("addBefore {} {}{}", temp.getName(), propertySource.getName(), port);
+                            environment.getPropertySources().addBefore(temp.getName(), propertySource);
+                            break;
+                        }
                     }
                 }
             }
