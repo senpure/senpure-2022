@@ -3,7 +3,7 @@
     {
       "name": "server.ports",
       "type": "java.lang.String",
-      "description": "当显示配置server.port=0时优先选择的端口号."
+      "description": "当server.port未配置或者server.port=0时优先选择的端口号."
     }
   ],
   "hints": [

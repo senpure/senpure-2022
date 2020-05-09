@@ -1,85 +1,61 @@
 package com.senpure.base.configuration;
 
 import com.senpure.base.AppEvn;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.SpringApplicationRunListener;
+import org.springframework.boot.ansi.AnsiOutput;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
 
 
-public class CurrentSpringApplicationRunListener implements SpringApplicationRunListener, ApplicationRunner {
-
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-
-    private static boolean done = false;
+public class CurrentSpringApplicationRunListener extends AbstractRootApplicationRunListener {
 
     public CurrentSpringApplicationRunListener(SpringApplication springApplication, String[] args) {
-
+        super(springApplication, args);
     }
 
     @Override
-    public void starting() {
+    public void rootStarting() {
 
-    }
+        if (isRoot()) {
+            Class<?> clazz = AppEvn.getStartClass();
+            if (clazz == null) {
+                Class<?> bootClass = null;
+                if (springApplication.getAllSources().size() > 0) {
+                    Object object = springApplication.getAllSources().iterator().next();
+                    if (object instanceof Class) {
+                        bootClass = (Class<?>) springApplication.getAllSources().iterator().next();
+                    }
+                }
+                clazz = bootClass;
+                if (clazz == null) {
+                    StackTraceElement[] stacks = Thread.currentThread().getStackTrace();
+                    StackTraceElement stack = stacks[stacks.length - 1];
+                    try {
+                        clazz = Class.forName(stack.getClassName());
+                        AppEvn.markStartClass(clazz);
 
-
-    @Override
-    public void environmentPrepared(ConfigurableEnvironment environment) {
-        //多个springContext 只需要执行一次
-        //保证开发阶段的的有几个classpath 时rootPath正确性
-        if (done) {
-            return;
-        }
-        done = true;
-        Class<?> clazz = AppEvn.getStartClass();
-        if (clazz == null) {
-            StackTraceElement[] stacks = Thread.currentThread().getStackTrace();
-            StackTraceElement stack = stacks[stacks.length - 1];
-            try {
-                clazz = Class.forName(stack.getClassName());
-                AppEvn.markStartClass(clazz);
-
-            } catch (Exception e) {
-                logger.error("", e);
+                    } catch (Exception e) {
+                        logger.error("", e);
+                    }
+                }
             }
+            AppEvn.markClassRootPath(clazz);
         }
-        AppEvn.markClassRootPath(clazz);
-        AppEvn.installAnsiConsole(clazz);
-        //logger.debug("{}={}", "spring.output.ansi.enabled", environment.getProperty("spring.output.ansi.enabled"));
+    }
+
+    @Override
+    public void rootEnvironmentPrepared(ConfigurableEnvironment environment) {
+        String value = environment.getProperty("spring.output.ansi.enabled", String.class);
+        if (value == null || !value.equalsIgnoreCase(AnsiOutput.Enabled.NEVER.name())) {
+            AppEvn.installAnsiConsole(AppEvn.getStartClass());
+        }
 
     }
 
     @Override
-    public void contextPrepared(ConfigurableApplicationContext configurableApplicationContext) {
-    }
-
-    @Override
-    public void contextLoaded(ConfigurableApplicationContext configurableApplicationContext) {
-    }
-
-    @Override
-    public void started(ConfigurableApplicationContext configurableApplicationContext) {
-
-    }
-
-    @Override
-    public void running(ConfigurableApplicationContext configurableApplicationContext) {
-
-    }
-
-    @Override
-    public void failed(ConfigurableApplicationContext configurableApplicationContext, Throwable throwable) {
-
-    }
-
-
-    @Override
-    public void run(ApplicationArguments args) throws Exception {
-
-
+    public void started(ConfigurableApplicationContext context) {
+        if (isRoot()) {
+            logger.info("springApplication bootClass {}", AppEvn.getStartClass().getName());
+        }
     }
 }

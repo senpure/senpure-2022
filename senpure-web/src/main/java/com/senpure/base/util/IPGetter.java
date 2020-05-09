@@ -1,31 +1,24 @@
-package com.senpure.base.init;
+package com.senpure.base.util;
 
-import com.senpure.base.spring.SpringContextRefreshEvent;
-import org.springframework.context.event.ContextRefreshedEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 
+public class IPGetter {
+    private String ip;
 
-public class IPGeter extends SpringContextRefreshEvent {
-    private static String ip;
-
-    public static String getIp() {
+    public String getIp() {
         return ip;
     }
-
-    @Override
-    public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
-        checkIP();
-
-    }
-
-    public  void checkIP() {
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+    public void checkIP() {
         URL url;
         try {
             url = new URL("http://pv.sohu.com/cityjson?ie=utf-8");
@@ -33,7 +26,7 @@ public class IPGeter extends SpringContextRefreshEvent {
                     .openConnection();
             connection.connect();
             BufferedReader reader = new BufferedReader(new InputStreamReader(
-                    connection.getInputStream(), "utf-8"));
+                    connection.getInputStream(), StandardCharsets.UTF_8));
             String line;
             StringBuilder sb = new StringBuilder();
             while ((line = reader.readLine()) != null) {
@@ -42,15 +35,10 @@ public class IPGeter extends SpringContextRefreshEvent {
             String result = sb.toString();
             int i = result.indexOf("\"cip\": \"");
             int j = result.indexOf("\"", i + 8);
-
             ip = result.substring(i + 8, j);
             logger.debug("本机IP is {}", ip);
-        } catch (MalformedURLException e) {
-
-            e.printStackTrace();
         } catch (IOException e) {
-
-            e.printStackTrace();
+          logger.error("",e);
         }
 
     }
