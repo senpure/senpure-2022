@@ -27,7 +27,7 @@ public abstract class AbstractRootApplicationRunListener implements SpringApplic
         this.springApplication = springApplication;
         Class<?> clazz = getClass();
         boolean flag = flagMap.getOrDefault(clazz, false);
-        System.out.println(clazz + " flag = " + flag);
+        //System.out.println(clazz + " flag = " + flag);
         if (!flag) {
             flagMap.putIfAbsent(clazz, true);
             root = true;
