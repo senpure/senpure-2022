@@ -14,7 +14,7 @@ public class Pluralize implements TemplateMethodModelEx {
     @Override
     public Object exec(List list) throws TemplateModelException {
         SimpleScalar simpleScalar= (SimpleScalar) list.get(0);
-        return Inflector.getInstance().pluralize(simpleScalar.getAsString());
+        return Inflector.getInstance().pluralize(simpleScalar.getAsString(),true);
     }
 
     public static void main(String[] args) {

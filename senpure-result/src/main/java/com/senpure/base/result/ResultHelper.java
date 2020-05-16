@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -15,7 +17,7 @@ import java.net.URL;
 import java.text.MessageFormat;
 import java.util.*;
 
-
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class ResultHelper implements ApplicationRunner {
     public static List<Result> results = new ArrayList<>();
     public static List<FieldAndInstance> fieldAndInstances = new ArrayList<>();

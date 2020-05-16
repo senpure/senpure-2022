@@ -1,7 +1,7 @@
 org.springframework.boot.SpringApplicationRunListener=\
-  com.senpure.base.configuration.CurrentSpringApplicationRunListener
+  com.senpure.base.autoconfigure.CurrentSpringApplicationRunListener
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  com.senpure.base.configuration.DefaultBannerShowConfiguration,\
+  com.senpure.base.autoconfigure.DefaultBannerShowAutoConfiguration,\
   com.senpure.base.util.Spring
 
 

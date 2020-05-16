@@ -1,4 +1,4 @@
-package com.senpure.base.configuration;
+package com.senpure.base.autoconfigure;
 
 import com.senpure.base.AppEvn;
 import org.springframework.boot.SpringApplication;

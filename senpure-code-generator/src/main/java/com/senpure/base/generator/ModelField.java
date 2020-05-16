@@ -1,16 +1,18 @@
 package com.senpure.base.generator;
 
 
+import java.lang.reflect.Field;
+
 public class ModelField {
 
     private boolean hasExplain;
-    private String explain="";
+    private String explain = "";
     //private public
     private String accessType = "";
 
     private String clazzType;
     private String name;
-
+    private Field field;
     private String column;
 
     private boolean nullable;
@@ -31,7 +33,7 @@ public class ModelField {
     /**
      * 两个字段表示一个意思是，只显示一个 如 date 和long型的时间戳
      */
-    private boolean strShow=true;
+    private boolean strShow = true;
 
     private boolean findOne = false;
     /**
@@ -59,7 +61,6 @@ public class ModelField {
         return str.length();
 
     }
-
 
 
     public int getColumnLen() {
@@ -212,7 +213,6 @@ public class ModelField {
     }
 
 
-
     public boolean isCriteriaOrder() {
         return criteriaOrder;
     }
@@ -230,7 +230,13 @@ public class ModelField {
         this.longDate = longDate;
     }
 
+    public Field getField() {
+        return field;
+    }
 
+    public void setField(Field field) {
+        this.field = field;
+    }
 
     @Override
     public String toString() {

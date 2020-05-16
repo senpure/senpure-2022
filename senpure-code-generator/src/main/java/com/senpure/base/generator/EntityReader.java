@@ -15,6 +15,8 @@ import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.MySQL8Dialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy;
+import org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy;
 
 import javax.persistence.*;
 import java.io.File;
@@ -25,7 +27,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.sql.Types;
 import java.util.*;
-
 
 public class EntityReader {
 
@@ -43,6 +44,14 @@ public class EntityReader {
         namingStrategy = config.getNamingStrategy();
         if (namingStrategy == null) {
             namingStrategy = new ImprovedNamingStrategy();
+        }
+        physicalNamingStrategy = config.getPhysicalNamingStrategy();
+        if (physicalNamingStrategy == null) {
+            physicalNamingStrategy = new SpringPhysicalNamingStrategy();
+        }
+        implicitNamingStrategy = config.getImplicitNamingStrategy();
+        if (implicitNamingStrategy == null) {
+            implicitNamingStrategy = new SpringImplicitNamingStrategy();
         }
         if (dialect == null) {
             dialect = new MySQL8Dialect();
@@ -146,8 +155,10 @@ public class EntityReader {
         modelMap.put(obj.getClass().getName(), model);
 
         Table table = obj.getClass().getAnnotation(Table.class);
+
         if (table == null || table.name().length() == 0) {
             model.setTableName(namingStrategy.classToTableName(obj.getClass().getName()));
+
         } else {
             model.setTableName(namingStrategy.classToTableName(table.name()));
         }
@@ -507,4 +518,8 @@ public class EntityReader {
 
 
     }
+
 }
+
+
+

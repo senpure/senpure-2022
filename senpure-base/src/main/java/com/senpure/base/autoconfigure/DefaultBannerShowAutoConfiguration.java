@@ -1,4 +1,4 @@
-package com.senpure.base.configuration;
+package com.senpure.base.autoconfigure;
 
 import com.senpure.base.util.BannerShow;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,8 +8,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
 
 
-//@Configuration
-public class DefaultBannerShowConfiguration {
+
+public class DefaultBannerShowAutoConfiguration {
 
     @Value("${default.banner:true}")
     private boolean banner = true;

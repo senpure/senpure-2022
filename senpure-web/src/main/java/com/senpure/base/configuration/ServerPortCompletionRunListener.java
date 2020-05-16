@@ -1,5 +1,6 @@
 package com.senpure.base.configuration;
 
+import com.senpure.base.autoconfigure.AbstractRootApplicationRunListener;
 import com.senpure.base.util.RandomUtil;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.env.OriginTrackedMapPropertySource;

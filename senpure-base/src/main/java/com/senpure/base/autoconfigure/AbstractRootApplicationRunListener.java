@@ -1,9 +1,10 @@
-package com.senpure.base.configuration;
+package com.senpure.base.autoconfigure;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringApplicationRunListener;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
 
 import java.util.HashMap;
@@ -17,17 +18,22 @@ import java.util.Map;
  */
 public abstract class AbstractRootApplicationRunListener implements SpringApplicationRunListener {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
-
+    private static final Map<Class<?>, Boolean> flagMap = new HashMap<>();
     private boolean root;
     protected final SpringApplication springApplication;
 
-    private static final Map<Class<?>, Boolean> flagMap = new HashMap<>();
+    protected final String source;
 
     public AbstractRootApplicationRunListener(SpringApplication springApplication, String[] args) {
         this.springApplication = springApplication;
         Class<?> clazz = getClass();
         boolean flag = flagMap.getOrDefault(clazz, false);
         //System.out.println(clazz + " flag = " + flag);
+        if (springApplication.getAllSources().size() > 0) {
+            source = springApplication.getAllSources().iterator().next().toString();
+        } else {
+            source = "unknown";
+        }
         if (!flag) {
             flagMap.putIfAbsent(clazz, true);
             root = true;
@@ -38,6 +44,7 @@ public abstract class AbstractRootApplicationRunListener implements SpringApplic
     public final boolean isRoot() {
         return root;
     }
+
 
     public abstract void rootStarting();
 
@@ -54,11 +61,32 @@ public abstract class AbstractRootApplicationRunListener implements SpringApplic
     @Override
     public void environmentPrepared(ConfigurableEnvironment environment) {
         if (root) {
-            logger.trace("执行rootEnvironmentPrepared ");
             rootEnvironmentPrepared(environment);
-        } else {
-            logger.trace("执行environmentPrepared ");
         }
+    }
+
+    @Override
+    public void contextPrepared(ConfigurableApplicationContext context) {
+
+    }
+
+    @Override
+    public void contextLoaded(ConfigurableApplicationContext context) {
+
+    }
+
+    @Override
+    public void started(ConfigurableApplicationContext context) {
+
+    }
+
+    @Override
+    public void running(ConfigurableApplicationContext context) {
+
+    }
+
+    @Override
+    public void failed(ConfigurableApplicationContext context, Throwable exception) {
 
     }
 }

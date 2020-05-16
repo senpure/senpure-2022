@@ -9,10 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * CommentReader
@@ -100,9 +97,7 @@ public class CommentReader {
         } else {
             fieldDoc(classDoc.superclass(), fieldDocs);
         }
-        for (FieldDoc fieldDoc : classDoc.fields(false)) {
-            fieldDocs.add(fieldDoc);
-        }
+        fieldDocs.addAll(Arrays.asList(classDoc.fields(false)));
     }
 
 
@@ -116,6 +111,7 @@ public class CommentReader {
             for (FieldDoc fieldDoc : classDoc.fields(false)) {
                 System.out.println(fieldDoc.toString() + "  :   " + fieldDoc.getRawCommentText());
             }
+
 
         }
     }
@@ -134,7 +130,7 @@ public class CommentReader {
                 "-classpath",
                 runtimeMXBean.getClassPath(),
 // 获取单个代码文件FaceLogDefinition.java的javadoc
-                "D:\\Projects\\senpure\\senpure-code-generator\\src\\main\\java\\com\\senpure\\base\\generator\\Model.java", "D:\\Projects\\senpure\\senpure-code-generator\\src\\main\\java\\com\\senpure\\base\\generator\\ModelField.java"});
+                "E:\\Projects\\senpure\\senpure-code-generator\\src\\main\\java\\com\\senpure\\base\\generator\\Model.java", "E:\\Projects\\senpure\\senpure-code-generator\\src\\main\\java\\com\\senpure\\base\\generator\\ModelField.java"});
 
         show();
     }

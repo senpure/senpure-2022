@@ -95,11 +95,18 @@ public class Inflector {
     }
 
     public String pluralize(String word) {
-        if (uncountables.contains(word.toLowerCase())) {
-            return word;
+        return pluralize(word, false);
+    }
+
+    public String pluralize(String word, boolean force) {
+        if (!force) {
+            if (uncountables.contains(word.toLowerCase())) {
+                return word;
+            }
         }
         return replaceWithFirstRule(word, plurals);
     }
+
 
     public String singularize(String word) {
         if (uncountables.contains(word.toLowerCase())) {

@@ -1,7 +1,7 @@
 package com.senpure.io.server.support.configuration;
 
 import com.senpure.base.AppEvn;
-import com.senpure.base.configuration.AbstractRootApplicationRunListener;
+import com.senpure.base.autoconfigure.AbstractRootApplicationRunListener;
 import com.senpure.io.server.ServerProperties;
 import com.senpure.io.server.support.annotation.EnableGateway;
 import org.springframework.boot.SpringApplication;

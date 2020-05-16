@@ -1,6 +1,9 @@
 package com.senpure.base.generator;
 
+import com.senpure.base.generator.hibernate.HibernateSettings;
 import com.senpure.base.generator.naming.NamingStrategy;
+import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
+import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
 import org.hibernate.dialect.Dialect;
 
 import java.util.HashMap;
@@ -38,11 +41,21 @@ public class GeneratorConfig {
      */
     private int classLevel = 2;
     /**
-     *与 classlevel 和 class2SourceSource  一定要同步
+     * 与 classlevel 和 class2SourceSource  一定要同步
      */
     private String class2SourceClass = "target\\classes";
     private String class2SourceSource = "src\\main\\java";
+    /**
+     * 生成的model前缀
+     */
+    private String modelPrefix = "";
+    /**
+     * 生成的model后缀
+     */
+    private String modelSuffix = "";
 
+    private  String entityPrefix="";
+    private  String entitySuffix="";
     private String modelTemplate = "com/senpure/base/generator/template/model.ftl";
     private String serviceTemplate = "com/senpure/base/generator/template/service.ftl";
     private String serviceMapCacheTemplate = "com/senpure/base/generator/template/serviceMapCache.ftl";
@@ -84,8 +97,8 @@ public class GeneratorConfig {
     //↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
     //↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
 
-    private boolean generatePermission =false;
-    private boolean generateMenu =false;
+    private boolean generatePermission = false;
+    private boolean generateMenu = false;
 
     private int menuStartId = 0;
 
@@ -107,8 +120,10 @@ public class GeneratorConfig {
     private NamingStrategy namingStrategy;
     //数据库方言 默认mysql8
     private Dialect dialect;
+    private PhysicalNamingStrategy physicalNamingStrategy;
+    private ImplicitNamingStrategy implicitNamingStrategy;
 
-
+    private HibernateSettings hibernateSettings = new HibernateSettings();
 
     //默认配置
     private ModelConfig defaultModelConfig = new ModelConfig();
@@ -132,7 +147,6 @@ public class GeneratorConfig {
         }
         return modelConfig;
     }
-
 
 
     public NamingStrategy getNamingStrategy() {
@@ -471,5 +485,62 @@ public class GeneratorConfig {
     public GeneratorConfig setResultRootPath(String resultRootPath) {
         this.resultRootPath = resultRootPath;
         return this;
+    }
+
+    public PhysicalNamingStrategy getPhysicalNamingStrategy() {
+        return physicalNamingStrategy;
+    }
+
+    public void setPhysicalNamingStrategy(PhysicalNamingStrategy physicalNamingStrategy) {
+        this.physicalNamingStrategy = physicalNamingStrategy;
+    }
+
+    public ImplicitNamingStrategy getImplicitNamingStrategy() {
+        return implicitNamingStrategy;
+    }
+
+    public void setImplicitNamingStrategy(ImplicitNamingStrategy implicitNamingStrategy) {
+        this.implicitNamingStrategy = implicitNamingStrategy;
+    }
+
+
+    public HibernateSettings getHibernateSettings() {
+        return hibernateSettings;
+    }
+
+    public void setHibernateSettings(HibernateSettings hibernateSettings) {
+        this.hibernateSettings = hibernateSettings;
+    }
+
+    public String getModelPrefix() {
+        return modelPrefix;
+    }
+
+    public void setModelPrefix(String modelPrefix) {
+        this.modelPrefix = modelPrefix;
+    }
+
+    public String getModelSuffix() {
+        return modelSuffix;
+    }
+
+    public void setModelSuffix(String modelSuffix) {
+        this.modelSuffix = modelSuffix;
+    }
+
+    public String getEntityPrefix() {
+        return entityPrefix;
+    }
+
+    public void setEntityPrefix(String entityPrefix) {
+        this.entityPrefix = entityPrefix;
+    }
+
+    public String getEntitySuffix() {
+        return entitySuffix;
+    }
+
+    public void setEntitySuffix(String entitySuffix) {
+        this.entitySuffix = entitySuffix;
     }
 }
