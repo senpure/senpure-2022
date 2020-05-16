@@ -211,6 +211,7 @@ public class JpaEntityReader {
         } else {
             identifier = Identifier.toIdentifier(table.name());
         }
+        identifier = physicalNamingStrategy.toPhysicalTableName(identifier, jdbcEnvironment);
         String tableName = identifier.getText();
         logger.debug("{} tableName {}", clazz, tableName);
         model.setTableName(tableName);
