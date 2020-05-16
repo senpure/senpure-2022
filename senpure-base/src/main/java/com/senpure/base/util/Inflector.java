@@ -94,15 +94,10 @@ public class Inflector {
         return underscoredWord;
     }
 
-    public String pluralize(String word) {
-        return pluralize(word, false);
-    }
 
-    public String pluralize(String word, boolean force) {
-        if (!force) {
-            if (uncountables.contains(word.toLowerCase())) {
-                return word;
-            }
+    public String pluralize(String word) {
+        if (uncountables.contains(word.toLowerCase())) {
+            return word;
         }
         return replaceWithFirstRule(word, plurals);
     }
