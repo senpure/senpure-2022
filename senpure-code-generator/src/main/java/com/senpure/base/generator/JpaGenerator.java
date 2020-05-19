@@ -1,6 +1,7 @@
 package com.senpure.base.generator;
 
 import com.senpure.base.AppEvn;
+import com.senpure.base.generator.config.FindConfig;
 import com.senpure.base.generator.config.JpaConfig;
 import com.senpure.base.generator.config.ModelConfig;
 import com.senpure.base.generator.config.RedundancyConfig;
@@ -32,7 +33,7 @@ public class JpaGenerator extends Generator {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
 
-    private final  List<String> exists = new ArrayList<>();
+    private final List<String> exists = new ArrayList<>();
     private final List<String> springLocal = new ArrayList<>();
 
     public void generate(String part) {
@@ -288,6 +289,88 @@ public class JpaGenerator extends Generator {
         checkDateField(model);
         checkRedundancy(model);
         checkCriteria(model);
+        checkFind(model);
+    }
+
+    private void checkFind(Model model) {
+        ModelConfig modelConfig = model.getModelConfig();
+        Collection<ModelField> modelFieldCollection = model.getModelFieldMap().values();
+        for (ModelField modelField : modelFieldCollection) {
+            if (modelField.isForeignKey()) {
+                find(model, modelField, false);
+            }
+        }
+        if (modelConfig.getFindConfigs().size() > 0) {
+            for (ModelField modelField : modelFieldCollection) {
+                if (modelConfig.getFindConfigs().size() > 0) {
+                    findByConfig(model, modelField, modelConfig);
+                }
+            }
+        } else {
+            for (ModelField modelField : modelFieldCollection) {
+                if (modelConfig.getFindConfigs().size() > 0) {
+                    findBySystem(model, modelField);
+                }
+            }
+        }
+    }
+
+    private void findBySystem(Model model, ModelField modelField) {
+        if (modelField.getName().equals("account")) {
+            find(model, modelField, true);
+        } else if (modelField.getName().equals("name")) {
+            find(model, modelField, true);
+        } else if (modelField.getName().endsWith("Name") && !modelField.getName().startsWith("readable")) {
+            find(model, modelField, false);
+        } else if (modelField.getName().equals("nick")) {
+            find(model, modelField, false);
+        } else if (modelField.getName().endsWith("Nick")) {
+            find(model, modelField, false);
+        } else if (modelField.getName().endsWith("Id")) {
+            if (model.getName().endsWith("Info")
+                    || model.getName().endsWith("info")
+                    || model.getName().endsWith("Ext")
+                    || model.getName().endsWith("ext")
+            ) {
+                find(model, modelField, true);
+            } else {
+                find(model, modelField, false);
+            }
+        } else if (modelField.getName().equals("type")) {
+            find(model, modelField, false);
+        } else if (modelField.getName().endsWith("Type")) {
+            find(model, modelField, false);
+        } else if (modelField.getName().equals("key")) {
+            find(model, modelField, true);
+        } else if (modelField.getName().endsWith("Key")) {
+            find(model, modelField, true);
+        } else if (modelField.getName().equals("uriAndMethod")) {
+            find(model, modelField, false);
+        } else if (modelField.getName().equalsIgnoreCase("gold")
+                || modelField.getName().equalsIgnoreCase("golds")
+                || modelField.getName().equalsIgnoreCase("diamond")
+        ) {
+            find(model, modelField, false);
+        }
+    }
+
+
+    private void findByConfig(Model model, ModelField modelField, ModelConfig modelConfig) {
+        for (FindConfig findConfig : modelConfig.getFindConfigs()) {
+            if (findConfig.isEq()) {
+                if (findConfig.getValue().equals(modelField.getName())) {
+                    find(model, modelField, findConfig.isFindOne());
+                }
+            } else if (findConfig.isStartWith()) {
+                if (findConfig.getValue().startsWith(modelField.getName())) {
+                    find(model, modelField, findConfig.isFindOne());
+                }
+            } else if (findConfig.isEndWith()) {
+                if (findConfig.getValue().equals(modelField.getName())) {
+                    find(model, modelField, findConfig.isFindOne());
+                }
+            }
+        }
     }
 
     private void checkCriteria(Model model) {
@@ -393,6 +476,19 @@ public class JpaGenerator extends Generator {
     private void prepareLog() {
         AnsiOutput.setEnabled(AnsiOutput.Enabled.ALWAYS);
         AppEvn.tryMarkClassRootPath();
+    }
+
+    private void find(Model model, ModelField modelField, boolean findOne) {
+        if (model.getFindModeFields().contains(modelField)) {
+            logger.info("change {} to {},{}  {}", modelField.isFindOne(), findOne, model, modelField);
+            modelField.setFindOne(findOne);
+            modelField.setCriteriaOrder(true);
+        } else {
+            logger.info("find  {}  {}", model, modelField);
+            modelField.setFindOne(findOne);
+            modelField.setCriteriaOrder(true);
+            model.getFindModeFields().add(modelField);
+        }
     }
 
     public static File file(String path, File project, String part) {

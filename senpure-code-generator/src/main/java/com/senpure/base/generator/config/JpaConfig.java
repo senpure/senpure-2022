@@ -117,6 +117,7 @@ public class JpaConfig {
     //单独配置，key是model类名
     private Map<String, ModelConfig> modelConfigMap = new HashMap<>();
 
+
     public ModelConfig getModelConfig(String modelName) {
 
         ModelConfig modelConfig = modelConfigMap.get(modelName);

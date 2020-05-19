@@ -91,6 +91,15 @@ public class ModelConfig {
     private String longDateSuffix = "Time";
 
     private List<RedundancyConfig> redundancyConfigs = new ArrayList<>();
+    private List<FindConfig> findConfigs = new ArrayList<>();
+
+    public List<FindConfig> getFindConfigs() {
+        return findConfigs;
+    }
+
+    public void setFindConfigs(List<FindConfig> findConfigs) {
+        this.findConfigs = findConfigs;
+    }
 
     public boolean isGenerateMapperJava() {
         return generateMapperJava;
