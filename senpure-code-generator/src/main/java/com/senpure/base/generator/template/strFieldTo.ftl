@@ -1,4 +1,4 @@
-<#if field.strShow>
+<#if field.criteriaShow>
     <#if field.hasExplain>
         //${field.explain}
     </#if>

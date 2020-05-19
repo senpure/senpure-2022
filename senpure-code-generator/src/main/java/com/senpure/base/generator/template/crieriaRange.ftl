@@ -1,27 +1,35 @@
 <#list criteriaFieldMap?values as field>
-    <#if field.strShow&&field.hasCriteriaRange>
-        <#if field.clazzType ="Date">
-            <#if field.longDate??>
-            <if test="start${field.name?cap_first} != null">
-                and ${field.longDate.column} >= ${r'#{'}start${field.name?cap_first}.time}
-            </if>
-            <if test="end${field.name?cap_first} != null">
-                and ${field.longDate.column} &lt;= ${r'#{'}end${field.name?cap_first}.time}
-            </if>
+    <#if field.criteriaShow&&field.hasCriteriaRange>
+<#include "rangeName.ftl">
+        <#if startJavaNullable?boolean>
+            <if test="${startName} != null">
+        </#if>
+        <#if field.redundancy>
+            <#--冗余并且只显示一个-->
+            <#if field.redundancyField??&&field.redundancyConfig.showOnlyOne>
+            and ${field.redundancyField.column} >= ${r'#{'}${startName}.${field.redundancyConfig.transformMethod}}
             <#else>
-            <if test="start${field.name?cap_first} != null">
-                and ${field.column} >= ${r'#{'}start${field.name?cap_first}}
-            </if>
-            <if test="end${field.name?cap_first} != null">
-                and ${field.column} &lt;= ${r'#{'}end${field.name?cap_first}}
-            </if>
+            and ${field.column} >= ${r'#{'}${startName}}
             </#if>
-        <#else><#--date-->
-            <if test="start${field.name?cap_first} != null">
-                and ${field.column} >= ${r'#{'}start${field.name?cap_first}}
+        <#else>
+            and ${field.column} >= ${r'#{'}${startName}}
+        </#if>
+        <#if startJavaNullable?boolean>
             </if>
-            <if test="end${field.name?cap_first} != null">
-                and ${field.column} &lt;= ${r'#{'}end${field.name?cap_first}}
+        </#if>
+        <#if endJavaNullable?boolean>
+            <if test="${endName} != null">
+        </#if>
+        <#if field.redundancy>
+            <#if field.redundancyField??&&field.redundancyConfig.showOnlyOne>
+                and ${field.redundancyField.column} &lt;= ${r'#{'}${endName}.${field.redundancyConfig.transformMethod}}
+            <#else >
+                and ${field.column} &lt;= ${r'#{'}${endName}}
+            </#if>
+        <#else>
+            and ${field.column} &lt;= ${r'#{'}${endName}}
+        </#if>
+        <#if endJavaNullable?boolean>
             </if>
         </#if>
     </#if>

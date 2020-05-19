@@ -14,7 +14,7 @@ import java.util.Locale;
  * @author senpure-generator
  * @version ${.now?datetime}
  */
-public class ${name}${globalConfig.resultPageSuffix} extends ActionResult {
+public class ${name}${config.resultPageSuffix} extends ActionResult {
     private static final long serialVersionUID = ${serial(modelFieldMap)}L;
 
     public static final String RECORDS_NAME = "${pluralize(nameRule(name))}";
@@ -24,30 +24,30 @@ public class ${name}${globalConfig.resultPageSuffix} extends ActionResult {
     @ApiModelProperty(position = 4, value = "一页数据")
     private List<${name}> ${pluralize(nameRule(name))} ;
 
-    public static ${name}${globalConfig.resultPageSuffix} success() {
-        return new ${name}${globalConfig.resultPageSuffix}(Result.SUCCESS);
+    public static ${name}${config.resultPageSuffix} success() {
+        return new ${name}${config.resultPageSuffix}(Result.SUCCESS);
     }
 
-    public static ${name}${globalConfig.resultPageSuffix} dim() {
-        return new ${name}${globalConfig.resultPageSuffix}(Result.ERROR_DIM);
+    public static ${name}${config.resultPageSuffix} dim() {
+        return new ${name}${config.resultPageSuffix}(Result.ERROR_DIM);
     }
 
-    public static ${name}${globalConfig.resultPageSuffix} failure() {
-        return new ${name}${globalConfig.resultPageSuffix}(Result.FAILURE);
+    public static ${name}${config.resultPageSuffix} failure() {
+        return new ${name}${config.resultPageSuffix}(Result.FAILURE);
     }
 
-    public static ${name}${globalConfig.resultPageSuffix} notExist() {
-        return new ${name}${globalConfig.resultPageSuffix}(Result.TARGET_NOT_EXIST);
+    public static ${name}${config.resultPageSuffix} notExist() {
+        return new ${name}${config.resultPageSuffix}(Result.TARGET_NOT_EXIST);
     }
 
-    public static ${name}${globalConfig.resultPageSuffix} result(int code) {
-        return new ${name}${globalConfig.resultPageSuffix}(code);
+    public static ${name}${config.resultPageSuffix} result(int code) {
+        return new ${name}${config.resultPageSuffix}(code);
     }
 
-    public ${name}${globalConfig.resultPageSuffix}() {
+    public ${name}${config.resultPageSuffix}() {
     }
 
-    public ${name}${globalConfig.resultPageSuffix}(int code) {
+    public ${name}${config.resultPageSuffix}(int code) {
         super(code);
     }
 
@@ -55,7 +55,7 @@ public class ${name}${globalConfig.resultPageSuffix} extends ActionResult {
         return total;
     }
 
-    public ${name}${globalConfig.resultPageSuffix} setTotal(int total) {
+    public ${name}${config.resultPageSuffix} setTotal(int total) {
         this.total = total;
         return this;
     }
@@ -64,37 +64,37 @@ public class ${name}${globalConfig.resultPageSuffix} extends ActionResult {
         return ${pluralize(nameRule(name))};
     }
 
-    public ${name}${globalConfig.resultPageSuffix} set${pluralize(nameRule(name))?cap_first}(List<${name}> ${pluralize(nameRule(name))}) {
+    public ${name}${config.resultPageSuffix} set${pluralize(nameRule(name))?cap_first}(List<${name}> ${pluralize(nameRule(name))}) {
         this.${pluralize(nameRule(name))} = ${pluralize(nameRule(name))};
         return this;
     }
 
     @Override
-    public ${name}${globalConfig.resultPageSuffix} setClientFormat(boolean clientFormat) {
+    public ${name}${config.resultPageSuffix} setClientFormat(boolean clientFormat) {
         super.setClientFormat(clientFormat);
         return this;
     }
 
     @Override
-    public ${name}${globalConfig.resultPageSuffix} setMessage(String message) {
+    public ${name}${config.resultPageSuffix} setMessage(String message) {
         super.setMessage(message);
         return this;
     }
 
     @Override
-    public ${name}${globalConfig.resultPageSuffix} setMessageArgs(List<String> messageArgs) {
+    public ${name}${config.resultPageSuffix} setMessageArgs(List<String> messageArgs) {
         super.setMessageArgs(messageArgs);
         return this;
     }
 
     @Override
-    public ${name}${globalConfig.resultPageSuffix} wrapMessage(Locale locale) {
+    public ${name}${config.resultPageSuffix} wrapMessage(Locale locale) {
         super.wrapMessage(locale);
         return this;
     }
 
     @Override
-    public ${name}${globalConfig.resultPageSuffix} wrapMessage(Locale locale, Object... args) {
+    public ${name}${config.resultPageSuffix} wrapMessage(Locale locale, Object... args) {
         super.wrapMessage(locale, args);
         return this;
     }

@@ -1,7 +1,7 @@
 package ${mapperPackage};
 
 import ${modelPackage}.${name};
-import ${criteriaPackage}.${name}Criteria;
+import ${criteriaPackage}.${name}${config.criteriaSuffix};
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -27,7 +27,7 @@ public interface ${name}Mapper {
      *
      * @return 影响的行数
      */
-    int deleteByCriteria(${name}Criteria criteria);
+    int deleteByCriteria(${name}${config.criteriaSuffix} criteria);
 
     /**
      * 取对象的值，直接插入数据库(包括空值)<#if version??>
@@ -43,7 +43,7 @@ public interface ${name}Mapper {
      *
      * @return 影响的行数
      */
-    int saveBatch(List<${name}> ${pluralize(nameRule(name))});
+    int saves(List<${name}> ${pluralize(nameRule(name))});
 
     /**
      * 会进行对象的空值判断，不为空才更新，以主键进行where判断<#if version??>
@@ -66,7 +66,7 @@ public interface ${name}Mapper {
      *
      * @return 影响的行数
      */
-    int updateByCriteria(${name}Criteria criteria);
+    int updateByCriteria(${name}${config.criteriaSuffix} criteria);
 
     int count();
 
@@ -77,12 +77,12 @@ public interface ${name}Mapper {
      *
      * @return 满足条件的总行数
      */
-    int countByCriteria(${name}Criteria criteria);
+    int countByCriteria(${name}${config.criteriaSuffix} criteria);
 
     /**
      * <b>主键会无效化,不会进行条件对比</b>
      *
      * @return 满足条件的记录
      */
-    List<${name}> findByCriteria(${name}Criteria criteria);
+    List<${name}> findByCriteria(${name}${config.criteriaSuffix} criteria);
 }

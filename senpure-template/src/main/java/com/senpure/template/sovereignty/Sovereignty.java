@@ -64,7 +64,7 @@ public class Sovereignty {
         }
         result = template.toString().contains("${sovereignty}");
         checks.put(template, result);
-        return result.booleanValue();
+        return result;
     }
 
     private static String strToByte(String str) {

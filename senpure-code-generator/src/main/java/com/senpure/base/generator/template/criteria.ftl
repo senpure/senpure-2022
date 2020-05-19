@@ -20,7 +20,7 @@ import java.io.Serializable;
  * @author senpure-generator
  * @version ${.now?datetime}
  */
-public class ${name}Criteria extends Criteria implements Serializable {
+public class ${name}${config.criteriaSuffix} extends Criteria implements Serializable {
     private static final long serialVersionUID = ${serial(modelFieldMap)}L;
 
 <#if id.hasExplain>
@@ -34,14 +34,14 @@ public class ${name}Criteria extends Criteria implements Serializable {
     ${version.accessType} ${version.clazzType} ${version.name};
 </#if>
 <#list modelFieldMap?values as field>
-    <#if field.strShow>
+    <#if field.criteriaShow>
 <#if field.hasExplain>
     //${field.explain}
 </#if>
     ${field.accessType} ${field.clazzType} ${field.name};
     <#if field.hasCriteriaRange>
-    ${field.accessType} ${field.clazzType} start${field.name?cap_first};
-    ${field.accessType} ${field.clazzType} end${field.name?cap_first};
+    ${field.accessType} ${field.clazzType} ${config.startRangePrefix}${field.name?cap_first};
+    ${field.accessType} ${field.clazzType} ${config.endRangePrefix}${field.name?cap_first};
     </#if>
     <#if field.criteriaOrder>
     //table [${tableName}][column = ${field.column}] criteriaOrder
@@ -58,14 +58,14 @@ public class ${name}Criteria extends Criteria implements Serializable {
     ${table.accessType} ${table.clazzType} ${table.name};
 </#if>
 
-    public static ${name} to${name}(${name}Criteria criteria, ${name} ${nameRule(name)}) {
+    public static ${name} to${name}(${name}${config.criteriaSuffix} criteria, ${name} ${nameRule(name)}) {
         ${nameRule(name)}.set${id.name?cap_first}(criteria.get${id.name?cap_first}());
     <#list modelFieldMap?values as field>
-    <#if field.strShow>
+    <#if field.criteriaShow>
         ${nameRule(name)}.set${field.name?cap_first}(criteria.<#if field.clazzType=="boolean">is<#else>get</#if>${field.name?cap_first}());
-        <#if field.longDate??>
+        <#if field.redundancyField??&&field.redundancyConfig.showOnlyOne>
         if (criteria.get${field.name?cap_first}() != null) {
-            ${nameRule(name)}.set${field.longDate.name?cap_first}(criteria.get${field.name?cap_first}().getTime());
+            ${nameRule(name)}.set${field.redundancyField.name?cap_first}(criteria.get${field.name?cap_first}().get${field.redundancyConfig.transformMethod?cap_first}());
         }
         </#if>
     </#if>
@@ -83,7 +83,7 @@ public class ${name}Criteria extends Criteria implements Serializable {
     }
 
     /**
-     * 将${name}Criteria 的有效值(不为空),赋值给 ${name}
+     * 将${name}${config.criteriaSuffix} 的有效值(不为空),赋值给 ${name}
      *
      * @return ${name}
      */
@@ -97,7 +97,7 @@ public class ${name}Criteria extends Criteria implements Serializable {
         </#if>
 <#list modelFieldMap?values as field>
     <#if field.javaNullable>
-    <#if field.strShow>
+    <#if field.criteriaShow>
         if (<#if field.clazzType=="boolean">is<#else>get</#if>${field.name?cap_first}() != null) {
             ${nameRule(name)}.set${field.name?cap_first}(<#if field.clazzType=="boolean">is<#else>get</#if>${field.name?cap_first}());
         <#if field.longDate??>
@@ -106,7 +106,7 @@ public class ${name}Criteria extends Criteria implements Serializable {
         }
     </#if>
     <#else>
-        <#if field.strShow>
+        <#if field.criteriaShow>
         ${nameRule(name)}.set${field.name?cap_first}(<#if field.clazzType=="boolean">is<#else>get</#if>${field.name?cap_first}());
          </#if>
         </#if>
@@ -128,7 +128,7 @@ public class ${name}Criteria extends Criteria implements Serializable {
     @Override
     protected void rangeStr(StringBuilder sb) {
     <#list modelFieldMap?values as field>
-         <#if field.strShow&&field.hasCriteriaRange>
+         <#if field.criteriaShow&&field.hasCriteriaRange>
          <#if field.clazzType="Date">
         if (start${field.name?cap_first} != null) {
             sb.append("start${field.name?cap_first}=").append(DateFormatUtil.getDateFormat(datePattern).format(start${field.name?cap_first})).append(",");
@@ -151,7 +151,7 @@ public class ${name}Criteria extends Criteria implements Serializable {
 
     @Override
     protected void beforeStr(StringBuilder sb) {
-        sb.append("${name}Criteria{");
+        sb.append("${name}${config.criteriaSuffix}{");
     <#if id.javaNullable>
         if (${id.name} != null) {
             sb.append("${id.name}=").append(${id.name}).append(",");
@@ -170,13 +170,13 @@ public class ${name}Criteria extends Criteria implements Serializable {
 </#if>
 <#list modelFieldMap?values as field>
     <#if field.javaNullable>
-    <#if field.strShow>
+    <#if field.criteriaShow>
         if (${field.name} != null) {
             sb.append("${field.name}=").append(${field.name}).append(",");
         }
     </#if>
     <#else >
-        <#if field.strShow>
+        <#if field.criteriaShow>
         sb.append("${field.name}=").append(${field.name}).append(",");
         </#if>
     </#if>
@@ -184,10 +184,10 @@ public class ${name}Criteria extends Criteria implements Serializable {
     }
 
 <#assign field = id />
-<#assign name >${name}Criteria</#assign>
+<#assign name >${name}${config.criteriaSuffix}</#assign>
 <#include "getset.ftl">
 <#list modelFieldMap?values as field>
-    <#if field.strShow>
+    <#if field.criteriaShow>
         <#include "getsetStringNull.ftl">
     </#if>
 </#list>

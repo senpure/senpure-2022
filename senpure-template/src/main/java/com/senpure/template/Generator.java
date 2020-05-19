@@ -1,5 +1,6 @@
 package com.senpure.template;
 
+import com.senpure.base.AppEvn;
 import com.senpure.base.util.Assert;
 import com.senpure.template.sovereignty.Sovereignty;
 import com.senpure.template.sovereignty.TemplateBean;
@@ -18,9 +19,11 @@ import java.io.OutputStreamWriter;
  * @date 2018-05-08
  */
 public class Generator {
+    static {
+        AppEvn.markPid();
+    }
 
     private static Logger logger = LoggerFactory.getLogger(Generator.class);
-
 
     public final static void generate(TemplateBean bean, Template template, File file, boolean checkSovereignty) {
 

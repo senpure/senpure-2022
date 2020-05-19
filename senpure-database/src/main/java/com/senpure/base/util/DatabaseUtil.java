@@ -17,36 +17,37 @@ public class DatabaseUtil {
     private static Logger logger = LoggerFactory.getLogger(DatabaseUtil.class);
 
     public static void checkAndCreateDatabase(DataSourceProperties prop) {
-        String fullurl = prop.getUrl();
-        String user = prop.getUsername();
-        String password = prop.getPassword();
-        int index = StringUtil.indexOf(fullurl, "/", 1, true);
-        String url = fullurl.substring(0, index);
+        checkAndCreateDatabase(prop.getUrl(),prop.getUsername(),prop.getPassword());
+
+    }
+    public static void checkAndCreateDatabase(String url,String username,String password) {
+        int index = StringUtil.indexOf(url, "/", 1, true);
+        String sampleUrl = url.substring(0, index);
         String database = "";
-        int j = fullurl.indexOf("?");
+        int j = url.indexOf("?");
         if (j < 0) {
-            database = fullurl.substring(index + 1);
+            database = url.substring(index + 1);
         } else {
-            database = fullurl.substring(index + 1, j);
+            database = url.substring(index + 1, j);
         }
-        fullurl = fullurl.toLowerCase();
-        index = fullurl.indexOf("encoding");
+        url = url.toLowerCase();
+        index = url.indexOf("encoding");
         String charSet = null;
         if (index > 0) {
-            int i = fullurl.indexOf("&amp;", index);
+            int i = url.indexOf("&amp;", index);
             if (i < 0) {
-                i = fullurl.indexOf("&", index);
+                i = url.indexOf("&", index);
             }
             if (i < 0) {
-                charSet = fullurl.substring(index + 9);
+                charSet = url.substring(index + 9);
             } else {
-                charSet = fullurl.substring(index + 9, i);
+                charSet = url.substring(index + 9, i);
             }
         }
         Connection connection = null;
         try {
             String checkSql = "SELECT information_schema.SCHEMATA.SCHEMA_NAME FROM information_schema.SCHEMATA where SCHEMA_NAME=?";
-            connection = DriverManager.getConnection(url, user, password);
+            connection = DriverManager.getConnection(sampleUrl, username, password);
             PreparedStatement preparedStatement = connection.prepareStatement(checkSql);
             preparedStatement.setString(1, database);
             ResultSet resultSet = preparedStatement.executeQuery();

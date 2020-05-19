@@ -14,7 +14,7 @@ import java.util.Date;
  * @author senpure-generator
  * @version ${.now?datetime}
  */
-public class ${name}Criteria extends Criteria implements Serializable {
+public class ${name}${config.criteriaSuffix} extends Criteria implements Serializable {
     private static final long serialVersionUID = ${serial(modelFieldMap)}L;
 
 <#if id.hasExplain>
@@ -38,7 +38,7 @@ public class ${name}Criteria extends Criteria implements Serializable {
     </#if>
 </#list>
 
-    public static ${name} to${name}(${name}Criteria criteria, ${name} ${nameRule(name)}) {
+    public static ${name} to${name}(${name}${config.criteriaSuffix} criteria, ${name} ${nameRule(name)}) {
         ${nameRule(name)}.set${id.name?cap_first}(criteria.get${id.name?cap_first}());
     <#list modelFieldMap?values as field>
         ${nameRule(name)}.set${field.name?cap_first}(criteria.<#if field.clazzType=="boolean">is<#else>get</#if>${field.name?cap_first}());
@@ -56,7 +56,7 @@ public class ${name}Criteria extends Criteria implements Serializable {
     }
 
     /**
-     * 将${name}Criteria 的有效值(不为空),赋值给 ${name}
+     * 将${name}${config.criteriaSuffix} 的有效值(不为空),赋值给 ${name}
      *
      * @return ${name}
      */
@@ -99,7 +99,7 @@ public class ${name}Criteria extends Criteria implements Serializable {
 
     @Override
     protected void beforeStr(StringBuilder sb) {
-        sb.append("${name}Criteria{");
+        sb.append("${name}${config.criteriaSuffix}{");
     <#if id.javaNullable>
         if (${id.name} != null) {
             sb.append("${id.name}=").append(${id.name}).append(",");
@@ -127,7 +127,7 @@ public class ${name}Criteria extends Criteria implements Serializable {
 </#list>
     }
 <#assign field = id />
-<#assign name >${name}Criteria</#assign>
+<#assign name >${name}${config.criteriaSuffix}</#assign>
 
 <#include "getset.ftl">
 

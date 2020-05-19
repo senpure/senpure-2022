@@ -20,17 +20,13 @@ import java.net.URL;
  */
 public class AppEvn {
     static {
-
-        String pid = AppEvn.getPid();
-        if (pid == null) {
-            pid = "pid";
-        }
-        System.setProperty("PID", pid);
+        markPid();
     }
 
+    private static final Logger logger = LoggerFactory.getLogger(AppEvn.class);
     private static String classRootPath;
     private static Class<?> startClass;
-    private static final Logger logger = LoggerFactory.getLogger(AppEvn.class);
+
 
     private static boolean installedAnsi = false;
 
@@ -127,7 +123,7 @@ public class AppEvn {
             }
             markClassRootPath(clazz);
         } catch (ClassNotFoundException e) {
-            logger.error("",e);
+            logger.error("", e);
         }
     }
 
@@ -137,7 +133,7 @@ public class AppEvn {
             if (clazz == null) {
                 StackTraceElement[] stacks = Thread.currentThread()
                         .getStackTrace();
-                StackTraceElement stack= stacks[2];
+                StackTraceElement stack = stacks[2];
                 clazz = Class.forName(stack.getClassName());
             }
             markClassRootPath(clazz);
@@ -175,7 +171,7 @@ public class AppEvn {
     public static Class<?> getCallerClass() {
         StackTraceElement[] stacks = Thread.currentThread()
                 .getStackTrace();
-        StackTraceElement stack= stacks[3];
+        StackTraceElement stack = stacks[3];
         Class<?> clazz = null;
         try {
             clazz = Class.forName(stack.getClassName());
@@ -266,7 +262,14 @@ public class AppEvn {
     }
 
     public static void markPid() {
-        System.getProperties().setProperty("PID", AppEvn.getPid());
+        String pid = System.getProperty("PID");
+        if (pid == null) {
+            pid = AppEvn.getPid();
+            if (pid != null) {
+                System.setProperty("PID", pid);
+            }
+        }
+
     }
 
     public static String getPid() {
@@ -298,7 +301,7 @@ public class AppEvn {
 
         StackTraceElement[] stacks = Thread.currentThread()
                 .getStackTrace();
-        StackTraceElement stack= stacks[2];
+        StackTraceElement stack = stacks[2];
         Class<?> clazz;
         try {
             clazz = Class.forName(stack.getClassName());
@@ -310,7 +313,6 @@ public class AppEvn {
 
     }
 
-   
 
     public static void main(String[] args) {
 
@@ -319,6 +321,6 @@ public class AppEvn {
         System.out.println(getClassRootPath());
 
         System.out.println("pid:" + System.getProperty("PID"));
-    
+
     }
 }

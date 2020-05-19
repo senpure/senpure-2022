@@ -1,7 +1,7 @@
 package ${servicePackage};
 
 import ${modelPackage}.${name};
-import ${criteriaPackage}.${name}Criteria;
+import ${criteriaPackage}.${name}${config.criteriaSuffix};
 import ${mapperPackage}.${name}Mapper;
 <#if version??>
 import com.senpure.base.exception.OptimisticLockingFailureException;
@@ -150,7 +150,7 @@ public class ${name}Service extends BaseService {
         }
     </#if>
 </#if>
-        int size = ${nameRule(name)}Mapper.saveBatch(${pluralize(nameRule(name))});
+        int size = ${nameRule(name)}Mapper.saves(${pluralize(nameRule(name))});
         return size;
     }
 
@@ -290,7 +290,7 @@ public class ${name}Service extends BaseService {
 <#list findModeFields as field>
 
     public <#if field.findOne>${name}<#else >List<${name}></#if> findBy${field.name?cap_first}(${field.clazzType} ${field.name}) {
-        ${name}Criteria criteria = new ${name}Criteria();
+        ${name}${config.criteriaSuffix} criteria = new ${name}${config.criteriaSuffix}();
         criteria.setUsePage(false);
         criteria.set${field.name?cap_first}(${field.name});
     <#if field.findOne>

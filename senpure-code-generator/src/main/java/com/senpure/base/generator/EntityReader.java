@@ -252,7 +252,7 @@ public class EntityReader {
                     logger.debug("time long name {}", longName);
                     ModelField temp = model.getModelFieldMap().get(longName);
                     if (temp != null) {
-                        temp.setStrShow(false);
+                        temp.setCriteriaShow(false);
                         temp.setHasCriteriaRange(true);
                         temp.setLongTime(true);
                         field.setLongDate(temp);

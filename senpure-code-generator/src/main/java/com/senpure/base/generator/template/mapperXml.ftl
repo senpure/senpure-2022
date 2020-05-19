@@ -31,15 +31,15 @@ ${mapperXmlTips(name,mapperPackage)}
 
 
     <!--按条件删除(不取主键的值进行对比，即主键无效化)-->
-    <delete id="deleteByCriteria" parameterType="${criteriaPackage}.${name}Criteria">
+    <delete id="deleteByCriteria" parameterType="${criteriaPackage}.${name}${config.criteriaSuffix}">
         delete from <#if tableType=="SINGLE">${tableName}<#else>${r'${'}tableName}</#if>
         <where>
         <#list criteriaFieldMap?values as field>
-            <#if field.strShow>
+            <#if field.criteriaShow&&!field.hasCriteriaRange>
                 <#if field.javaNullable >
             <if test="${field.name} != null">
-                <#if field.longDate??>
-                and ${field.longDate.column} = ${r'#{'}${field.name}.time}
+                <#if field.redundancyField??&&field.redundancyConfig.showOnlyOne>
+                ${field.redundancyField.column} = ${r'#{'}${field.name}.${field.redundancyConfig.transformMethod}},
                 <#else >
                 and ${field.column} = ${r'#{'}${field.name}}
                 </#if>
@@ -60,7 +60,7 @@ ${mapperXmlTips(name,mapperPackage)}
     </insert>
 
     <!-- 取对象的值，直接插入数据库(包括空值)<#if version??>,${version.name}字段(版本控制)，被初始化为1</#if>-->
-    <insert id="saveBatch" parameterType="${modelPackage}.${name}" >
+    <insert id="saves" parameterType="${modelPackage}.${name}" >
         insert into <#if tableType=="SINGLE">${tableName}<#else>${r'${'}tableName}</#if> (<include refid="${name?uncap_first}AllColumns"/>)
         values
         <foreach collection="list" item="item" index="index" separator="," >
@@ -103,7 +103,7 @@ ${mapperXmlTips(name,mapperPackage)}
     </update>
 
     <!--会进行对象的空值判断，不为空才更新，主键无值时，可以进行批量更新-->
-    <update id="updateByCriteria" parameterType="${criteriaPackage}.${name}Criteria">
+    <update id="updateByCriteria" parameterType="${criteriaPackage}.${name}${config.criteriaSuffix}">
         update <#if tableType=="SINGLE">${tableName}<#else>${r'${'}tableName}</#if>
         <set>
         <#if version??>
@@ -122,13 +122,13 @@ ${mapperXmlTips(name,mapperPackage)}
                     ${version.column} = ${r'#{'}${version.name}Update},
             </#if>
         </#if>
-        <#list modelFieldMap?values as field>
-        <#if field.strShow>
+        <#list criteriaFieldMap?values as field>
+        <#if field.criteriaShow&&!field.hasCriteriaRange>
                 <#if field.javaNullable >
                 <if test="${field.name} != null">
                     ${field.column} = ${r'#{'}${field.name}},
-                     <#if field.longDate??>
-                    ${field.longDate.column} = ${r'#{'}${field.name}.time},
+                    <#if field.redundancyField??&&field.redundancyConfig.showOnlyOne>
+                    ${field.redundancyField.column} = ${r'#{'}${field.name}.${field.redundancyConfig.transformMethod}},
                      </#if>
                 </if>
                 <#else>
@@ -167,15 +167,19 @@ ${mapperXmlTips(name,mapperPackage)}
     </select>
 
     <!--主键会无效化,不会进行条件对比-->
-    <select id="countByCriteria" resultType="int" parameterType="${criteriaPackage}.${name}Criteria">
+    <select id="countByCriteria" resultType="int" parameterType="${criteriaPackage}.${name}${config.criteriaSuffix}">
         select count(*) from <#if tableType=="SINGLE">${tableName}<#else>${r'${'}tableName}</#if>
         <where>
         <#list criteriaFieldMap?values as field>
-            <#if field.strShow >
+            <#if field.criteriaShow &&!field.hasCriteriaRange>
                 <#if field.javaNullable >
             <if test="${field.name} != null">
-                <#if field.longDate??>
-                and ${field.longDate.column} = ${r'#{'}${field.name}.time}
+                <#if field.redundancy>
+                    <#if field.redundancyField??&&field.redundancyConfig.showOnlyOne>
+                    and ${field.redundancyField.column} = ${r'#{'}${field.name}.${field.redundancyConfig.transformMethod}}
+                    <#else >
+                    and ${field.column} = ${r'#{'}${field.name}}
+                    </#if>
                     <#else >
                 and ${field.column} = ${r'#{'}${field.name}}
                 </#if>
@@ -190,12 +194,12 @@ ${mapperXmlTips(name,mapperPackage)}
     </select>
 
     <!--主键会无效化,不会进行条件对比-->
-    <select id="findByCriteria" parameterType="${criteriaPackage}.${name}Criteria" resultMap="${name?uncap_first}ResultMap">
+    <select id="findByCriteria" parameterType="${criteriaPackage}.${name}${config.criteriaSuffix}" resultMap="${name?uncap_first}ResultMap">
         select <include refid="${name?uncap_first}AllColumns"/>
         from <#if tableType=="SINGLE">${tableName}<#else>${r'${'}tableName}</#if>
         <where>
         <#list criteriaFieldMap?values as field>
-            <#if field.strShow >
+            <#if field.criteriaShow &&!field.hasCriteriaRange>
                 <#if field.javaNullable >
             <if test="${field.name} != null">
                 and ${field.column} = ${r'#{'}${field.name}}

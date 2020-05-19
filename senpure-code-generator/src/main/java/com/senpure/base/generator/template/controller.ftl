@@ -3,14 +3,14 @@ package ${controllerPackage};
 import com.senpure.base.result.ResultMap;
 import com.senpure.base.spring.BaseController;
 <#if useCriteriaStr>
-import ${criteriaPackage}.${name}CriteriaStr;
+import ${criteriaPackage}.${name}${config.criteriaStrSuffix};
 </#if>
-import ${criteriaPackage}.${name}Criteria;
+import ${criteriaPackage}.${name}${config.criteriaSuffix};
 import ${servicePackage}.${name}Service;
 import ${modelPackage}.${name};
 import com.senpure.base.result.ActionResult;
-import ${resultPackage}.${name}${globalConfig.resultPageSuffix};
-import ${resultPackage}.${name}${globalConfig.resultRecordSuffix};
+import ${resultPackage}.${name}${config.resultPageSuffix};
+import ${resultPackage}.${name}${config.resultRecordSuffix};
 import org.springframework.beans.factory.annotation.Autowired;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -63,10 +63,10 @@ public class ${name}Controller extends BaseController {
     @MenuGenerator(id = ${(menuId+1)?c}, text = "${name} Detail")
 </#if>
 <#if useCriteriaStr>
-    <#assign criteriaClazz>${name}CriteriaStr</#assign>
+    <#assign criteriaClazz>${name}${config.criteriaStrSuffix}</#assign>
     <#assign criteriaName>criteriaStr</#assign>
 <#else >
-    <#assign criteriaClazz>${name}Criteria</#assign>
+    <#assign criteriaClazz>${name}${config.criteriaSuffix}</#assign>
     <#assign criteriaName>criteria</#assign>
 </#if>
     @ApiImplicitParams(@ApiImplicitParam(name = "page", value = "页数", dataType = "int", paramType = "path", example = "1"))
@@ -77,10 +77,10 @@ public class ${name}Controller extends BaseController {
             return incorrect(request, result, view);
         }
 <#if useCriteriaStr>
-        ${name}Criteria criteria = ${criteriaName}.to${name}Criteria();
+        ${name}${config.criteriaSuffix} criteria = ${criteriaName}.to${name}${config.criteriaSuffix}();
 </#if>
         logger.debug("查询条件:{}", criteria);
-        ${name}${globalConfig.resultPageSuffix} pageResult = ${nameRule(name)}Service.findPage(criteria);
+        ${name}${config.resultPageSuffix} pageResult = ${nameRule(name)}Service.findPage(criteria);
         ResultMap resultMap = ResultMap.result(pageResult.getCode());
         resultMap.putTotal(pageResult.getTotal());
         resultMap.put("${pluralize(nameRule(name))}",pageResult.get${pluralize(nameRule(name))?cap_first}());
@@ -93,7 +93,7 @@ public class ${name}Controller extends BaseController {
     </#if>
     @ResponseBody
     @ApiImplicitParams(@ApiImplicitParam(name = "${id.name}", value = "主键", required = true, example = "888888", <#if id.clazzType="String"><#elseif id.clazzType="Integer">dataType = "int", <#else>dataType = "${id.clazzType?uncap_first}", </#if>paramType = "path"))
-    @ApiResponses(@ApiResponse(code = 200, message = "OK", response = ${name}${globalConfig.resultRecordSuffix}.class))
+    @ApiResponses(@ApiResponse(code = 200, message = "OK", response = ${name}${config.resultRecordSuffix}.class))
     public ResultMap read${name}(HttpServletRequest request, @PathVariable String ${id.name}) {
         <#if id.clazzType !="String">
         ${id.clazzType} number${id.name?cap_first};
@@ -119,14 +119,14 @@ public class ${name}Controller extends BaseController {
     @PermissionVerify(value = "${nameRule(name)}_create")
     </#if>
     @ResponseBody
-     @ApiResponses(@ApiResponse(code = 200, message = "OK", response = ${name}${globalConfig.resultRecordSuffix}.class))
+     @ApiResponses(@ApiResponse(code = 200, message = "OK", response = ${name}${config.resultRecordSuffix}.class))
     public ResultMap create${name}(HttpServletRequest request, @ModelAttribute("criteria") @Valid ${criteriaClazz} ${criteriaName}, BindingResult result) {
         if (result.hasErrors()) {
             logger.warn("客户端输入不正确{}", result);
             return incorrect(request, result);
         }
 <#if useCriteriaStr>
-        ${name}Criteria criteria = ${criteriaName}.to${name}Criteria();
+        ${name}${config.criteriaSuffix} criteria = ${criteriaName}.to${name}${config.criteriaSuffix}();
 </#if>
         logger.debug("创建${name}:{}", criteria);
         if (${nameRule(name)}Service.save(criteria)) {
@@ -158,7 +158,7 @@ public class ${name}Controller extends BaseController {
         }
     </#if>
         <#if useCriteriaStr>
-        ${name}Criteria criteria = ${criteriaName}.to${name}Criteria();
+        ${name}${config.criteriaSuffix} criteria = ${criteriaName}.to${name}${config.criteriaSuffix}();
         </#if>
         criteria.set${id.name?cap_first}(<#if id.clazzType !="String">number${id.name?cap_first}<#else>${id.name}</#if>);
         logger.debug("修改${name}:{}", criteria);

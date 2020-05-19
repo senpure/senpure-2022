@@ -1,6 +1,8 @@
 package com.senpure.base.generator;
 
 
+import com.senpure.base.generator.config.RedundancyConfig;
+
 import java.lang.reflect.Field;
 
 public class ModelField {
@@ -25,15 +27,26 @@ public class ModelField {
      * 是否由数据库生成id
      */
     private boolean databaseId;
+    /**
+     * 是否是外键
+     */
+    private boolean foreignKey;
 
     /**
      * 是否有 范围条件判断
      */
     private boolean hasCriteriaRange;
+
+
+    private boolean redundancy;
+    private ModelField redundancyField;
+    private RedundancyConfig redundancyConfig;
+
     /**
-     * 两个字段表示一个意思是，只显示一个 如 date 和long型的时间戳
+     * 是否对外显示，两个字段表示一个意思是，只显示一个 如 date 和long型的时间戳
+     * 兼容 strShow
      */
-    private boolean strShow = true;
+    private boolean criteriaShow = true;
 
     private boolean findOne = false;
     /**
@@ -44,6 +57,7 @@ public class ModelField {
      * 数字表示时间
      */
     private boolean longTime;
+    private boolean useSimpleDate = false;
 
     /**
      * 是否可以条件排序
@@ -81,12 +95,9 @@ public class ModelField {
     }
 
     public boolean isStrShow() {
-        return strShow;
+        return criteriaShow;
     }
 
-    public void setStrShow(boolean strShow) {
-        this.strShow = strShow;
-    }
 
     public void setHasCriteriaRange(boolean hasCriteriaRange) {
         this.hasCriteriaRange = hasCriteriaRange;
@@ -208,6 +219,7 @@ public class ModelField {
         return date;
     }
 
+
     public void setDate(boolean date) {
         this.date = date;
     }
@@ -238,6 +250,59 @@ public class ModelField {
         this.field = field;
     }
 
+
+    public void setHasExplain(boolean hasExplain) {
+        this.hasExplain = hasExplain;
+    }
+
+    public RedundancyConfig getRedundancyConfig() {
+        return redundancyConfig;
+    }
+
+    public void setRedundancyConfig(RedundancyConfig redundancyConfig) {
+        this.redundancyConfig = redundancyConfig;
+    }
+
+    public boolean isRedundancy() {
+        return redundancy;
+    }
+
+    public void setRedundancy(boolean redundancy) {
+        this.redundancy = redundancy;
+    }
+
+    public boolean isCriteriaShow() {
+        return criteriaShow;
+    }
+
+    public void setCriteriaShow(boolean criteriaShow) {
+        this.criteriaShow = criteriaShow;
+    }
+
+    public boolean isForeignKey() {
+        return foreignKey;
+    }
+
+    public void setForeignKey(boolean foreignKey) {
+        this.foreignKey = foreignKey;
+    }
+
+    public boolean isUseSimpleDate() {
+        return useSimpleDate;
+    }
+
+    public void setUseSimpleDate(boolean useSimpleDate) {
+        this.useSimpleDate = useSimpleDate;
+    }
+
+    public ModelField getRedundancyField() {
+        return redundancyField;
+    }
+
+    public void setRedundancyField(ModelField redundancyField) {
+        this.redundancyField = redundancyField;
+    }
+
     @Override
     public String toString() {
         return "ModelField{" +
@@ -251,4 +316,6 @@ public class ModelField {
                         ", version='" + version : "") + '\'' +
                 '}';
     }
+
+
 }

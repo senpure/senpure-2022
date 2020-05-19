@@ -16,7 +16,7 @@ import java.io.Serializable;
  * @author senpure-generator
  * @version ${.now?datetime}
  */
-public class ${name}CriteriaStr extends CriteriaStr implements Serializable {
+public class ${name}${config.criteriaStrSuffix} extends CriteriaStr implements Serializable {
     private static final long serialVersionUID = ${serial(modelFieldMap)}L;
 
 <#if id.hasExplain>
@@ -32,7 +32,7 @@ public class ${name}CriteriaStr extends CriteriaStr implements Serializable {
     ${version.accessType} String ${version.name};
 </#if>
 <#list modelFieldMap?values as field>
-    <#if field.strShow>
+    <#if field.criteriaShow>
         <#if field.hasExplain>
     //${field.explain}
         </#if>
@@ -48,7 +48,7 @@ public class ${name}CriteriaStr extends CriteriaStr implements Serializable {
     </#if>
 </#list>
 <#list modelFieldMap?values as field>
-    <#if field.strShow>
+    <#if field.criteriaShow>
         <#if field.hasCriteriaRange>
     ${apiModelProperty(name,field,"start")}
     ${field.accessType} String start${field.name?cap_first};
@@ -64,7 +64,7 @@ public class ${name}CriteriaStr extends CriteriaStr implements Serializable {
     </#if>
 </#list>
 <#list modelFieldMap?values as field>
-    <#if field.strShow>
+    <#if field.criteriaShow>
         <#if field.criteriaOrder>
     //table [${tableName}][column = <#if field.longDate??>${field.longDate.column}<#else >${field.column}</#if>] criteriaOrder
     ${apiModelProperty(name,field,"order")}
@@ -73,8 +73,8 @@ public class ${name}CriteriaStr extends CriteriaStr implements Serializable {
     </#if>
 </#list>
 
-    public ${name}Criteria to${name}Criteria() {
-        ${name}Criteria criteria = new ${name}Criteria();
+    public ${name}${config.criteriaSuffix} to${name}${config.criteriaSuffix}() {
+        ${name}${config.criteriaSuffix} criteria = new ${name}${config.criteriaSuffix}();
         criteria.setPage(Integer.valueOf(getPage()));
         criteria.setPageSize(Integer.valueOf(getPageSize()));
 <#assign field = id/>
@@ -93,7 +93,7 @@ public class ${name}CriteriaStr extends CriteriaStr implements Serializable {
     @Override
     protected void rangeStr(StringBuilder sb) {
     <#list modelFieldMap?values as field>
-        <#if field.strShow&&field.hasCriteriaRange>
+        <#if field.criteriaShow&&field.hasCriteriaRange>
         if (start${field.name?cap_first} != null) {
             sb.append("start${field.name?cap_first}=").append(start${field.name?cap_first}).append(",");
         }
@@ -107,7 +107,7 @@ public class ${name}CriteriaStr extends CriteriaStr implements Serializable {
 
     @Override
     protected void beforeStr(StringBuilder sb) {
-        sb.append("${name}CriteriaStr{");
+        sb.append("${name}${config.criteriaStrSuffix}{");
         if (${id.name} != null) {
             sb.append("${id.name}=").append(${id.name}).append(",");
         }
@@ -117,7 +117,7 @@ public class ${name}CriteriaStr extends CriteriaStr implements Serializable {
         }
 </#if>
 <#list modelFieldMap?values as field>
-    <#if field.strShow>
+    <#if field.criteriaShow>
         if (${field.name} != null) {
             sb.append("${field.name}=").append(${field.name}).append(",");
         }
@@ -138,7 +138,7 @@ public class ${name}CriteriaStr extends CriteriaStr implements Serializable {
     }
 
 <#assign field = id />
-<#assign name >${name}CriteriaStr</#assign>
+<#assign name >${name}${config.criteriaStrSuffix}</#assign>
 <#include "getsetStringNullStr.ftl">
 <#if version??>
     <#assign field = version />

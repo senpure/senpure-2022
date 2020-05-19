@@ -2,15 +2,16 @@ package com.senpure.base.generator;
 
 import com.senpure.base.AppEvn;
 import com.senpure.base.annotation.Explain;
-import com.senpure.base.entity.LongAndVersionEntity;
 import com.senpure.base.generator.comment.CommentReader;
 import com.senpure.base.generator.comment.LineCommentReader;
+import com.senpure.base.generator.config.JpaConfig;
 import com.senpure.base.generator.hibernate.ImplicitBasicColumnNameSourceImpl;
 import com.senpure.base.generator.hibernate.ImplicitEntityNameSourceImpl;
 import com.senpure.base.generator.hibernate.ImplicitJoinColumnNameSourceImpl;
 import com.senpure.base.util.Assert;
 import com.senpure.base.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.type.JdbcType;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.internal.InFlightMetadataCollectorImpl;
@@ -47,9 +48,10 @@ import java.util.*;
  */
 public class JpaEntityReader {
 
-    private GeneratorConfig config;
+    private JpaConfig config;
     private JdbcEnvironment jdbcEnvironment;
     private MetadataBuildingContext metadataBuildingContext;
+    private  BootstrapContext bootstrapContext;
     private Logger logger = LoggerFactory.getLogger(getClass());
     private PhysicalNamingStrategy physicalNamingStrategy;
     private ImplicitNamingStrategy implicitNamingStrategy;
@@ -59,7 +61,7 @@ public class JpaEntityReader {
     private String[] unullable = {"int", "char", "short", "byte", "float", "double", "boolean", "long"};
     private Map<String, Model> modelMap = new HashMap<>();
 
-    public JpaEntityReader(GeneratorConfig config) {
+    public JpaEntityReader(JpaConfig config) {
         this.config = config;
         Map<String, String> jpaSetting = config.getHibernateSettings().getSettings();
         jpaSetting.putIfAbsent(AvailableSettings.DIALECT, "org.hibernate.dialect.MySQL8Dialect");
@@ -74,6 +76,7 @@ public class JpaEntityReader {
         MetadataSources metadataSources = new MetadataSources(registry);
         MetadataBuilderImpl metadataBuilderImpl = new MetadataBuilderImpl(metadataSources);
         BootstrapContext bootstrapContext = metadataBuilderImpl.getBootstrapContext();
+        this.bootstrapContext=bootstrapContext;
         MetadataBuildingOptions metadataBuildingOptions = metadataBuilderImpl.getMetadataBuildingOptions();
 
         physicalNamingStrategy = metadataBuildingOptions.getPhysicalNamingStrategy();
@@ -316,14 +319,13 @@ public class JpaEntityReader {
                             Assert.error("不支持的java类型：" + field.getType());
                         }
                         int[] sqlTypes = basicType.sqlTypes(null);
-                        String jdbcType = jdbcEnvironment.getDialect().getTypeName(sqlTypes[0], column.length(), column.precision(), column.scale()).toUpperCase();
-                        int index = jdbcType.indexOf("(");
-                        if (index > 0) {
-                            jdbcType = jdbcType.substring(0, index);
-                        }
-                        modelField.setJdbcType(jdbcType);
-                        checkDateField(model, modelField);
-
+//                        String jdbcType = jdbcEnvironment.getDialect().getTypeName(sqlTypes[0], column.length(), column.precision(), column.scale()).toUpperCase();
+//                        int index = jdbcType.indexOf("(");
+//                        if (index > 0) {
+//                            jdbcType = jdbcType.substring(0, index);
+//                        };
+//                            modelField.setJdbcType(jdbcType);
+                            modelField.setJdbcType(JdbcType.forCode(sqlTypes[0]).toString());
                         // 主键判断
                         if (field.getAnnotation(Id.class) == null) {
                             model.getModelFieldMap().put(modelField.getName(), modelField);
@@ -360,15 +362,6 @@ public class JpaEntityReader {
         }
     }
 
-    private void checkDateField(Model model, ModelField modelField) {
-        Field field = modelField.getField();
-        if (field.getType().isAssignableFrom(Date.class)) {
-            model.setHasDate(true);
-            model.getDateFieldMap().put(modelField.getName(), modelField);
-            modelField.setDate(true);
-            modelField.setCriteriaOrder(true);
-        }
-    }
 
     private void readSuperClass(Model model, Class<?> superClazz) {
         if (superClazz == null) {
@@ -422,24 +415,11 @@ public class JpaEntityReader {
                 }
                 modelField.setJavaNullable(javaNullable(target.getId().getClazzType()));
                 model.getModelFieldMap().put(modelField.getName(), modelField);
-                model.getCriteriaFieldMap().put(modelField.getName(), modelField);
-                find(model, modelField, false);
+                modelField.setForeignKey(true);
+                // model.getCriteriaFieldMap().put(modelField.getName(), modelField);
             }
         }
 
-    }
-
-    private void find(Model model, ModelField modelField, boolean findOne) {
-        if (model.getFindModeFields().contains(modelField)) {
-            logger.info("change {} to {},{}  {}", modelField.isFindOne(), findOne, model, modelField);
-            modelField.setFindOne(findOne);
-            modelField.setCriteriaOrder(true);
-        } else {
-            logger.info("find  {}  {}", model, modelField);
-            modelField.setFindOne(findOne);
-            modelField.setCriteriaOrder(true);
-            model.getFindModeFields().add(modelField);
-        }
     }
 
     public String readJoin(Field field, Model referencedModel) {
@@ -468,34 +448,5 @@ public class JpaEntityReader {
         return true;
     }
 
-    public static void main(String[] args) {
-        JpaEntityReader jpaEntityReader = new JpaEntityReader(new GeneratorConfig());
-        jpaEntityReader.readEntity(Book.class);
 
-
-    }
-
-
-    @Entity(name = "Book2")
-    private static class Book extends LongAndVersionEntity {
-
-        @JoinColumn(nullable = false)
-        private Author authorSelf;
-    }
-
-    @Entity
-    private static class Author {
-        @Id
-        @GenericGenerator(name = "idGenerator", strategy = "com.senpure.base.util.IDGeneratorHibernate")
-        @GeneratedValue(generator = "idGenerator")
-        private Long myAuId;
-
-        public Long getMyAuId() {
-            return myAuId;
-        }
-
-        public void setMyAuId(Long myAuId) {
-            this.myAuId = myAuId;
-        }
-    }
 }

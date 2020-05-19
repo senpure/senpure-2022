@@ -1,9 +1,9 @@
 package ${servicePackage};
 
 import ${modelPackage}.${name};
-import ${criteriaPackage}.${name}Criteria;
+import ${criteriaPackage}.${name}${config.criteriaSuffix};
 import ${mapperPackage}.${name}Mapper;
-import ${resultPackage}.${name}${globalConfig.resultPageSuffix};
+import ${resultPackage}.${name}${config.resultPageSuffix};
 <#if version??>
 import com.senpure.base.exception.OptimisticLockingFailureException;
 </#if>
@@ -82,7 +82,7 @@ public class ${name}Service extends BaseService {
         }
     </#if>
 </#if>
-        return ${nameRule(name)}Mapper.saveBatch(${pluralize(nameRule(name))});
+        return ${nameRule(name)}Mapper.saves(${pluralize(nameRule(name))});
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -140,8 +140,8 @@ public class ${name}Service extends BaseService {
 </#if>
 
     @Transactional(readOnly = true)
-    public ${name}${globalConfig.resultPageSuffix} findPage(${name?cap_first}Criteria criteria) {
-        ${name}${globalConfig.resultPageSuffix} pageResult = ${name}${globalConfig.resultPageSuffix}.success();
+    public ${name}${config.resultPageSuffix} findPage(${name?cap_first}Criteria criteria) {
+        ${name}${config.resultPageSuffix} pageResult = ${name}${config.resultPageSuffix}.success();
         //是否是主键查找
         <#if id.javaNullable>
         if (criteria.get${id.name?cap_first}() != null) {
@@ -206,7 +206,7 @@ public class ${name}Service extends BaseService {
 <#list findModeFields as field>
 
     public <#if field.findOne>${name}<#else >List<${name}></#if> findBy${field.name?cap_first}(${field.clazzType} ${field.name}) {
-        ${name}Criteria criteria = new ${name}Criteria();
+        ${name}${config.criteriaSuffix} criteria = new ${name}${config.criteriaSuffix}();
         criteria.setUsePage(false);
         criteria.set${field.name?cap_first}(${field.name});
     <#if field.findOne>

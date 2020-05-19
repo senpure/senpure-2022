@@ -1,5 +1,6 @@
 package com.senpure.base.generator;
 
+import com.senpure.base.generator.config.ModelConfig;
 import com.senpure.base.generator.hibernate.HibernateSettings;
 import com.senpure.base.generator.naming.NamingStrategy;
 import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
@@ -45,17 +46,7 @@ public class GeneratorConfig {
      */
     private String class2SourceClass = "target\\classes";
     private String class2SourceSource = "src\\main\\java";
-    /**
-     * 生成的model前缀
-     */
-    private String modelPrefix = "";
-    /**
-     * 生成的model后缀
-     */
-    private String modelSuffix = "";
 
-    private  String entityPrefix="";
-    private  String entitySuffix="";
     private String modelTemplate = "com/senpure/base/generator/template/model.ftl";
     private String serviceTemplate = "com/senpure/base/generator/template/service.ftl";
     private String serviceMapCacheTemplate = "com/senpure/base/generator/template/serviceMapCache.ftl";
@@ -512,35 +503,5 @@ public class GeneratorConfig {
         this.hibernateSettings = hibernateSettings;
     }
 
-    public String getModelPrefix() {
-        return modelPrefix;
-    }
 
-    public void setModelPrefix(String modelPrefix) {
-        this.modelPrefix = modelPrefix;
-    }
-
-    public String getModelSuffix() {
-        return modelSuffix;
-    }
-
-    public void setModelSuffix(String modelSuffix) {
-        this.modelSuffix = modelSuffix;
-    }
-
-    public String getEntityPrefix() {
-        return entityPrefix;
-    }
-
-    public void setEntityPrefix(String entityPrefix) {
-        this.entityPrefix = entityPrefix;
-    }
-
-    public String getEntitySuffix() {
-        return entitySuffix;
-    }
-
-    public void setEntitySuffix(String entitySuffix) {
-        this.entitySuffix = entitySuffix;
-    }
 }

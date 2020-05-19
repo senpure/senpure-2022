@@ -2,7 +2,7 @@ package com.senpure.dispatcher.generator;
 
 import com.senpure.base.generator.CodeGenerator;
 import com.senpure.base.generator.GeneratorConfig;
-import com.senpure.base.generator.ModelConfig;
+import com.senpure.base.generator.config.ModelConfig;
 
 /**
  * DispatcherCodeGenerator

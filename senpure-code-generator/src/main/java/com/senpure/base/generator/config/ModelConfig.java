@@ -1,4 +1,9 @@
-package com.senpure.base.generator;
+package com.senpure.base.generator.config;
+
+import com.senpure.base.generator.GeneratorConfig;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * ModelConfig
@@ -11,14 +16,34 @@ public class ModelConfig {
 
     public static ModelConfig getOverwriteAllInstance() {
         ModelConfig config = new ModelConfig();
-        config.setOverwriteModel(true);
-        config.setOverwriteService(true);
-        config.setOverwriteCriteria(true);
-        config.setOverwriteController(true);
-        config.setOverwriteMapperJava(true);
-        config.setOverwriteMapperXml(true);
-        config.setOverwriteResult(true);
-        return config;
+        return config.overwriteAll();
+    }
+
+
+    public ModelConfig() {
+        redundancyConfigs.add(new RedundancyConfig());
+    }
+
+    public ModelConfig overwriteAll() {
+        setOverwriteModel(true);
+        setOverwriteService(true);
+        setOverwriteCriteria(true);
+        setOverwriteController(true);
+        setOverwriteMapperJava(true);
+        setOverwriteMapperXml(true);
+        setOverwriteResult(true);
+        return this;
+    }
+
+    public ModelConfig generateAll() {
+        setGenerateModel(true);
+        setGenerateService(true);
+        setGenerateCriteria(true);
+        setGenerateController(true);
+        setGenerateMapperJava(true);
+        setGenerateMapperXml(true);
+        setGenerateResult(true);
+        return this;
     }
 
     private boolean generateModel = true;
@@ -32,8 +57,7 @@ public class ModelConfig {
 
 
     private boolean generateCriteria = true;
-    private boolean generateResult= true;
-
+    private boolean generateResult = true;
 
 
     private boolean useCriteriaStr = true;
@@ -55,14 +79,18 @@ public class ModelConfig {
     //表类型 mix single
     private String tableType = GeneratorConfig.TABLE_TYPE_SINGLE;
     //service 开启缓存
-    private boolean cache=false;
+    private boolean cache = false;
     //cache =true 时生效 spring cache
-    private boolean remoteCache=true;
+    private boolean remoteCache = true;
     //cache =true 时生效 spring cache local混合
     private boolean localCache;
     //cache =true 时生效 本地map缓存
     private boolean mapCache;
 
+    //字段匹配为时间类型
+    private String longDateSuffix = "Time";
+
+    private List<RedundancyConfig> redundancyConfigs = new ArrayList<>();
 
     public boolean isGenerateMapperJava() {
         return generateMapperJava;
@@ -111,7 +139,6 @@ public class ModelConfig {
     public void setGenerateController(boolean generateController) {
         this.generateController = generateController;
     }
-
 
 
     public boolean isGenerateModel() {
@@ -225,5 +252,22 @@ public class ModelConfig {
 
     public void setOverwriteResult(boolean overwriteResult) {
         this.overwriteResult = overwriteResult;
+    }
+
+    public String getLongDateSuffix() {
+        return longDateSuffix;
+    }
+
+    public void setLongDateSuffix(String longDateSuffix) {
+        this.longDateSuffix = longDateSuffix;
+    }
+
+
+    public List<RedundancyConfig> getRedundancyConfigs() {
+        return redundancyConfigs;
+    }
+
+    public void setRedundancyConfigs(List<RedundancyConfig> redundancyConfigs) {
+        this.redundancyConfigs = redundancyConfigs;
     }
 }

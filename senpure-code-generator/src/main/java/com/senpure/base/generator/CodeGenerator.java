@@ -2,6 +2,7 @@ package com.senpure.base.generator;
 
 
 import com.senpure.base.AppEvn;
+import com.senpure.base.generator.config.ModelConfig;
 import com.senpure.base.generator.method.*;
 import com.senpure.base.util.Assert;
 import com.senpure.base.util.StringUtil;
@@ -92,7 +93,7 @@ public class CodeGenerator {
         if (file.exists()) {
             if (cover) {
                 if (model.isCurrentService()) {
-                    logger.debug("{}{} useCache:{}", AnsiOutput.toString(new Object[]{AnsiColor.BRIGHT_RED, "覆盖生成"}), file.getAbsolutePath(), AnsiOutput.toString(new Object[]{AnsiColor.BRIGHT_RED, getCache(model.getConfig())}));
+                    logger.debug("{}{} useCache:{}", AnsiOutput.toString(new Object[]{AnsiColor.BRIGHT_RED, "覆盖生成"}), file.getAbsolutePath(), AnsiOutput.toString(new Object[]{AnsiColor.BRIGHT_RED, getCache(model.getModelConfig())}));
 
                 } else {
                     logger.debug("{}{}", AnsiOutput.toString(new Object[]{AnsiColor.BRIGHT_RED, "覆盖生成"}), file.getAbsolutePath());
@@ -108,7 +109,7 @@ public class CodeGenerator {
 
         } else {
             if (model.isCurrentService()) {
-                logger.debug("生成{} useCache:{}", file.getAbsolutePath(), AnsiOutput.toString(new Object[]{AnsiColor.BRIGHT_RED, getCache(model.getConfig())}));
+                logger.debug("生成{} useCache:{}", file.getAbsolutePath(), AnsiOutput.toString(new Object[]{AnsiColor.BRIGHT_RED, getCache(model.getModelConfig())}));
             } else {
                 logger.debug("生成{}", file.getAbsolutePath());
             }
@@ -212,8 +213,8 @@ public class CodeGenerator {
                 Assert.error(model.getName() + "没有主键");
             }
             ModelConfig modelConfig = config.getModelConfig(model.getName());
-            model.setGlobalConfig(config);
-            model.setConfig(modelConfig);
+            model.setGeneratorConfig(new GeneratorConfig());
+            model.setModelConfig(modelConfig);
             model.setMenuId(menuId);
 
             menuId += 100;

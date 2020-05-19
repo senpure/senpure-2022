@@ -1,12 +1,16 @@
 package com.senpure.base.generator;
 
+import com.senpure.base.generator.config.JpaConfig;
+import com.senpure.base.generator.config.ModelConfig;
+import com.senpure.template.sovereignty.TemplateBean;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 
-public class Model {
+public class Model extends TemplateBean {
     /**
      * 是否有注释
      */
@@ -17,14 +21,16 @@ public class Model {
     private String explain;
 
     /**
-     * 是否有data类型字段 只有java.untl.Date
+     * 是否有data类型字段 只有java.util.Date
      */
     private boolean hasDate;
     /**
      * 是否还有long类型的日期
      */
     private boolean hasLongDate;
-
+    /**
+     * 是否有范围字段 >= <=
+     */
     private boolean hasRange;
     /**
      * 数据库表明
@@ -64,18 +70,20 @@ public class Model {
     /**
      * class
      */
-    private Class clazz;
-    private Map<String, ModelField> modelFieldMap = new LinkedHashMap<>();
+    private Class<?> clazz;
+
     //外键放在前面
     private Map<String, ModelField> criteriaFieldMap = new LinkedHashMap<>();
 
-    AfterReadColumn afterReadColumn = new AfterReadColumn();
+    private AfterReadColumn afterReadColumn = new AfterReadColumn();
     /**
      * 主键字段
      */
     private ModelField id;
 
     private ModelField version;
+
+    private Map<String, ModelField> modelFieldMap = new LinkedHashMap<>();
 
     private Map<String, ModelField> dateFieldMap = new LinkedHashMap<>();
     /**
@@ -90,9 +98,18 @@ public class Model {
 
     private List<ModelField> allFields = new ArrayList<>();
 
-    private ModelConfig config;
-    private GeneratorConfig globalConfig;
+    private ModelConfig modelConfig;
+    private JpaConfig config;
+    private GeneratorConfig generatorConfig;
 
+
+    public GeneratorConfig getGeneratorConfig() {
+        return generatorConfig;
+    }
+
+    public void setGeneratorConfig(GeneratorConfig generatorConfig) {
+        this.generatorConfig = generatorConfig;
+    }
 
     public boolean isHasDate() {
         return hasDate;
@@ -400,21 +417,29 @@ public class Model {
         this.resultPackage = resultPackage;
     }
 
-    public ModelConfig getConfig() {
+    public ModelConfig getModelConfig() {
+        return modelConfig;
+    }
+
+    public void setModelConfig(ModelConfig modelConfig) {
+        this.modelConfig = modelConfig;
+    }
+
+
+    public List<ModelField> getAllFields() {
+        return allFields;
+    }
+
+    public void setAllFields(List<ModelField> allFields) {
+        this.allFields = allFields;
+    }
+
+    public JpaConfig getConfig() {
         return config;
     }
 
-    public void setConfig(ModelConfig config) {
+    public void setConfig(JpaConfig config) {
         this.config = config;
-    }
-
-
-    public GeneratorConfig getGlobalConfig() {
-        return globalConfig;
-    }
-
-    public void setGlobalConfig(GeneratorConfig globalConfig) {
-        this.globalConfig = globalConfig;
     }
 
     public boolean isGeneratePermission() {
