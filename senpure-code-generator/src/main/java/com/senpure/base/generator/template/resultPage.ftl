@@ -1,7 +1,7 @@
 package ${resultPackage};
 
-import com.senpure.base.result.ActionResult;
-import com.senpure.base.result.Result;
+import com.senpure.base.ActionResult;
+import com.senpure.base.Result;
 import ${modelPackage}.${name};
 import io.swagger.annotations.ApiModelProperty;
 
@@ -11,7 +11,7 @@ import java.util.Locale;
 /**<#if hasExplain>
  * ${explain}
  *</#if>
- * @author senpure-generator
+${sovereignty}
  * @version ${.now?datetime}
  */
 public class ${name}${config.resultPageSuffix} extends ActionResult {

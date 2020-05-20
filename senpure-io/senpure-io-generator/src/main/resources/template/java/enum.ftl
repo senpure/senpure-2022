@@ -3,7 +3,7 @@ package ${javaPackage};
 /**<#if hasExplain>
  * ${explain}
  * </#if>
- ${sovereignty}
+${sovereignty}
  * @time ${.now?datetime}
  */
 public enum ${javaName} {

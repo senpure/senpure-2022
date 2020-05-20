@@ -8,7 +8,7 @@ package com.senpure.template.sovereignty;
  */
 public class TemplateBean {
 
-    private String sovereignty=Sovereignty.getInstance().sovereigntyJavaComment();
+    private String sovereignty;
 
     private int beforeSovereigntyCount = 0;
     private int afterSovereigntyCount = 0;

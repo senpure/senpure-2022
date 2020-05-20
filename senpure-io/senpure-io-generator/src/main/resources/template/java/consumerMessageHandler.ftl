@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 /**<#if hasExplain>
  * ${explain}处理器
  *</#if>
- ${sovereignty}
+${sovereignty}
  * @time ${.now?datetime}
  */
 @Component

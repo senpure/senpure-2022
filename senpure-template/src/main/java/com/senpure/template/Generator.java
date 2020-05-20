@@ -1,6 +1,5 @@
 package com.senpure.template;
 
-import com.senpure.base.AppEvn;
 import com.senpure.base.util.Assert;
 import com.senpure.template.sovereignty.Sovereignty;
 import com.senpure.template.sovereignty.TemplateBean;
@@ -18,12 +17,10 @@ import java.io.OutputStreamWriter;
  * @author senpure
  * @date 2018-05-08
  */
-public class Generator {
-    static {
-        AppEvn.markPid();
-    }
+public final class Generator {
 
-    private static Logger logger = LoggerFactory.getLogger(Generator.class);
+
+    private static final Logger logger = LoggerFactory.getLogger(Generator.class);
 
     public final static void generate(TemplateBean bean, Template template, File file, boolean checkSovereignty) {
 
@@ -32,7 +29,21 @@ public class Generator {
             System.exit(0);
         }
 
+
+        boolean setSovereignty = bean.getSovereignty() == null;
+        if (setSovereignty) {
+            if (file.getName().endsWith(".java")) {
+                bean.setSovereignty(Sovereignty.getInstance().sovereigntyJavaComment());
+            } else if (file.getName().endsWith(".lua")) {
+                bean.setSovereignty(Sovereignty.getInstance().sovereigntyLuaComment());
+            } else {
+                bean.setSovereignty(Sovereignty.getInstance().sovereignty());
+            }
+        }
         generateFile(bean, template, file);
+        if (setSovereignty) {
+            bean.setSovereignty(null);
+        }
         if (checkSovereignty && !bean.checkSovereignty()) {
             logger.error("{} 没有调用 ${sovereignty} 或者没有${sovereignty}没有执行", template.getSourceName());
             if (file.exists()) {

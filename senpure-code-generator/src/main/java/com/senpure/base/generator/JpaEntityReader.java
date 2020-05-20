@@ -51,7 +51,7 @@ public class JpaEntityReader {
     private JpaConfig config;
     private JdbcEnvironment jdbcEnvironment;
     private MetadataBuildingContext metadataBuildingContext;
-    private  BootstrapContext bootstrapContext;
+    private BootstrapContext bootstrapContext;
     private Logger logger = LoggerFactory.getLogger(getClass());
     private PhysicalNamingStrategy physicalNamingStrategy;
     private ImplicitNamingStrategy implicitNamingStrategy;
@@ -76,7 +76,7 @@ public class JpaEntityReader {
         MetadataSources metadataSources = new MetadataSources(registry);
         MetadataBuilderImpl metadataBuilderImpl = new MetadataBuilderImpl(metadataSources);
         BootstrapContext bootstrapContext = metadataBuilderImpl.getBootstrapContext();
-        this.bootstrapContext=bootstrapContext;
+        this.bootstrapContext = bootstrapContext;
         MetadataBuildingOptions metadataBuildingOptions = metadataBuilderImpl.getMetadataBuildingOptions();
 
         physicalNamingStrategy = metadataBuildingOptions.getPhysicalNamingStrategy();
@@ -115,6 +115,7 @@ public class JpaEntityReader {
                 logger.debug("跳过 {}", clazz.getName());
             }
         }
+        readJoin();
         return modelMap;
     }
 
@@ -201,7 +202,7 @@ public class JpaEntityReader {
         logger.info("read {}", clazz.getName());
         readName(model, clazz);
         readFields(model, clazz);
-        readJoin();
+
         return model;
     }
 
@@ -287,7 +288,7 @@ public class JpaEntityReader {
                     }
                     String key = model.getClazz().getName() + "." + modelField.getAccessType() + "." + modelField.getName();
                     String comment = LineCommentReader.getComment(key);
-                    if (comment != null) {
+                    if (StringUtil.isExist(comment)) {
                         modelField.setExplain(modelField.getExplain() + comment);
                     }
                     ManyToOne manyToOne = field.getAnnotation(ManyToOne.class);
@@ -295,7 +296,8 @@ public class JpaEntityReader {
                         //  JoinColumn joinColumn = field.getAnnotation(JoinColumn.class);
                         logger.debug("{}暂时不处理字段{} {}", model.getName(), field.getType().getName(), field.getName());
                         //暂时用全类名表示
-                        modelField.setName(field.getType().getName());
+                        modelField.setClazzType(field.getType().getName());
+                        // modelField.setName(field.getType().getName());
                         model.getAfterReadColumn().getTargetClass().add(field.getType().getName());
                         model.getAfterReadColumn().getModelFields().add(modelField);
                     } else {
@@ -325,7 +327,7 @@ public class JpaEntityReader {
 //                            jdbcType = jdbcType.substring(0, index);
 //                        };
 //                            modelField.setJdbcType(jdbcType);
-                            modelField.setJdbcType(JdbcType.forCode(sqlTypes[0]).toString());
+                        modelField.setJdbcType(JdbcType.forCode(sqlTypes[0]).toString());
                         // 主键判断
                         if (field.getAnnotation(Id.class) == null) {
                             model.getModelFieldMap().put(modelField.getName(), modelField);
@@ -392,7 +394,7 @@ public class JpaEntityReader {
             List<ModelField> modelFields = model.getAfterReadColumn().getModelFields();
             //完成外键信息补充
             for (ModelField modelField : modelFields) {
-                Model target = modelMap.get(modelField.getName());
+                Model target = modelMap.get(modelField.getClazzType());
                 if (target == null) {
                     Assert.error(modelField.getName() + "不存在 ");
                 }
@@ -401,8 +403,8 @@ public class JpaEntityReader {
                 target.setChildField(modelField);
 
                 //改写name 之前是Target全类名
-                modelField.setName(StringUtil.toLowerFirstLetter(target.getName()
-                        + StringUtil.toUpperFirstLetter(target.getId().getName())));
+                modelField.setName(modelField.getName()
+                        + StringUtil.toUpperFirstLetter(target.getId().getName()));
                 modelField.setClazzType(target.getId().getClazzType());
                 modelField.setJdbcType(target.getId().getJdbcType());
                 String joinName = readJoin(modelField.getField(), target);

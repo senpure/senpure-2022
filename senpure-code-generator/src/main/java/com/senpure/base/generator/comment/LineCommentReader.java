@@ -117,7 +117,7 @@ public class LineCommentReader {
                     FieldModel fieldModel = new FieldModel();
                     fieldModels.add(fieldModel);
                     List<Java8Parser.FieldModifierContext> fieldModifierContexts = fieldDeclarationContext.fieldModifier();
-                    int fieldLine = fieldDeclarationContext.getStart().getLine();
+                    int fieldLine = fieldDeclarationContext.getStop().getLine();
                     for (Java8Parser.FieldModifierContext modifierContext : fieldModifierContexts) {
                         String modifier = modifierContext.getText();
                         if (modifier.equals("static")) {
@@ -142,7 +142,9 @@ public class LineCommentReader {
                             if (token.getLine() != lastFieldLine) {
                                 //skip //
                                 String l = token.getText().substring(2).trim();
-                                fieldModel.getLineComments().add(l);
+                                if (l.length() > 0) {
+                                    fieldModel.getLineComments().add(l);
+                                }
                             }
 
                         }
@@ -151,10 +153,13 @@ public class LineCommentReader {
                     if (lineComments != null) {
                         for (Token token : lineComments) {
                             // logger.info("{} line {} .. {}", token.getText(), token.getLine(), fieldDeclarationContext.getStart().getLine());
-                            if (token.getLine() == fieldDeclarationContext.getStart().getLine()) {
+                            if (token.getLine() == fieldDeclarationContext.getStop().getLine()) {
                                 //skip //
                                 String l = token.getText().substring(2);
-                                fieldModel.getLineComments().add(l);
+                                if (l.length() > 0) {
+                                    fieldModel.getLineComments().add(l);
+                                }
+
                             }
                         }
 

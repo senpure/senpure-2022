@@ -11,7 +11,7 @@ import java.util.Date;
 /**<#if hasExplain>
  * ${explain}
  * </#if>
- * @author senpure-generator
+${sovereignty}
  * @version ${.now?datetime}
  */
 <#if hasExplain>

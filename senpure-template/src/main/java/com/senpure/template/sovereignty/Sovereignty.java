@@ -13,12 +13,13 @@ public class Sovereignty {
     public static Sovereignty getInstance() {
         return sovereignty;
     }
-
+    private List<String> authors = new ArrayList<>();
     private List<String> sovereignties = new ArrayList<>();
     private List<String> javaSovereignties = new ArrayList<>();
     private Map<Template, Boolean> checks = new HashMap<>();
 
     private Sovereignty() {
+        authors.add(byteToStr("c2VucHVyZQ=="));
         sovereignties.add(byteToStr("YXV0aG9yICAgIHNlbnB1cmU="));
         javaSovereignties.add(byteToStr("YXV0aG9yIHNlbnB1cmU="));
 
@@ -29,7 +30,7 @@ public class Sovereignty {
     }
 
     public String sovereigntyJavaComment() {
-        return sovereignty("* @", true, javaSovereignties);
+        return sovereignty(" * @", true, javaSovereignties);
     }
 
     public String sovereigntyLuaComment() {
@@ -45,7 +46,7 @@ public class Sovereignty {
     private String sovereignty(String prefix, boolean newLine, List<String> sovereignties) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < sovereignties.size(); i++) {
-            if (i > 0 && newLine) {
+            if (i > 0 ) {
                 if (newLine) {
                     sb.append("\n");
                 } else {
@@ -88,11 +89,12 @@ public class Sovereignty {
 
     public static void main(String[] args) {
 
-        String str="hello world!";
+        String str="senpure";
         String data = strToByte(str);
         System.out.println(data);
 
         System.out.println(byteToStr(data));
+        System.out.println(byteToStr("YXV0aG9yIHNlbnB1cmU="));
     }
 }
 

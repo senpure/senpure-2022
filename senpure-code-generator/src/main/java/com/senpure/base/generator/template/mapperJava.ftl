@@ -7,11 +7,11 @@ import org.apache.ibatis.annotations.Mapper;
 import java.util.List;
 
 /**
- * @author senpure-generator
+${sovereignty}
  * @version ${.now?datetime}
  */
 @Mapper
-public interface ${name}Mapper {
+public interface ${name}${config.mapperSuffix} {
 
     ${name} find(${id.clazzType} ${id.name});
 
@@ -43,7 +43,7 @@ public interface ${name}Mapper {
      *
      * @return 影响的行数
      */
-    int saves(List<${name}> ${pluralize(nameRule(name))});
+    int saveList(List<${name}> ${pluralize(nameRule(name))});
 
     /**
      * 会进行对象的空值判断，不为空才更新，以主键进行where判断<#if version??>

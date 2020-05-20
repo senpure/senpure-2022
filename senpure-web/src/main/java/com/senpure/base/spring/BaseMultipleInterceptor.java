@@ -1,7 +1,7 @@
 package com.senpure.base.spring;
 
 
-import com.senpure.base.result.ResultMap;
+import com.senpure.base.ResultMap;
 import com.senpure.base.util.Download;
 import com.senpure.base.util.Http;
 import com.senpure.base.util.JSON;

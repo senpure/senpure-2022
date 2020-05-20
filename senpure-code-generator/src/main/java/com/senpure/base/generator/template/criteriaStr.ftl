@@ -13,7 +13,7 @@ import java.io.Serializable;
 /**<#if hasExplain>
  * ${explain}
  *</#if>
- * @author senpure-generator
+${sovereignty}
  * @version ${.now?datetime}
  */
 public class ${name}${config.criteriaStrSuffix} extends CriteriaStr implements Serializable {

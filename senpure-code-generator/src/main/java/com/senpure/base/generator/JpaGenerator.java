@@ -28,7 +28,11 @@ import java.util.*;
  * @author senpure
  * @time 2020-05-15 15:45:27
  */
-public class JpaGenerator extends Generator {
+public class JpaGenerator {
+
+    static {
+        AppEvn.markPid();
+    }
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -504,14 +508,14 @@ public class JpaGenerator extends Generator {
         if (file.exists()) {
             if (cover) {
                 logger.debug("{}{}", AnsiOutput.toString(AnsiColor.BRIGHT_RED, "覆盖生成"), file.getAbsolutePath());
-                generate(args, template, file, false);
+                Generator.generate(args, template, file, false);
             } else {
 
                 logger.warn("{}存在无法生成", file.getAbsolutePath());
             }
         } else {
             logger.debug("生成{}", file.getAbsolutePath());
-            generate(args, template, file, false);
+            Generator.generate(args, template, file, false);
         }
     }
 
@@ -527,7 +531,7 @@ public class JpaGenerator extends Generator {
                 } else {
                     logger.debug("{}{}", AnsiOutput.toString(AnsiColor.BRIGHT_RED, "覆盖生成"), file.getAbsolutePath());
                 }
-                generate(model, template, file, false);
+                Generator.generate(model, template, file, false);
             } else {
                 exists.add(file.getAbsolutePath());
                 if (model.isCurrentService()) {
@@ -542,7 +546,7 @@ public class JpaGenerator extends Generator {
             } else {
                 logger.debug("生成{}", file.getAbsolutePath());
             }
-            generate(model, template, file, false);
+            Generator.generate(model, template, file, false);
 
         }
     }

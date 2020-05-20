@@ -2,7 +2,7 @@ package ${servicePackage};
 
 import ${modelPackage}.${name};
 import ${criteriaPackage}.${name}${config.criteriaSuffix};
-import ${mapperPackage}.${name}Mapper;
+import ${mapperPackage}.${name}${config.mapperSuffix};
 import ${resultPackage}.${name}${config.resultPageSuffix};
 <#if version??>
 import com.senpure.base.exception.OptimisticLockingFailureException;
@@ -10,7 +10,6 @@ import com.senpure.base.exception.OptimisticLockingFailureException;
 <#if modelPackage !="com.senpure.base.model">
 import com.senpure.base.service.BaseService;
 </#if>
-import com.senpure.base.result.ResultMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,36 +18,40 @@ import java.util.List;
 import java.util.ArrayList;
 
 /**
- * @author senpure-generator
+${sovereignty}
  * @version ${.now?datetime}
  */
 @Service
-public class ${name}Service extends BaseService {
+public class ${name}${config.serviceSuffix} extends BaseService {
+
+    private ${name}${config.mapperSuffix} ${nameRule(name)}${config.mapperSuffix};
 
     @Autowired
-    private ${name}Mapper ${nameRule(name)}Mapper;
+    public void set${name?cap_first}${config.mapperSuffix}(${name}${config.mapperSuffix} ${nameRule(name)}${config.mapperSuffix}) {
+        this.${nameRule(name)}${config.mapperSuffix} = ${nameRule(name)}${config.mapperSuffix};
+    }
 
     public ${name} find(${id.clazzType} ${id.name}) {
-        return ${nameRule(name)}Mapper.find(${id.name});
+        return ${nameRule(name)}${config.mapperSuffix}.find(${id.name});
     }
 
     public int count() {
-        return ${nameRule(name)}Mapper.count();
+        return ${nameRule(name)}${config.mapperSuffix}.count();
     }
 
     public List<${name}> findAll() {
-        return ${nameRule(name)}Mapper.findAll();
+        return ${nameRule(name)}${config.mapperSuffix}.findAll();
     }
 
     @Transactional(rollbackFor = Exception.class)
     public boolean delete(${id.clazzType} ${id.name}) {
-        int result = ${nameRule(name)}Mapper.delete(${id.name});
+        int result = ${nameRule(name)}${config.mapperSuffix}.delete(${id.name});
         return result == 1;
     }
 
     @Transactional(rollbackFor = Exception.class)
     public int delete(${name?cap_first}Criteria criteria) {
-        return ${nameRule(name)}Mapper.deleteByCriteria(criteria);
+        return ${nameRule(name)}${config.mapperSuffix}.deleteByCriteria(criteria);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -57,11 +60,14 @@ public class ${name}Service extends BaseService {
     <#if id.clazzType =="Long" || id.clazzType =="long">
         ${nameRule(name)}.set${id.name?cap_first}(idGenerator.nextId());
     <#else >
+        <#--
         //TODO 注意是否有主键
         //${nameRule(name)}.set${id.name?cap_first}();
+        -->
+        checkPrimaryKey(${nameRule(name)}, ${nameRule(name)}.get${id.name?cap_first}());
     </#if>
 </#if>
-        int result = ${nameRule(name)}Mapper.save(${nameRule(name)});
+        int result = ${nameRule(name)}${config.mapperSuffix}.save(${nameRule(name)});
         return result == 1;
     }
 
@@ -76,13 +82,17 @@ public class ${name}Service extends BaseService {
             ${nameRule(name)}.set${id.name?cap_first}(idGenerator.nextId());
         }
     <#else >
+        <#--
         //TODO 注意是否有主键
+        //${nameRule(name)}.set${id.name?cap_first}();
+        -->
         for (${name} ${nameRule(name)} : ${pluralize(nameRule(name))}) {
             //${nameRule(name)}.set${id.name?cap_first}();
+            checkPrimaryKey(${nameRule(name)}, ${nameRule(name)}.get${id.name?cap_first}());
         }
     </#if>
 </#if>
-        return ${nameRule(name)}Mapper.saves(${pluralize(nameRule(name))});
+        return ${nameRule(name)}${config.mapperSuffix}.saveList(${pluralize(nameRule(name))});
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -91,11 +101,14 @@ public class ${name}Service extends BaseService {
     <#if id.clazzType =="Long" || id.clazzType =="long">
         criteria.set${id.name?cap_first}(idGenerator.nextId());
     <#else >
+        <#--
         //TODO 注意是否有主键
         //criteria.set${id.name?cap_first}();
+        -->
+        checkPrimaryKey(criteria, criteria.get${id.name?cap_first}());
     </#if>
 </#if>
-        int result = ${nameRule(name)}Mapper.save(criteria.to${name?cap_first}());
+        int result = ${nameRule(name)}${config.mapperSuffix}.save(criteria.to${name?cap_first}());
         return result == 1;
     }
 
@@ -107,7 +120,7 @@ public class ${name}Service extends BaseService {
      */
     @Transactional(rollbackFor = Exception.class)
     public boolean update(${name?cap_first} ${nameRule(name)}) {
-        int updateCount = ${nameRule(name)}Mapper.update(${nameRule(name)});
+        int updateCount = ${nameRule(name)}${config.mapperSuffix}.update(${nameRule(name)});
         if (updateCount == 0) {
             throw new OptimisticLockingFailureException(${nameRule(name)}.getClass() + ",[" + ${nameRule(name)}.get${id.name?cap_first}() + "],版本号冲突,版本号[" + ${nameRule(name)}.get${version.name?cap_first}() + "]");
         }
@@ -121,7 +134,7 @@ public class ${name}Service extends BaseService {
      */
     @Transactional(rollbackFor = Exception.class)
     public int update(${name?cap_first}Criteria criteria) {
-        int updateCount = ${nameRule(name)}Mapper.updateByCriteria(criteria);
+        int updateCount = ${nameRule(name)}${config.mapperSuffix}.updateByCriteria(criteria);
         if (updateCount == 0 && criteria.get${version.name?cap_first}() != null
                 && criteria.get${id.name?cap_first}() != null) {
             throw new OptimisticLockingFailureException(criteria.getClass() + ",[" + criteria.get${id.name?cap_first}() + "],版本号冲突,版本号[" + criteria.get${version.name?cap_first}() + "]");
@@ -131,7 +144,7 @@ public class ${name}Service extends BaseService {
 <#else >
     @Transactional(rollbackFor = Exception.class)
     public boolean update(${name?cap_first} ${nameRule(name)}) {
-        int updateCount = ${nameRule(name)}Mapper.update(${nameRule(name)});
+        int updateCount = ${nameRule(name)}${config.mapperSuffix}.update(${nameRule(name)});
         if (updateCount == 0) {
             return false;
         }
@@ -148,9 +161,9 @@ public class ${name}Service extends BaseService {
         <#else>
         if (criteria.get${id.name?cap_first}() > 0) {
         </#if>
-            ${name} ${nameRule(name)} = ${nameRule(name)}Mapper.find(criteria.get${id.name?cap_first}());
+            ${name} ${nameRule(name)} = ${nameRule(name)}${config.mapperSuffix}.find(criteria.get${id.name?cap_first}());
             if (${nameRule(name)} != null) {
-                List<${name}> ${pluralize(nameRule(name))} = new ArrayList(16);
+                List<${name}> ${pluralize(nameRule(name))} = new ArrayList<>(16);
                 ${pluralize(nameRule(name))}.add(${nameRule(name)});
                 pageResult.setTotal(1);
                 pageResult.set${pluralize(nameRule(name))?cap_first}(${pluralize(nameRule(name))});
@@ -159,14 +172,14 @@ public class ${name}Service extends BaseService {
             }
             return pageResult;
         }
-        int total = ${nameRule(name)}Mapper.countByCriteria(criteria);
+        int total = ${nameRule(name)}${config.mapperSuffix}.countByCriteria(criteria);
         pageResult.setTotal(total);
         if (total == 0) {
             return pageResult;
         }
         //检查页数是否合法
         checkPage(criteria, total);
-        List<${name}> ${pluralize(nameRule(name))} = ${nameRule(name)}Mapper.findByCriteria(criteria);
+        List<${name}> ${pluralize(nameRule(name))} = ${nameRule(name)}${config.mapperSuffix}.findByCriteria(criteria);
         pageResult.set${pluralize(nameRule(name))?cap_first}(${pluralize(nameRule(name))});
         return pageResult;
     }
@@ -179,13 +192,13 @@ public class ${name}Service extends BaseService {
         if (criteria.get${id.name?cap_first}() > 0) {
         </#if>
             List<${name}> ${pluralize(nameRule(name))} = new ArrayList<>(16);
-            ${name} ${nameRule(name)} = ${nameRule(name)}Mapper.find(criteria.get${id.name?cap_first}());
+            ${name} ${nameRule(name)} = ${nameRule(name)}${config.mapperSuffix}.find(criteria.get${id.name?cap_first}());
             if (${nameRule(name)} != null) {
                 ${pluralize(nameRule(name))}.add(${nameRule(name)});
             }
             return ${pluralize(nameRule(name))};
         }
-        return ${nameRule(name)}Mapper.findByCriteria(criteria);
+        return ${nameRule(name)}${config.mapperSuffix}.findByCriteria(criteria);
     }
 
     public ${name} findOne(${name?cap_first}Criteria criteria) {
@@ -195,9 +208,9 @@ public class ${name}Service extends BaseService {
         <#else>
         if (criteria.get${id.name?cap_first}() > 0 ) {
         </#if>
-            return ${nameRule(name)}Mapper.find(criteria.get${id.name?cap_first}());
+            return ${nameRule(name)}${config.mapperSuffix}.find(criteria.get${id.name?cap_first}());
         }
-        List<${name}> ${pluralize(nameRule(name))} = ${nameRule(name)}Mapper.findByCriteria(criteria);
+        List<${name}> ${pluralize(nameRule(name))} = ${nameRule(name)}${config.mapperSuffix}.findByCriteria(criteria);
         if (${pluralize(nameRule(name))}.size() == 0) {
             return null;
         }
@@ -210,13 +223,13 @@ public class ${name}Service extends BaseService {
         criteria.setUsePage(false);
         criteria.set${field.name?cap_first}(${field.name});
     <#if field.findOne>
-        List<${name}> ${pluralize(nameRule(name))} = ${nameRule(name)}Mapper.findByCriteria(criteria);
+        List<${name}> ${pluralize(nameRule(name))} = ${nameRule(name)}${config.mapperSuffix}.findByCriteria(criteria);
         if (${pluralize(nameRule(name))}.size() == 0) {
             return null;
         }
         return ${pluralize(nameRule(name))}.get(0);
     <#else>
-        return ${nameRule(name)}Mapper.findByCriteria(criteria);
+        return ${nameRule(name)}${config.mapperSuffix}.findByCriteria(criteria);
     </#if>
     }
 </#list>

@@ -3,7 +3,7 @@ package ${servicePackage};
 import ${modelPackage}.${name};
 import ${resultPackage}.${name}${config.resultPageSuffix};
 import ${criteriaPackage}.${name}${config.criteriaSuffix};
-import ${mapperPackage}.${name}Mapper;
+import ${mapperPackage}.${name}${config.mapperSuffix};
 <#if version??>
 import com.senpure.base.exception.OptimisticLockingFailureException;
 </#if>
@@ -23,15 +23,19 @@ import java.util.List;
 import java.util.ArrayList;
 
 /**
- * @author senpure-generator
+${sovereignty}
  * @version ${.now?datetime}
  */
 @Service
 @CacheConfig(cacheNames = "${nameRule(name)}")
-public class ${name}Service extends BaseService {
+public class ${name}${config.serviceSuffix} extends BaseService {
+
+    private ${name}${config.mapperSuffix} ${nameRule(name)}${config.mapperSuffix};
 
     @Autowired
-    private ${name}Mapper ${nameRule(name)}Mapper;
+    public void set${name?cap_first}${config.mapperSuffix}(${name}${config.mapperSuffix} ${nameRule(name)}${config.mapperSuffix}) {
+        this.${nameRule(name)}${config.mapperSuffix} = ${nameRule(name)}${config.mapperSuffix};
+    }
 
     @CacheEvict(key = "#${id.name}")
     public void clearCache(${id.clazzType} ${id.name}) {
@@ -43,7 +47,7 @@ public class ${name}Service extends BaseService {
 
     @Cacheable(key = "#id", unless = "#result == null")
     public ${name} find(${id.clazzType} ${id.name}) {
-        return ${nameRule(name)}Mapper.find(${id.name});
+        return ${nameRule(name)}${config.mapperSuffix}.find(${id.name});
     }
 
     @Cacheable(key = "#id", unless = "#result == null")
@@ -53,28 +57,28 @@ public class ${name}Service extends BaseService {
 
     @CachePut(key = "#id", unless = "#result == null")
     public ${name} findSkipCache(${id.clazzType} ${id.name}) {
-        return ${nameRule(name)}Mapper.find(${id.name});
+        return ${nameRule(name)}${config.mapperSuffix}.find(${id.name});
     }
 
     public int count() {
-        return ${nameRule(name)}Mapper.count();
+        return ${nameRule(name)}${config.mapperSuffix}.count();
     }
 
     public List<${name}> findAll() {
-        return ${nameRule(name)}Mapper.findAll();
+        return ${nameRule(name)}${config.mapperSuffix}.findAll();
     }
 
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(key = "#${id.name}")
     public boolean delete(${id.clazzType} ${id.name}) {
-        int result = ${nameRule(name)}Mapper.delete(${id.name});
+        int result = ${nameRule(name)}${config.mapperSuffix}.delete(${id.name});
         return result == 1;
     }
 
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(key = "#criteria.${id.name}", allEntries = true)
     public int delete(${name?cap_first}Criteria criteria) {
-        return ${nameRule(name)}Mapper.deleteByCriteria(criteria);
+        return ${nameRule(name)}${config.mapperSuffix}.deleteByCriteria(criteria);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -83,11 +87,14 @@ public class ${name}Service extends BaseService {
     <#if id.clazzType =="Long" || id.clazzType =="long">
         ${nameRule(name)}.set${id.name?cap_first}(idGenerator.nextId());
     <#else >
+        <#--
         //TODO 注意是否有主键
         //${nameRule(name)}.set${id.name?cap_first}();
+        -->
+        checkPrimaryKey(${nameRule(name)}, ${nameRule(name)}.get${id.name?cap_first}());
     </#if>
 </#if>
-        int result = ${nameRule(name)}Mapper.save(${nameRule(name)});
+        int result = ${nameRule(name)}${config.mapperSuffix}.save(${nameRule(name)});
         return result == 1;
     }
 
@@ -102,13 +109,13 @@ public class ${name}Service extends BaseService {
             ${nameRule(name)}.set${id.name?cap_first}(idGenerator.nextId());
         }
     <#else >
-        //TODO 注意是否有主键
         for (${name} ${nameRule(name)} : ${pluralize(nameRule(name))}) {
             //${nameRule(name)}.set${id.name?cap_first}();
+            checkPrimaryKey(${nameRule(name)}, ${nameRule(name)}.get${id.name?cap_first}());
         }
     </#if>
 </#if>
-        return ${nameRule(name)}Mapper.saves(${pluralize(nameRule(name))});
+        return ${nameRule(name)}${config.mapperSuffix}.saveList(${pluralize(nameRule(name))});
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -117,11 +124,14 @@ public class ${name}Service extends BaseService {
     <#if id.clazzType =="Long" || id.clazzType =="long">
         criteria.set${id.name?cap_first}(idGenerator.nextId());
     <#else >
+        <#--
         //TODO 注意是否有主键
         //criteria.set${id.name?cap_first}();
+        -->
+        checkPrimaryKey(criteria, criteria.get${id.name?cap_first}());
     </#if>
 </#if>
-        int result = ${nameRule(name)}Mapper.save(criteria.to${name?cap_first}());
+        int result = ${nameRule(name)}${config.mapperSuffix}.save(criteria.to${name?cap_first}());
         return result == 1;
     }
 
@@ -134,7 +144,7 @@ public class ${name}Service extends BaseService {
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(key = "#${nameRule(name)}.${id.name}")
     public boolean update(${name?cap_first} ${nameRule(name)}) {
-        int updateCount = ${nameRule(name)}Mapper.update(${nameRule(name)});
+        int updateCount = ${nameRule(name)}${config.mapperSuffix}.update(${nameRule(name)});
         if (updateCount == 0) {
             throw new OptimisticLockingFailureException(${nameRule(name)}.getClass() + ",[" + ${nameRule(name)}.get${id.name?cap_first}() + "],版本号冲突,版本号[" + ${nameRule(name)}.get${version.name?cap_first}() + "]");
         }
@@ -149,7 +159,7 @@ public class ${name}Service extends BaseService {
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(key = "#criteria.${id.name}", allEntries = true)
     public int update(${name?cap_first}Criteria criteria) {
-        int updateCount = ${nameRule(name)}Mapper.updateByCriteria(criteria);
+        int updateCount = ${nameRule(name)}${config.mapperSuffix}.updateByCriteria(criteria);
         if (updateCount == 0 && criteria.get${version.name?cap_first}() != null
                 && criteria.get${id.name?cap_first}() != null) {
             throw new OptimisticLockingFailureException(criteria.getClass() + ",[" + criteria.get${id.name?cap_first}() + "],版本号冲突,版本号[" + criteria.get${version.name?cap_first}() + "]");
@@ -160,7 +170,7 @@ public class ${name}Service extends BaseService {
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(key = "#${nameRule(name)}.${id.name}")
     public boolean update(${name?cap_first} ${nameRule(name)}) {
-        int updateCount = ${nameRule(name)}Mapper.update(${nameRule(name)});
+        int updateCount = ${nameRule(name)}${config.mapperSuffix}.update(${nameRule(name)});
         if (updateCount == 0) {
             return false;
         }
@@ -177,7 +187,7 @@ public class ${name}Service extends BaseService {
         <#else>
         if (criteria.get${id.name?cap_first}() > 0) {
         </#if>
-            ${name} ${nameRule(name)} = ${nameRule(name)}Mapper.find(criteria.get${id.name?cap_first}());
+            ${name} ${nameRule(name)} = ${nameRule(name)}${config.mapperSuffix}.find(criteria.get${id.name?cap_first}());
             if (${nameRule(name)} != null) {
                 List<${name}> ${pluralize(nameRule(name))} = new ArrayList<>(16);
                 ${pluralize(nameRule(name))}.add(${nameRule(name)});
@@ -188,14 +198,14 @@ public class ${name}Service extends BaseService {
             }
             return result;
         }
-        int total = ${nameRule(name)}Mapper.countByCriteria(criteria);
+        int total = ${nameRule(name)}${config.mapperSuffix}.countByCriteria(criteria);
         result.setTotal(total);
         if (total == 0) {
             return result;
         }
         //检查页数是否合法
         checkPage(criteria, total);
-        List<${name}> ${pluralize(nameRule(name))} = ${nameRule(name)}Mapper.findByCriteria(criteria);
+        List<${name}> ${pluralize(nameRule(name))} = ${nameRule(name)}${config.mapperSuffix}.findByCriteria(criteria);
         result.set${pluralize(nameRule(name))?cap_first}(${pluralize(nameRule(name))});
         return result;
     }
@@ -208,13 +218,13 @@ public class ${name}Service extends BaseService {
         if (criteria.get${id.name?cap_first}() > 0) {
         </#if>
             List<${name}> ${pluralize(nameRule(name))} = new ArrayList<>(16);
-            ${name} ${nameRule(name)} = ${nameRule(name)}Mapper.find(criteria.get${id.name?cap_first}());
+            ${name} ${nameRule(name)} = ${nameRule(name)}${config.mapperSuffix}.find(criteria.get${id.name?cap_first}());
             if (${nameRule(name)} != null) {
                 ${pluralize(nameRule(name))}.add(${nameRule(name)});
             }
             return ${pluralize(nameRule(name))};
         }
-        return ${nameRule(name)}Mapper.findByCriteria(criteria);
+        return ${nameRule(name)}${config.mapperSuffix}.findByCriteria(criteria);
     }
 
     public ${name} findOne(${name?cap_first}Criteria criteria) {
@@ -224,9 +234,9 @@ public class ${name}Service extends BaseService {
         <#else>
         if (criteria.get${id.name?cap_first}() > 0 ) {
         </#if>
-            return ${nameRule(name)}Mapper.find(criteria.get${id.name?cap_first}());
+            return ${nameRule(name)}${config.mapperSuffix}.find(criteria.get${id.name?cap_first}());
         }
-        List<${name}> ${pluralize(nameRule(name))} = ${nameRule(name)}Mapper.findByCriteria(criteria);
+        List<${name}> ${pluralize(nameRule(name))} = ${nameRule(name)}${config.mapperSuffix}.findByCriteria(criteria);
         if (${pluralize(nameRule(name))}.size() == 0) {
             return null;
         }
@@ -239,13 +249,13 @@ public class ${name}Service extends BaseService {
         criteria.setUsePage(false);
         criteria.set${field.name?cap_first}(${field.name});
 <#if field.findOne>
-        List<${name}> ${pluralize(nameRule(name))} = ${nameRule(name)}Mapper.findByCriteria(criteria);
+        List<${name}> ${pluralize(nameRule(name))} = ${nameRule(name)}${config.mapperSuffix}.findByCriteria(criteria);
         if (${pluralize(nameRule(name))}.size() == 0) {
             return null;
         }
         return ${pluralize(nameRule(name))}.get(0);
 <#else>
-        return ${nameRule(name)}Mapper.findByCriteria(criteria);
+        return ${nameRule(name)}${config.mapperSuffix}.findByCriteria(criteria);
 </#if>
     }
 </#list>

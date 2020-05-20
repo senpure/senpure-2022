@@ -1,14 +1,14 @@
 package ${controllerPackage};
 
-import com.senpure.base.result.ResultMap;
 import com.senpure.base.spring.BaseController;
 <#if useCriteriaStr>
 import ${criteriaPackage}.${name}${config.criteriaStrSuffix};
 </#if>
 import ${criteriaPackage}.${name}${config.criteriaSuffix};
-import ${servicePackage}.${name}Service;
+import ${servicePackage}.${name}${config.serviceSuffix};
 import ${modelPackage}.${name};
-import com.senpure.base.result.ActionResult;
+import com.senpure.base.ActionResult;
+import com.senpure.base.ResultMap;
 import ${resultPackage}.${name}${config.resultPageSuffix};
 import ${resultPackage}.${name}${config.resultRecordSuffix};
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +18,6 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 <#if generatePermission>
@@ -35,7 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 /**
- * @author senpure-generator
+${sovereignty}
  * @version ${.now?datetime}
  */
 @Controller
@@ -45,13 +41,13 @@ import javax.validation.Valid;
 </#if>
 public class ${name}Controller extends BaseController {
 
-    private ${name}Service ${nameRule(name)}Service;
+    private ${name}${config.serviceSuffix} ${nameRule(name)}${config.serviceSuffix};
     // Field can be converted to a local variable 警告，不用管，方便以后修改
     private String view = "/${module}/${nameRule(name)}";
 
     @Autowired
-    public void set${name?cap_first}Service(${name}Service ${nameRule(name)}Service) {
-        this.${nameRule(name)}Service = ${nameRule(name)}Service;
+    public void set${name?cap_first}${config.serviceSuffix}(${name}${config.serviceSuffix} ${nameRule(name)}${config.serviceSuffix}) {
+        this.${nameRule(name)}${config.serviceSuffix} = ${nameRule(name)}${config.serviceSuffix};
     }
 
     //Cannot resolve @PathVariable 'page' 警告，不用管
@@ -80,7 +76,7 @@ public class ${name}Controller extends BaseController {
         ${name}${config.criteriaSuffix} criteria = ${criteriaName}.to${name}${config.criteriaSuffix}();
 </#if>
         logger.debug("查询条件:{}", criteria);
-        ${name}${config.resultPageSuffix} pageResult = ${nameRule(name)}Service.findPage(criteria);
+        ${name}${config.resultPageSuffix} pageResult = ${nameRule(name)}${config.serviceSuffix}.findPage(criteria);
         ResultMap resultMap = ResultMap.result(pageResult.getCode());
         resultMap.putTotal(pageResult.getTotal());
         resultMap.put("${pluralize(nameRule(name))}",pageResult.get${pluralize(nameRule(name))?cap_first}());
@@ -105,7 +101,7 @@ public class ${name}Controller extends BaseController {
         }
     </#if>
         logger.debug("查询${name}:{}", ${id.name});
-        ${name} ${nameRule(name)} = ${nameRule(name)}Service.find(<#if id.clazzType !="String">number${id.name?cap_first}<#else>${id.name}</#if>);
+        ${name} ${nameRule(name)} = ${nameRule(name)}${config.serviceSuffix}.find(<#if id.clazzType !="String">number${id.name?cap_first}<#else>${id.name}</#if>);
         if (${nameRule(name)} != null) {
             return wrapMessage(request, ResultMap.success()).put("${nameRule(name)}",${nameRule(name)});
         } else {
@@ -129,7 +125,7 @@ public class ${name}Controller extends BaseController {
         ${name}${config.criteriaSuffix} criteria = ${criteriaName}.to${name}${config.criteriaSuffix}();
 </#if>
         logger.debug("创建${name}:{}", criteria);
-        if (${nameRule(name)}Service.save(criteria)) {
+        if (${nameRule(name)}${config.serviceSuffix}.save(criteria)) {
             return wrapMessage(request, ResultMap.success()).put("${id.name}", criteria.get${id.name?cap_first}());
         } else {
             return wrapMessage(request, ResultMap.dim());
@@ -168,12 +164,12 @@ public class ${name}Controller extends BaseController {
         <#else>
         if (criteria.get${version.name?cap_first}() == 0) {
         </#if>
-            ${name} ${nameRule(name)} = ${nameRule(name)}Service.find(criteria.get${id.name?cap_first}());
+            ${name} ${nameRule(name)} = ${nameRule(name)}${config.serviceSuffix}.find(criteria.get${id.name?cap_first}());
             if (${nameRule(name)} == null) {
                 return wrapMessage(request, ResultMap.notExist(), id);
             }
             criteria.effective(${nameRule(name)});
-            if (${nameRule(name)}Service.update(${nameRule(name)})) {
+            if (${nameRule(name)}${config.serviceSuffix}.update(${nameRule(name)})) {
                 return wrapMessage(request, ResultMap.success());
             } else {
                 return wrapMessage(request, ResultMap.dim());
@@ -181,7 +177,7 @@ public class ${name}Controller extends BaseController {
         }
     <#else >
     </#if>
-        if (${nameRule(name)}Service.update(criteria.to${name}())) {
+        if (${nameRule(name)}${config.serviceSuffix}.update(criteria.to${name}())) {
             return wrapMessage(request, ResultMap.success());
         } else {
             return wrapMessage(request, ResultMap.dim());
@@ -206,7 +202,7 @@ public class ${name}Controller extends BaseController {
         }
         </#if>
         logger.debug("删除${name}:{}", ${id.name});
-        if (${nameRule(name)}Service.delete(<#if id.clazzType !="String">number${id.name?cap_first}<#else>${id.name}</#if>)) {
+        if (${nameRule(name)}${config.serviceSuffix}.delete(<#if id.clazzType !="String">number${id.name?cap_first}<#else>${id.name}</#if>)) {
             return wrapMessage(request, ResultMap.success());
         } else {
             return wrapMessage(request, ResultMap.dim());

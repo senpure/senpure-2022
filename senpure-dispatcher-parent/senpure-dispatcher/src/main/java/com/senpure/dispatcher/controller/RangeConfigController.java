@@ -1,12 +1,12 @@
 package com.senpure.dispatcher.controller;
 
-import com.senpure.base.result.ResultMap;
+import com.senpure.base.ResultMap;
 import com.senpure.base.spring.BaseController;
 import com.senpure.dispatcher.criteria.RangeConfigCriteriaStr;
 import com.senpure.dispatcher.criteria.RangeConfigCriteria;
 import com.senpure.dispatcher.service.RangeConfigService;
 import com.senpure.dispatcher.model.RangeConfig;
-import com.senpure.base.result.ActionResult;
+import com.senpure.base.ActionResult;
 import com.senpure.dispatcher.result.RangeConfigPageResult;
 import com.senpure.dispatcher.result.RangeConfigRecordResult;
 import org.springframework.beans.factory.annotation.Autowired;

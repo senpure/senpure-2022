@@ -93,190 +93,210 @@ public class ModelConfig {
     private List<RedundancyConfig> redundancyConfigs = new ArrayList<>();
     private List<FindConfig> findConfigs = new ArrayList<>();
 
-    public List<FindConfig> getFindConfigs() {
-        return findConfigs;
+    public boolean isGenerateModel() {
+        return generateModel;
     }
 
-    public void setFindConfigs(List<FindConfig> findConfigs) {
-        this.findConfigs = findConfigs;
+    public ModelConfig setGenerateModel(boolean generateModel) {
+        this.generateModel = generateModel;
+        return this;
     }
 
     public boolean isGenerateMapperJava() {
         return generateMapperJava;
     }
 
-    public void setGenerateMapperJava(boolean generateMapperJava) {
+    public ModelConfig setGenerateMapperJava(boolean generateMapperJava) {
         this.generateMapperJava = generateMapperJava;
+        return this;
     }
 
     public boolean isGenerateMapperXml() {
         return generateMapperXml;
     }
 
-    public void setGenerateMapperXml(boolean generateMapperXml) {
+    public ModelConfig setGenerateMapperXml(boolean generateMapperXml) {
         this.generateMapperXml = generateMapperXml;
-    }
-
-    public boolean isOverwriteMapperJava() {
-        return overwriteMapperJava;
-    }
-
-    public void setOverwriteMapperJava(boolean overwriteMapperJava) {
-        this.overwriteMapperJava = overwriteMapperJava;
-    }
-
-    public boolean isOverwriteMapperXml() {
-        return overwriteMapperXml;
-    }
-
-    public void setOverwriteMapperXml(boolean overwriteMapperXml) {
-        this.overwriteMapperXml = overwriteMapperXml;
+        return this;
     }
 
     public boolean isGenerateService() {
         return generateService;
     }
 
-    public void setGenerateService(boolean generateService) {
+    public ModelConfig setGenerateService(boolean generateService) {
         this.generateService = generateService;
+        return this;
     }
 
     public boolean isGenerateController() {
         return generateController;
     }
 
-    public void setGenerateController(boolean generateController) {
+    public ModelConfig setGenerateController(boolean generateController) {
         this.generateController = generateController;
-    }
-
-
-    public boolean isGenerateModel() {
-        return generateModel;
-    }
-
-    public void setGenerateModel(boolean generateModel) {
-        this.generateModel = generateModel;
-    }
-
-    public boolean isOverwriteModel() {
-        return overwriteModel;
-    }
-
-    public void setOverwriteModel(boolean overwriteModel) {
-        this.overwriteModel = overwriteModel;
-    }
-
-
-    public boolean isOverwriteService() {
-        return overwriteService;
-    }
-
-    public void setOverwriteService(boolean overwriteService) {
-        this.overwriteService = overwriteService;
-    }
-
-    public boolean isOverwriteController() {
-        return overwriteController;
-    }
-
-    public void setOverwriteController(boolean overwriteController) {
-        this.overwriteController = overwriteController;
-    }
-
-    public String getTableType() {
-        return tableType;
-    }
-
-    public void setTableType(String tableType) {
-        this.tableType = tableType;
+        return this;
     }
 
     public boolean isGenerateCriteria() {
         return generateCriteria;
     }
 
-    public boolean isOverwriteCriteria() {
-        return overwriteCriteria;
-    }
-
-    public void setOverwriteCriteria(boolean overwriteCriteria) {
-        this.overwriteCriteria = overwriteCriteria;
-    }
-
-    public void setGenerateCriteria(boolean generateCriteria) {
+    public ModelConfig setGenerateCriteria(boolean generateCriteria) {
         this.generateCriteria = generateCriteria;
-    }
-
-    public boolean isUseCriteriaStr() {
-        return useCriteriaStr;
-    }
-
-    public void setUseCriteriaStr(boolean useCriteriaStr) {
-        this.useCriteriaStr = useCriteriaStr;
-    }
-
-    public boolean isCache() {
-        return cache;
-    }
-
-    public void setCache(boolean cache) {
-        this.cache = cache;
-    }
-
-    public boolean isRemoteCache() {
-        return remoteCache;
-    }
-
-    public void setRemoteCache(boolean remoteCache) {
-        this.remoteCache = remoteCache;
-    }
-
-    public boolean isLocalCache() {
-        return localCache;
-    }
-
-    public void setLocalCache(boolean localCache) {
-        this.localCache = localCache;
-    }
-
-    public boolean isMapCache() {
-        return mapCache;
-    }
-
-    public void setMapCache(boolean mapCache) {
-        this.mapCache = mapCache;
+        return this;
     }
 
     public boolean isGenerateResult() {
         return generateResult;
     }
 
-    public void setGenerateResult(boolean generateResult) {
+    public ModelConfig setGenerateResult(boolean generateResult) {
         this.generateResult = generateResult;
+        return this;
+    }
+
+    public boolean isUseCriteriaStr() {
+        return useCriteriaStr;
+    }
+
+    public ModelConfig setUseCriteriaStr(boolean useCriteriaStr) {
+        this.useCriteriaStr = useCriteriaStr;
+        return this;
+    }
+
+    public boolean isOverwriteModel() {
+        return overwriteModel;
+    }
+
+    public ModelConfig setOverwriteModel(boolean overwriteModel) {
+        this.overwriteModel = overwriteModel;
+        return this;
+    }
+
+    public boolean isOverwriteMapperJava() {
+        return overwriteMapperJava;
+    }
+
+    public ModelConfig setOverwriteMapperJava(boolean overwriteMapperJava) {
+        this.overwriteMapperJava = overwriteMapperJava;
+        return this;
+    }
+
+    public boolean isOverwriteMapperXml() {
+        return overwriteMapperXml;
+    }
+
+    public ModelConfig setOverwriteMapperXml(boolean overwriteMapperXml) {
+        this.overwriteMapperXml = overwriteMapperXml;
+        return this;
+    }
+
+    public boolean isOverwriteService() {
+        return overwriteService;
+    }
+
+    public ModelConfig setOverwriteService(boolean overwriteService) {
+        this.overwriteService = overwriteService;
+        return this;
+    }
+
+    public boolean isOverwriteController() {
+        return overwriteController;
+    }
+
+    public ModelConfig setOverwriteController(boolean overwriteController) {
+        this.overwriteController = overwriteController;
+        return this;
+    }
+
+    public boolean isOverwriteCriteria() {
+        return overwriteCriteria;
+    }
+
+    public ModelConfig setOverwriteCriteria(boolean overwriteCriteria) {
+        this.overwriteCriteria = overwriteCriteria;
+        return this;
     }
 
     public boolean isOverwriteResult() {
         return overwriteResult;
     }
 
-    public void setOverwriteResult(boolean overwriteResult) {
+    public ModelConfig setOverwriteResult(boolean overwriteResult) {
         this.overwriteResult = overwriteResult;
+        return this;
+    }
+
+    public String getTableType() {
+        return tableType;
+    }
+
+    public ModelConfig setTableType(String tableType) {
+        this.tableType = tableType;
+        return this;
+    }
+
+    public boolean isCache() {
+        return cache;
+    }
+
+    public ModelConfig setCache(boolean cache) {
+        this.cache = cache;
+        return this;
+    }
+
+    public boolean isRemoteCache() {
+        return remoteCache;
+    }
+
+    public ModelConfig setRemoteCache(boolean remoteCache) {
+        this.remoteCache = remoteCache;
+        return this;
+    }
+
+    public boolean isLocalCache() {
+        return localCache;
+    }
+
+    public ModelConfig setLocalCache(boolean localCache) {
+        this.localCache = localCache;
+        return this;
+    }
+
+    public boolean isMapCache() {
+        return mapCache;
+    }
+
+    public ModelConfig setMapCache(boolean mapCache) {
+        this.mapCache = mapCache;
+        return this;
     }
 
     public String getLongDateSuffix() {
         return longDateSuffix;
     }
 
-    public void setLongDateSuffix(String longDateSuffix) {
+    public ModelConfig setLongDateSuffix(String longDateSuffix) {
         this.longDateSuffix = longDateSuffix;
+        return this;
     }
-
 
     public List<RedundancyConfig> getRedundancyConfigs() {
         return redundancyConfigs;
     }
 
-    public void setRedundancyConfigs(List<RedundancyConfig> redundancyConfigs) {
+    public ModelConfig setRedundancyConfigs(List<RedundancyConfig> redundancyConfigs) {
         this.redundancyConfigs = redundancyConfigs;
+        return this;
+    }
+
+    public List<FindConfig> getFindConfigs() {
+        return findConfigs;
+    }
+
+    public ModelConfig setFindConfigs(List<FindConfig> findConfigs) {
+        this.findConfigs = findConfigs;
+        return this;
     }
 }

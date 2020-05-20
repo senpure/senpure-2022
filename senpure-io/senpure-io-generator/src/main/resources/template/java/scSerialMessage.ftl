@@ -24,7 +24,7 @@ import java.util.ArrayList;
 /**<#if hasExplain>
  * ${explain}
  * </#if>
- ${sovereignty}
+${sovereignty}
  * @time ${.now?datetime}
  */
 <#assign name>${javaName}</#assign>

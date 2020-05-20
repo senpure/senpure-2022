@@ -14,7 +14,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import javax.annotation.PostConstruct;
 
 /**
- * @author senpure-generator
+${sovereignty}
  * @version ${.now?datetime}
  */
 @Configuration

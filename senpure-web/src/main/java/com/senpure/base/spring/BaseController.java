@@ -2,10 +2,10 @@ package com.senpure.base.spring;
 
 
 import com.senpure.base.WebConstant;
-import com.senpure.base.result.ActionResult;
-import com.senpure.base.result.Result;
-import com.senpure.base.result.ResultHelper;
-import com.senpure.base.result.ResultMap;
+import com.senpure.base.ActionResult;
+import com.senpure.base.Result;
+import com.senpure.base.ResultHelper;
+import com.senpure.base.ResultMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

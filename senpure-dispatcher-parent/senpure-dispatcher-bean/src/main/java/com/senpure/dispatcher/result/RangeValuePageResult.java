@@ -1,7 +1,7 @@
 package com.senpure.dispatcher.result;
 
-import com.senpure.base.result.ActionResult;
-import com.senpure.base.result.Result;
+import com.senpure.base.ActionResult;
+import com.senpure.base.Result;
 import com.senpure.dispatcher.model.RangeValue;
 import io.swagger.annotations.ApiModelProperty;
 
