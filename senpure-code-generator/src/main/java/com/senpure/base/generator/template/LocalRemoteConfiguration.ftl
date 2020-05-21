@@ -1,7 +1,7 @@
 package ${package};
 
 <#if package !="com.senpure.base.configuraion">
-import com.senpure.base.configuration.BaseConfiguration;
+import com.senpure.base.configure.BaseConfiguration;
 </#if>
 import com.senpure.base.cache.LocalRemoteCacheManager;
 import org.springframework.beans.factory.annotation.Autowired;

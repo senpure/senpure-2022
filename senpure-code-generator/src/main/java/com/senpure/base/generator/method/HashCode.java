@@ -3,7 +3,6 @@ package com.senpure.base.generator.method;
 import com.senpure.base.generator.ModelField;
 import freemarker.template.SimpleHash;
 import freemarker.template.TemplateMethodModelEx;
-import freemarker.template.TemplateModelException;
 
 import java.util.List;
 import java.util.Map;
@@ -14,8 +13,8 @@ import java.util.TreeMap;
  */
 public class HashCode implements TemplateMethodModelEx {
     @Override
-    public Object exec(List list) throws TemplateModelException {
-        Map<String, ModelField> shortMap = new TreeMap();
+    public Object exec(List list) {
+        Map<String, ModelField> shortMap = new TreeMap<>();
         try {
             SimpleHash simpleHash = (SimpleHash) list.get(0);
             shortMap.putAll(simpleHash.toMap());

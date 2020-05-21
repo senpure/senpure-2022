@@ -21,6 +21,9 @@
             return this;
         }
         this.${field.name} = ${field.name};
+       <#if field.date>
+        this.${field.name}Valid.setDateStr(${field.name});
+       </#if>
         return this;
     }
 
@@ -34,11 +37,10 @@
             return this;
         }
         this.${field.name}Pattern = ${field.name}Pattern;
-        <#if field.hasCriteriaRange>
-        this.start${field.name?cap_first}Valid.setPattern(${field.name}Pattern);
-        this.end${field.name?cap_first}Valid.setPattern(${field.name}Pattern);
-        <#else >
         this.${field.name}Valid.setPattern(${field.name}Pattern);
+        <#if field.hasCriteriaRange>
+        this.${config.startRangePrefix}${field.name?cap_first}Valid.setPattern(${field.name}Pattern);
+        this.${config.endRangePrefix}${field.name?cap_first}Valid.setPattern(${field.name}Pattern);
         </#if>
         return this;
     }
@@ -52,8 +54,8 @@
      * @return
      */
         </#if>
-    public String getStart${field.name?cap_first}() {
-        return start${field.name?cap_first};
+    public String get${config.startRangePrefix?cap_first}${field.name?cap_first}() {
+        return ${config.startRangePrefix}${field.name?cap_first};
     }
 
         <#if field.hasExplain>
@@ -63,13 +65,13 @@
      * @return
      */
         </#if>
-    public ${name} setStart${field.name?cap_first}(String start${field.name?cap_first}) {
-        if (start${field.name?cap_first} != null && start${field.name?cap_first}.trim().length() == 0) {
+    public ${name} set${config.startRangePrefix?cap_first}${field.name?cap_first}(String ${config.startRangePrefix}${field.name?cap_first}) {
+        if (${config.startRangePrefix}${field.name?cap_first} != null && ${config.startRangePrefix}${field.name?cap_first}.trim().length() == 0) {
             return this;
         }
-        this.start${field.name?cap_first} = start${field.name?cap_first};
+        this.${config.startRangePrefix}${field.name?cap_first} = ${config.startRangePrefix}${field.name?cap_first};
         <#if field.clazzType=="Date">
-        this.start${field.name?cap_first}Valid.setDateStr(start${field.name?cap_first});
+        this.${config.startRangePrefix}${field.name?cap_first}Valid.setDateStr(${config.startRangePrefix}${field.name?cap_first});
         </#if>
         return this;
     }
@@ -81,8 +83,8 @@
      * @return
      */
         </#if>
-    public String getEnd${field.name?cap_first}() {
-        return end${field.name?cap_first};
+    public String get${config.endRangePrefix?cap_first}${field.name?cap_first}() {
+        return ${config.endRangePrefix}${field.name?cap_first};
     }
 
         <#if field.hasExplain>
@@ -92,13 +94,13 @@
      * @return
      */
         </#if>
-    public ${name} setEnd${field.name?cap_first}(String end${field.name?cap_first}) {
-        if (end${field.name?cap_first} != null && end${field.name?cap_first}.trim().length() == 0) {
+    public ${name} set${config.endRangePrefix?cap_first}${field.name?cap_first}(String ${config.endRangePrefix}${field.name?cap_first}) {
+        if (${config.endRangePrefix}${field.name?cap_first} != null && ${config.endRangePrefix}${field.name?cap_first}.trim().length() == 0) {
             return this;
         }
-        this.end${field.name?cap_first} = end${field.name?cap_first};
+        this.${config.endRangePrefix}${field.name?cap_first} = ${config.endRangePrefix}${field.name?cap_first};
         <#if field.clazzType=="Date">
-        this.end${field.name?cap_first}Valid.setDateStr(end${field.name?cap_first});
+        this.${config.endRangePrefix}${field.name?cap_first}Valid.setDateStr(${config.endRangePrefix}${field.name?cap_first});
         </#if>
         return this;
     }

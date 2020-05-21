@@ -1,11 +1,8 @@
 org.springframework.boot.SpringApplicationRunListener=\
-  com.senpure.base.configuration.ServerPortCompletionRunListener
+  com.senpure.base.autoconfigure.ServerPortCompletionRunListener
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  com.senpure.base.configuration.ConverterConfiguration,\
-  com.senpure.base.configuration.LocaleResolverConfiguration,\
-  com.senpure.base.configuration.ResourcesConfiguration,\
-  com.senpure.base.configuration.ValidatorConfiguration,\
-  com.senpure.base.configuration.SpringEventRecordConfiguration
+  com.senpure.base.autoconfigure.LocaleResolverAutoConfiguration,\
+  com.senpure.base.autoconfigure.SpringEventRecordAutoConfiguration
 
 
 

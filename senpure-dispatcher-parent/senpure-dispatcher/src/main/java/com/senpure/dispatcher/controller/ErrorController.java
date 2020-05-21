@@ -1,7 +1,7 @@
 package com.senpure.dispatcher.controller;
 
 import com.senpure.base.ResultMap;
-import com.senpure.base.spring.BaseController;
+import com.senpure.base.controller.BaseController;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;

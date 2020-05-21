@@ -1,6 +1,6 @@
 package ${controllerPackage};
 
-import com.senpure.base.spring.BaseController;
+import com.senpure.base.controller.BaseController;
 <#if useCriteriaStr>
 import ${criteriaPackage}.${name}${config.criteriaStrSuffix};
 </#if>

@@ -43,7 +43,7 @@ public class ${name}${config.criteriaStrSuffix} extends CriteriaStr implements S
     ${apiModelProperty(name,field,"pattern")}
     ${field.accessType} String ${field.name}Pattern ;
     @DynamicDate
-    ${field.accessType} PatternDate ${field.name}Valid = new PatternDate();
+    ${field.accessType} final PatternDate ${field.name}Valid = new PatternDate();
         </#if><#--时间类型-->
     </#if>
 </#list>
@@ -51,14 +51,14 @@ public class ${name}${config.criteriaStrSuffix} extends CriteriaStr implements S
     <#if field.criteriaShow>
         <#if field.hasCriteriaRange>
     ${apiModelProperty(name,field,"start")}
-    ${field.accessType} String start${field.name?cap_first};
+    ${field.accessType} String ${config.startRangePrefix}${field.name?cap_first};
     ${apiModelProperty(name,field,"end")}
-    ${field.accessType} String end${field.name?cap_first};
+    ${field.accessType} String ${config.endRangePrefix}${field.name?cap_first};
             <#if field.date>
     @DynamicDate
-    ${field.accessType} PatternDate start${field.name?cap_first}Valid = new PatternDate();
+    ${field.accessType} final PatternDate ${config.startRangePrefix}${field.name?cap_first}Valid = new PatternDate();
     @DynamicDate
-    ${field.accessType} PatternDate end${field.name?cap_first}Valid = new PatternDate();
+    ${field.accessType} final PatternDate ${config.endRangePrefix}${field.name?cap_first}Valid = new PatternDate();
             </#if>
         </#if><#-- 范围判断-->
     </#if>
@@ -75,8 +75,8 @@ public class ${name}${config.criteriaStrSuffix} extends CriteriaStr implements S
 
     public ${name}${config.criteriaSuffix} to${name}${config.criteriaSuffix}() {
         ${name}${config.criteriaSuffix} criteria = new ${name}${config.criteriaSuffix}();
-        criteria.setPage(Integer.valueOf(getPage()));
-        criteria.setPageSize(Integer.valueOf(getPageSize()));
+        criteria.setPage(Integer.parseInt(getPage()));
+        criteria.setPageSize(Integer.parseInt(getPageSize()));
 <#assign field = id/>
 <#include "strFieldTo.ftl">
 <#if version??>
@@ -94,11 +94,11 @@ public class ${name}${config.criteriaStrSuffix} extends CriteriaStr implements S
     protected void rangeStr(StringBuilder sb) {
     <#list modelFieldMap?values as field>
         <#if field.criteriaShow&&field.hasCriteriaRange>
-        if (start${field.name?cap_first} != null) {
-            sb.append("start${field.name?cap_first}=").append(start${field.name?cap_first}).append(",");
+        if (${config.startRangePrefix}${field.name?cap_first} != null) {
+            sb.append("${config.startRangePrefix}${field.name?cap_first}=").append(${config.startRangePrefix}${field.name?cap_first}).append(",");
         }
-        if (end${field.name?cap_first} != null) {
-            sb.append("end${field.name?cap_first}=").append(end${field.name?cap_first}).append(",");
+        if (${config.endRangePrefix}${field.name?cap_first} != null) {
+            sb.append("${config.endRangePrefix}${field.name?cap_first}=").append(${config.endRangePrefix}${field.name?cap_first}).append(",");
         }
         </#if>
     </#list>

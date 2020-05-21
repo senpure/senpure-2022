@@ -17,9 +17,9 @@ public class SpringContextStoppedEvent implements
 
     @Override
     public void onApplicationEvent(ContextStoppedEvent event) {
-        if (SpringContextUtil.isTopContext(event.getApplicationContext())) {
-            logger.debug("{}: stoppedEvent :{}", event.getApplicationContext().getId(), event.toString());
-        }
+
+        logger.debug("{}: stoppedEvent :{}", event.getApplicationContext().getId(), event.toString());
+
     }
 
 }

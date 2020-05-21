@@ -1,7 +1,7 @@
 package com.senpure.dispatcher.controller;
 
 import com.senpure.base.ResultMap;
-import com.senpure.base.spring.BaseController;
+import com.senpure.base.controller.BaseController;
 import com.senpure.dispatcher.criteria.RangeConfigCriteriaStr;
 import com.senpure.dispatcher.criteria.RangeConfigCriteria;
 import com.senpure.dispatcher.service.RangeConfigService;

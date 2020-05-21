@@ -37,7 +37,8 @@ public class MapperXmlTips implements TemplateMethodModelEx {
                 append("]自动生成，如果预计字段经常变动，不建议修改。如果该xml不能满足需要可新建一个xml，如")
                 .append(name).append("ExpandMapper.xml，").
                 append("将命名空间指向").append(pageName)
-                .append(".ModelAMapper即可，该xml中定义的")
+                .append(".").append(name)
+                .append("Mapper即可，该xml中定义的")
                 .append(lowName).append("ResultMap与").append(lowName).append("AllColumns等其他可以在新建的xml中直接引用。");
 
         int len = 0;
@@ -75,17 +76,12 @@ public class MapperXmlTips implements TemplateMethodModelEx {
             return true;
         }
         Character.UnicodeBlock ub = Character.UnicodeBlock.of(c);
-        if (ub == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS
+        return ub == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS
                 || ub == Character.UnicodeBlock.CJK_COMPATIBILITY_IDEOGRAPHS
                 || ub == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS_EXTENSION_A
                 || ub == Character.UnicodeBlock.GENERAL_PUNCTUATION
                 || ub == Character.UnicodeBlock.CJK_SYMBOLS_AND_PUNCTUATION
-                || ub == Character.UnicodeBlock.HALFWIDTH_AND_FULLWIDTH_FORMS) {
-            return true;
-        }
-
-
-        return false;
+                || ub == Character.UnicodeBlock.HALFWIDTH_AND_FULLWIDTH_FORMS;
     }
 
 

@@ -1,31 +1,22 @@
 package com.senpure.base.criterion;
 
 
-import com.senpure.base.struct.PatternDate;
-import com.senpure.base.validator.DynamicDate;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.io.Serializable;
 
-
+/**
+ * 取消掉默认的startData ，endData
+ */
 public class CriteriaStr implements Serializable {
 
-    public static final String ORDER_DESC = "DESC";
-    public static final String ORDER_ASC = "ASC";
+
 
     private static final long serialVersionUID = 1L;
 
-    @ApiModelProperty(hidden = true)
-    private String startDate, endDate;
 
-    @DynamicDate
-    @ApiModelProperty(hidden = true)
-    private PatternDate startDateValid = new PatternDate();
-    @ApiModelProperty(hidden = true)
-    @DynamicDate
-    private PatternDate endDateValid = new PatternDate();
     @ApiModelProperty( hidden = true,position = 200, value = "页数", example = "2", dataType = "int")
     @Min(value = 1, message = "{input.error}")
     private String page = "1";
@@ -33,56 +24,8 @@ public class CriteriaStr implements Serializable {
     @Max(value = 200, message = "{input.error}")
     @ApiModelProperty(hidden = true,position = 201, value = "每页数据", notes = "每页显示多少条数据，默认15条", example = "20",dataType = "int")
     private String pageSize = "15";
-    @ApiModelProperty(hidden = true)
-    private String datePattern = "yyyy-MM-dd HH:mm:ss";
-
-    public String getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(String startDate) {
-        if (startDate != null && startDate.trim().length() == 0) {
-            startDate = null;
-        }
-        this.startDate = startDate;
-        startDateValid.setDateStr(startDate);
-    }
-
-    public String getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(String endDate) {
-        if (endDate != null && endDate.trim().length() == 0) {
-            endDate = null;
-        }
-        this.endDate = endDate;
-        endDateValid.setDateStr(endDate);
-    }
 
 
-    protected PatternDate getStartDateValid() {
-        return startDateValid;
-    }
-
-
-    protected PatternDate getEndDateValid() {
-        return endDateValid;
-    }
-
-    public String getDatePattern() {
-        return datePattern;
-    }
-
-    public void setDatePattern(String datePattern) {
-        if (datePattern != null && datePattern.trim().length() == 0) {
-            this.datePattern = null;
-            return;
-        }
-        this.datePattern = datePattern;
-        startDateValid.setPattern(datePattern);
-        endDateValid.setPattern(datePattern);
-    }
 
     public void setPageSize(String pageSize) {
         this.pageSize = pageSize;
@@ -104,10 +47,9 @@ public class CriteriaStr implements Serializable {
 
     public Criteria toCriteria() {
         Criteria criteria = new Criteria();
-        criteria.setPage(Integer.valueOf(getPage()));
-        criteria.setPageSize(Integer.valueOf(getPageSize()));
-        criteria.setStartDate(startDateValid.getDate());
-        criteria.setEndDate(endDateValid.getDate());
+        criteria.setPage(Integer.parseInt(getPage()));
+        criteria.setPageSize(Integer.parseInt(getPageSize()));
+
         return criteria;
     }
 
@@ -121,14 +63,6 @@ public class CriteriaStr implements Serializable {
 
     }
 
-    protected void dateStr(StringBuilder sb) {
-        if (getStartDate() != null) {
-            sb.append("startDate=").append(getStartDate()).append(",");
-        }
-        if (getEndDate() != null) {
-            sb.append("endDate=").append(getEndDate()).append(",");
-        }
-    }
 
     protected void afterStr(StringBuilder sb) {
         sb.append("page=").append(getPage()).append(",");

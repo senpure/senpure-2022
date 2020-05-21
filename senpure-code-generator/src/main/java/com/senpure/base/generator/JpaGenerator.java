@@ -58,7 +58,10 @@ public class JpaGenerator {
         cfg.setSharedVariable("serial", new HashCode());
         cfg.setSharedVariable("labelFormat", new LabelFormat());
         cfg.setSharedVariable("mapperXmlTips", new MapperXmlTips());
+        cfg.setSharedVariable("strAdd", new StringTempList.StringAdd());
+        cfg.setSharedVariable("strGet", new StringTempList.StringGet());
         ApiModelProperty apiModelProperty = new ApiModelProperty();
+        apiModelProperty.setJpaConfig(config);
         cfg.setSharedVariable("apiModelProperty", apiModelProperty);
         cfg.setClassForTemplateLoading(getClass(), "/");
         Template modelTemplate = null;
@@ -401,11 +404,6 @@ public class JpaGenerator {
     private void checkDateField(Model model, ModelField modelField) {
         Field field = modelField.getField();
         if (field.getType().isAssignableFrom(Date.class)) {
-            if (model.isHasDate() || model.isHasLongDate()) {
-                modelField.setUseSimpleDate(false);
-            } else {
-                modelField.setUseSimpleDate(true);
-            }
             model.setHasDate(true);
             model.setHasRange(true);
             model.getDateFieldMap().put(modelField.getName(), modelField);
@@ -418,11 +416,7 @@ public class JpaGenerator {
             if (StringUtil.isExist(modelConfig.getLongDateSuffix())) {
                 if (modelField.getName().endsWith(modelConfig.getLongDateSuffix())) {
                     if (modelField.getClazzType().equalsIgnoreCase("long")) {
-                        if (model.isHasDate() || model.isHasLongDate()) {
-                            modelField.setUseSimpleDate(false);
-                        } else {
-                            modelField.setUseSimpleDate(true);
-                        }
+
                         model.setHasLongDate(true);
                         modelField.setLongTime(true);
                         modelField.setHasCriteriaRange(true);
@@ -450,14 +444,10 @@ public class JpaGenerator {
                             if (redundancyConfig.isShowOnlyOne()) {
                                 if (redundancyConfig.isShowShowType()) {
                                     compute.setCriteriaShow(false);
-                                    if (compute.isUseSimpleDate()) {
-                                        show.setUseSimpleDate(true);
-                                    }
+
                                 } else {
                                     show.setCriteriaShow(false);
-                                    if (show.isUseSimpleDate()) {
-                                        compute.setUseSimpleDate(true);
-                                    }
+
                                 }
 
                             }

@@ -1,6 +1,7 @@
 package com.senpure.base.generator.method;
 
 import com.senpure.base.generator.ModelField;
+import com.senpure.base.generator.config.JpaConfig;
 import com.senpure.base.util.DateFormatUtil;
 import com.senpure.base.util.StringUtil;
 import com.senpure.base.util.TimeCalculator;
@@ -22,6 +23,7 @@ import java.util.Map;
 public class ApiModelProperty implements TemplateMethodModelEx {
 
     private Map<String, Integer> map = new HashMap<>();
+    private JpaConfig jpaConfig;
     private int startPosition = 1;
 
     @Override
@@ -68,7 +70,7 @@ public class ApiModelProperty implements TemplateMethodModelEx {
         } else if (modelField.getClazzType().equals("String")) {
             sb.append("example = \"").append(modelField.getName()).append("\", ");
         } else if (modelField.getClazzType().equalsIgnoreCase("boolean")) {
-          //  sb.append("example = \"").append("true").append("\", ");
+            //  sb.append("example = \"").append("true").append("\", ");
         } else if (modelField.getClazzType().equals("Date")) {
             if (scalar.equals("end")) {
                 sb.append("example = \"").append(DateFormatUtil.format(TimeCalculator.getDayEnd().getTime())).append("\", ");
@@ -103,6 +105,11 @@ public class ApiModelProperty implements TemplateMethodModelEx {
 
     public int getStartPosition() {
         return startPosition;
+    }
+
+    public ApiModelProperty setJpaConfig(JpaConfig jpaConfig) {
+        this.jpaConfig = jpaConfig;
+        return this;
     }
 
     public String getDataType(ModelField modelField) {

@@ -1,5 +1,11 @@
 package ${modelPackage};
-
+<#--如果需要对引用的包进行排序可使用
+<#if strAdd("import package;")??></#if>
+<#if strAdd("import package2;")??></#if>
+<#list strGet() as str>
+${str}
+</#list>
+-->
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 

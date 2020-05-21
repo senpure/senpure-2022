@@ -57,7 +57,7 @@ public class ModelField {
      * 数字表示时间
      */
     private boolean longTime;
-    private boolean useSimpleDate = false;
+
 
     /**
      * 是否可以条件排序
@@ -287,13 +287,6 @@ public class ModelField {
         this.foreignKey = foreignKey;
     }
 
-    public boolean isUseSimpleDate() {
-        return useSimpleDate;
-    }
-
-    public void setUseSimpleDate(boolean useSimpleDate) {
-        this.useSimpleDate = useSimpleDate;
-    }
 
     public ModelField getRedundancyField() {
         return redundancyField;

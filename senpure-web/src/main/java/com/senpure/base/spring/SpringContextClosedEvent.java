@@ -8,16 +8,14 @@ import org.springframework.context.event.ContextClosedEvent;
 
 
 public class SpringContextClosedEvent implements ApplicationListener<ContextClosedEvent> {
-	protected   Logger logger;
+    protected Logger logger;
 
-	public SpringContextClosedEvent() {
-		logger= LoggerFactory.getLogger(getClass());
-	}
+    public SpringContextClosedEvent() {
+        logger = LoggerFactory.getLogger(getClass());
+    }
 
-	@Override
-	public void onApplicationEvent(ContextClosedEvent event) {
-		if (SpringContextUtil.isTopContext(event.getApplicationContext())) {
-			logger.debug("{}: closedEvent :{}",   event.getApplicationContext().getId(),event.toString());
-		}
-	}
+    @Override
+    public void onApplicationEvent(ContextClosedEvent event) {
+        logger.debug("{}: closedEvent :{}", event.getApplicationContext().getId(), event.toString());
+    }
 }

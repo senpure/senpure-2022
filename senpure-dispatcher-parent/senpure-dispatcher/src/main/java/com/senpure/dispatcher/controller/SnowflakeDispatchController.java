@@ -1,7 +1,7 @@
 package com.senpure.dispatcher.controller;
 
 import com.senpure.base.ResultMap;
-import com.senpure.base.spring.BaseController;
+import com.senpure.base.controller.BaseController;
 import com.senpure.dispatcher.criteria.ServerCenterAndWorkCriteriaStr;
 import com.senpure.dispatcher.model.ServerCenterAndWork;
 import com.senpure.dispatcher.result.ServerCenterAndWorkRecordResult;

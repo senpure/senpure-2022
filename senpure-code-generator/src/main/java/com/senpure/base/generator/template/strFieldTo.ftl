@@ -18,26 +18,26 @@
     <#if field.hasCriteriaRange>
         <#if field.date>
             <#if field.clazzType="Date">
-        if (start${field.name?cap_first} != null) {
-            criteria.setStart${field.name?cap_first}(start${field.name?cap_first}Valid.getDate());
+        if (${config.startRangePrefix}${field.name?cap_first} != null) {
+            criteria.set${config.startRangePrefix?cap_first}${field.name?cap_first}(${config.startRangePrefix}${field.name?cap_first}Valid.getDate());
         }
-        if (end${field.name?cap_first} != null) {
-            criteria.setEnd${field.name?cap_first}(end${field.name?cap_first}Valid.getDate());
+        if (${config.endRangePrefix}${field.name?cap_first} != null) {
+            criteria.set${config.endRangePrefix?cap_first}${field.name?cap_first}(${config.endRangePrefix}${field.name?cap_first}Valid.getDate());
         }
             <#else>
-        if (start${field.name?cap_first} != null) {
-            criteria.setStart${field.name?cap_first}(start${field.name?cap_first}Valid.getDate().getTime());
+        if (${config.startRangePrefix}${field.name?cap_first} != null) {
+            criteria.set${config.startRangePrefix?cap_first}${field.name?cap_first}(${config.startRangePrefix}${field.name?cap_first}Valid.getDate().getTime());
         }
-        if (end${field.name?cap_first} != null) {
-            criteria.setEnd${field.name?cap_first}(end${field.name?cap_first}Valid.getDate().getTime());
+        if (${config.endRangePrefix}${field.name?cap_first} != null) {
+            criteria.set${config.endRangePrefix?cap_first}${field.name?cap_first}(${config.endRangePrefix}${field.name?cap_first}Valid.getDate().getTime());
         }
             </#if>
         <#else><#--不是时间格式-->
-        if (start${field.name?cap_first} != null) {
-            criteria.setStart${field.name?cap_first}(${field.clazzType}.valueOf(start${field.name?cap_first}));
+        if (${config.startRangePrefix}${field.name?cap_first} != null) {
+            criteria.set${config.startRangePrefix?cap_first}${field.name?cap_first}(${field.clazzType}.valueOf(${config.startRangePrefix}${field.name?cap_first}));
         }
-        if (end${field.name?cap_first} != null) {
-            criteria.setEnd${field.name?cap_first}(${field.clazzType}.valueOf(end${field.name?cap_first}));
+        if (${config.endRangePrefix}${field.name?cap_first} != null) {
+            criteria.set${config.endRangePrefix?cap_first}${field.name?cap_first}(${field.clazzType}.valueOf(${config.endRangePrefix}${field.name?cap_first}));
         }
         </#if>
 </#if><#--hasCriteriaRange-->

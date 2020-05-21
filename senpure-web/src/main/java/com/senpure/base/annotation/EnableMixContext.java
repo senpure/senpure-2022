@@ -1,7 +1,7 @@
 package com.senpure.base.annotation;
 
-import com.senpure.base.configuration.MixContextConfiguration;
-import com.senpure.base.configuration.SpringContextCheckerConfiguration;
+import com.senpure.base.configure.MixContextConfiguration;
+import com.senpure.base.configure.SpringContextCheckerConfiguration;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.Documented;

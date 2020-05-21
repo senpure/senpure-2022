@@ -1,6 +1,5 @@
 package com.senpure.base.criterion;
 
-import com.senpure.base.util.DateFormatUtil;
 import com.senpure.base.util.TimeCalculator;
 
 import java.util.Date;
@@ -18,8 +17,8 @@ public class CriteriaHelper {
         Date date =
                 TimeCalculator.getDayBegin().getTime();
         TimeCalculator.toDayBegin(date);
-        criteriaStr.setDatePattern(pattern);
-        criteriaStr.setStartDate(DateFormatUtil.getDateFormat(pattern).format(date));
+       // criteriaStr.setDatePattern(pattern);
+       // criteriaStr.setStartDate(DateFormatUtil.getDateFormat(pattern).format(date));
 
     }
 }

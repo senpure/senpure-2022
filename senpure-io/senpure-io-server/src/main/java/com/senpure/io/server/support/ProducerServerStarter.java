@@ -49,7 +49,7 @@ public class ProducerServerStarter implements ApplicationRunner {
     private ProducerMessageExecutor messageExecutor;
     @Resource
     private TaskLoopGroup service;
-    @Value("${server.port:0}")
+    @Value("${server.port:8080}")
     private int httpPort;
 
     private ServerProperties.Producer producer;

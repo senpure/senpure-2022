@@ -27,33 +27,33 @@
     }
 
 <#if field.hasCriteriaRange>
-    public ${field.clazzType} getStart${field.name?cap_first}() {
-        return start${field.name?cap_first};
+    public ${field.clazzType} get${config.startRangePrefix?cap_first}${field.name?cap_first}() {
+        return ${config.startRangePrefix}${field.name?cap_first};
     }
 
-    public ${name} setStart${field.name?cap_first}(${field.clazzType} start${field.name?cap_first}) {
+    public ${name} set${config.startRangePrefix?cap_first}${field.name?cap_first}(${field.clazzType} ${config.startRangePrefix}${field.name?cap_first}) {
     <#if field.clazzType=='String'>
-        if (start${field.name?cap_first} != null && start${field.name?cap_first}.trim().length() == 0) {
-            this.start${field.name?cap_first} = null;
+        if (${config.startRangePrefix}${field.name?cap_first} != null && ${config.startRangePrefix}${field.name?cap_first}.trim().length() == 0) {
+            this.${config.startRangePrefix}${field.name?cap_first} = null;
             return this;
         }
     </#if>
-        this.start${field.name?cap_first} = start${field.name?cap_first};
+        this.${config.startRangePrefix}${field.name?cap_first} = ${config.startRangePrefix}${field.name?cap_first};
         return this;
     }
 
-    public ${field.clazzType} getEnd${field.name?cap_first}() {
-        return end${field.name?cap_first};
+    public ${field.clazzType} get${config.endRangePrefix?cap_first}${field.name?cap_first}() {
+        return ${config.endRangePrefix}${field.name?cap_first};
     }
 
-    public ${name} setEnd${field.name?cap_first}(${field.clazzType} end${field.name?cap_first}) {
+    public ${name} set${config.endRangePrefix?cap_first}${field.name?cap_first}(${field.clazzType} ${config.endRangePrefix}${field.name?cap_first}) {
     <#if field.clazzType=='String'>
-        if (end${field.name?cap_first} != null && end${field.name?cap_first}.trim().length() == 0) {
-            this.end${field.name?cap_first} = null;
+        if (${config.endRangePrefix}${field.name?cap_first} != null && ${config.endRangePrefix}${field.name?cap_first}.trim().length() == 0) {
+            this.${config.endRangePrefix}${field.name?cap_first} = null;
             return this;
         }
     </#if>
-        this.end${field.name?cap_first} = end${field.name?cap_first};
+        this.${config.endRangePrefix}${field.name?cap_first} = ${config.endRangePrefix}${field.name?cap_first};
         return this;
     }
 

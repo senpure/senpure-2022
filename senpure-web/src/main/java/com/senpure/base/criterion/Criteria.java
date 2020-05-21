@@ -1,18 +1,14 @@
 package com.senpure.base.criterion;
 
 
-import com.senpure.base.util.DateFormatUtil;
-
 import javax.validation.constraints.AssertTrue;
 import java.io.Serializable;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 
 public class Criteria implements Serializable {
 
+    private static final List<Long> EMPTY = Collections.unmodifiableList(new ArrayList<>());
     public static final String ORDER_DESC = "DESC";
     public static final String ORDER_ASC = "ASC";
 
@@ -23,9 +19,8 @@ public class Criteria implements Serializable {
     //前端必须分页
     @AssertTrue
     private boolean usePage = true;
-    private Date startDate;
-    private Date endDate;
-    protected String datePattern="yyyy-MM-dd HH:mm:ss";
+
+    protected String datePattern = "yyyy-MM-dd HH:mm:ss";
     private Map<String, String> order = new LinkedHashMap<>(8);
 
     public int getPage() {
@@ -39,21 +34,6 @@ public class Criteria implements Serializable {
         this.page = page;
     }
 
-    public Date getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(Date startDate) {
-        this.startDate = startDate;
-    }
-
-    public Date getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(Date endDate) {
-        this.endDate = endDate;
-    }
 
     public boolean isUsePage() {
         return usePage;
@@ -107,20 +87,25 @@ public class Criteria implements Serializable {
         }
     }
 
-    public boolean isHasDate() {
-        return true;
+
+    public List<Long> getCacheEndTime() {
+        return EMPTY;
     }
 
     public boolean isCanCache() {
-        if (!isHasDate()) {
+
+        //必须保证时间在当前之前，之后会不断的加入新的内容，数据不一致
+        List<Long> times = getCacheEndTime();
+        if (times.isEmpty()) {
             return true;
         }
-        //必须保证时间在当前之前，之后会不断的加入新的内容，数据不一致
-        Date date = getEndDate();
-        if (date == null) {
-            return false;
+        long now = System.currentTimeMillis();
+        for (Long time : times) {
+            if (time > now) {
+                return false;
+            }
         }
-        return date.getTime() < System.currentTimeMillis();
+        return true;
     }
 
     protected void beforeStr(StringBuilder sb) {
@@ -141,29 +126,13 @@ public class Criteria implements Serializable {
     }
 
     protected void dateStr(StringBuilder sb) {
-        if (getStartDate() != null) {
-            sb.append("startDate=").append(DateFormatUtil.
-                    getDateFormat(datePattern).
-                    format(getStartDate())).append(",");
-        }
-        if (getEndDate() != null) {
-            sb.append("endDate=").append(DateFormatUtil.
-                    getDateFormat(datePattern).
-                    format(getEndDate())).append(",");
-        }
+        String empty = "";
+        sb.append(empty);
     }
 
     protected void dateCache(StringBuilder sb) {
-        if (getStartDate() != null) {
-            sb.append("startDate=").append(DateFormatUtil.
-                    getDateFormat(DateFormatUtil.DFP_Y2MS).
-                    format(getStartDate())).append(",");
-        }
-        if (getEndDate() != null) {
-            sb.append("endDate=").append(DateFormatUtil.
-                    getDateFormat(DateFormatUtil.DFP_Y2MS).
-                    format(getEndDate())).append(",");
-        }
+        String empty = "";
+        sb.append(empty);
     }
 
     protected void afterStr(StringBuilder sb) {

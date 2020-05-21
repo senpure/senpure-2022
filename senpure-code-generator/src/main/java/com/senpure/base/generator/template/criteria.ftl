@@ -130,18 +130,18 @@ public class ${name}${config.criteriaSuffix} extends Criteria implements Seriali
     <#list modelFieldMap?values as field>
          <#if field.criteriaShow&&field.hasCriteriaRange>
          <#if field.clazzType="Date">
-        if (start${field.name?cap_first} != null) {
-            sb.append("start${field.name?cap_first}=").append(DateFormatUtil.getDateFormat(datePattern).format(start${field.name?cap_first})).append(",");
+        if (${config.startRangePrefix}${field.name?cap_first} != null) {
+            sb.append("${config.startRangePrefix}${field.name?cap_first}=").append(DateFormatUtil.getDateFormat(datePattern).format(${config.startRangePrefix}${field.name?cap_first})).append(",");
         }
-        if (end${field.name?cap_first} != null) {
-            sb.append("end${field.name?cap_first}=").append(DateFormatUtil.getDateFormat(datePattern).format(end${field.name?cap_first})).append(",");
+        if (${config.endRangePrefix}${field.name?cap_first} != null) {
+            sb.append("${config.endRangePrefix}${field.name?cap_first}=").append(DateFormatUtil.getDateFormat(datePattern).format(${config.endRangePrefix}${field.name?cap_first})).append(",");
         }
          <#else >
-        if (start${field.name?cap_first} != null) {
-            sb.append("start${field.name?cap_first}=").append(start${field.name?cap_first}).append(",");
+        if (${config.startRangePrefix}${field.name?cap_first} != null) {
+            sb.append("${config.startRangePrefix}${field.name?cap_first}=").append(${config.startRangePrefix}${field.name?cap_first}).append(",");
         }
-        if (end${field.name?cap_first} != null) {
-            sb.append("end${field.name?cap_first}=").append(end${field.name?cap_first}).append(",");
+        if (${config.endRangePrefix}${field.name?cap_first} != null) {
+            sb.append("${config.endRangePrefix}${field.name?cap_first}=").append(${config.endRangePrefix}${field.name?cap_first}).append(",");
         }
          </#if>
          </#if>
