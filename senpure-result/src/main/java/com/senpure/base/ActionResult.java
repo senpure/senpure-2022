@@ -31,7 +31,6 @@ public class ActionResult implements Serializable {
     @ApiModelProperty(hidden = true, position = 102)
     protected boolean clientFormat;
 
-
     public static ActionResult success() {
         return new ActionResult(Result.SUCCESS);
     }

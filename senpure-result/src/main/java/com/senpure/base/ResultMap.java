@@ -86,7 +86,7 @@ public class ResultMap extends HashMap<String, Object> {
     }
 
     public ResultMap putItems(List value) {
-        super.put(itemName, value);
+        super.put(itemsName, value);
         return this;
     }
 
@@ -96,7 +96,7 @@ public class ResultMap extends HashMap<String, Object> {
     }
 
     public ResultMap putItem(Object value) {
-        super.put(itemsName, value);
+        super.put(itemName, value);
         return this;
     }
 
@@ -112,7 +112,7 @@ public class ResultMap extends HashMap<String, Object> {
 
     public ResultMap addMessageArgs(List<Object> value) {
         if (args == null) {
-            args = new ArrayList();
+            args = new ArrayList<>();
         }
         args.addAll(value);
         if (clientFormat) {
@@ -123,7 +123,7 @@ public class ResultMap extends HashMap<String, Object> {
 
     public ResultMap addMessageArgs(Object value) {
         if (args == null) {
-            args = new ArrayList();
+            args = new ArrayList<>();
         }
         args.add(value);
         if (clientFormat) {
@@ -140,7 +140,7 @@ public class ResultMap extends HashMap<String, Object> {
 
     public boolean isSuccess() {
         Integer code = (Integer) super.get(RESULT_KEY);
-        return code.intValue() == Result.SUCCESS;
+        return code == Result.SUCCESS;
     }
 
     public int getCode() {

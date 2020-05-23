@@ -10,7 +10,7 @@ import java.util.Locale;
 
 /**
  * @author senpure
- * @version 2020-5-20 18:21:45
+ * @version 2020-5-22 14:19:27
  */
 public class URIPermissionPageResult extends ActionResult {
     private static final long serialVersionUID = 1046435846L;

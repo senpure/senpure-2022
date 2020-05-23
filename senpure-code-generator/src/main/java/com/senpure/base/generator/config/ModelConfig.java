@@ -79,7 +79,7 @@ public class ModelConfig {
     //表类型 mix single
     private String tableType = GeneratorConfig.TABLE_TYPE_SINGLE;
     //service 开启缓存
-    private boolean cache = false;
+    private boolean cache = true;
     //cache =true 时生效 spring cache
     private boolean remoteCache = true;
     //cache =true 时生效 spring cache local混合

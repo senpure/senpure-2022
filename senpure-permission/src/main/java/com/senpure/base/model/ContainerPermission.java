@@ -1,5 +1,4 @@
 package com.senpure.base.model;
-
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -8,7 +7,7 @@ import java.util.Date;
 
 /**
  * @author senpure
- * @version 2020-5-20 18:21:46
+ * @version 2020-5-22 16:52:02
  */
 @ApiModel
 public class ContainerPermission implements Serializable {
@@ -19,9 +18,9 @@ public class ContainerPermission implements Serializable {
     //乐观锁，版本控制
     @ApiModelProperty(hidden = true )
     private Integer version;
-    @ApiModelProperty(dataType = "long", example = "1589904000000", position = 1)
+    @ApiModelProperty(dataType = "long", example = "1590076800000", position = 1)
     private Long expiryTime;
-    @ApiModelProperty(dataType = "date-time", example = "2020-05-20 00:00:00", position = 2)
+    @ApiModelProperty(dataType = "date-time", example = "2020-05-22 00:00:00", position = 2)
     private Date expiryDate;
     //(外键,modelName:Container,tableName:senpure_container)
     @ApiModelProperty(value = "(外键,modelName:Container,tableName:senpure_container)", dataType = "int", example = "666666", position = 3)

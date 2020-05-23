@@ -50,6 +50,8 @@ public class BaseController {
         return modelAndView.addObject(WebConstant.ACTION_RESULT_MODEL_VIEW_KEY, result);
     }
 
+
+
     protected ModelAndView view(HttpServletRequest request, String view) {
 
         return addActionResult(request, new ModelAndView(view), ResultMap.success(), false);
@@ -59,6 +61,8 @@ public class BaseController {
 
         return addActionResult(request, new ModelAndView(view), result, false);
     }
+
+
 
     protected ModelAndView result(HttpServletRequest request, String view, ResultMap result) {
 

@@ -1,5 +1,4 @@
 package com.senpure.base.model;
-
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -8,7 +7,7 @@ import java.util.Date;
 
 /**
  * @author senpure
- * @version 2020-5-20 18:21:45
+ * @version 2020-5-22 16:52:02
  */
 @ApiModel
 public class Container implements Serializable {
@@ -27,9 +26,9 @@ public class Container implements Serializable {
     private Integer level;
     @ApiModelProperty(dataType = "long", example = "666666", position = 4)
     private Long relation;
-    @ApiModelProperty(dataType = "long", example = "1589904000000", position = 5)
+    @ApiModelProperty(dataType = "long", example = "1590076800000", position = 5)
     private Long createTime;
-    @ApiModelProperty(dataType = "date-time", example = "2020-05-20 00:00:00", position = 6)
+    @ApiModelProperty(dataType = "date-time", example = "2020-05-22 00:00:00", position = 6)
     private Date createDate;
     //所属容器层次结构,主要是为了查询,多有用like查询 -1-2-3-12-
     @ApiModelProperty(value = "所属容器层次结构,主要是为了查询,多有用like查询 -1-2-3-12-", example = "containerStructure", position = 7)

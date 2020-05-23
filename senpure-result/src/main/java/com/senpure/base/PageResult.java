@@ -14,7 +14,7 @@ import java.util.Locale;
 public class PageResult<T> extends ActionResult {
     private static final long serialVersionUID = 2438584673528847820L;
 
-    @ApiModelProperty(position = 3, value = "结果集总数", example = "1086")
+    @ApiModelProperty(position = 3, value = "结果集总数", example = "10086")
     private int total;
     @ApiModelProperty(position = 4, value = "一页数据")
     private List<T> items;

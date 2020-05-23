@@ -10,7 +10,7 @@ import java.util.Locale;
 
 /**
  * @author senpure
- * @version 2020-5-20 18:21:45
+ * @version 2020-5-22 16:52:02
  */
 public class RoleValueRecordResult extends ActionResult {
     private static final long serialVersionUID = 1099570973L;

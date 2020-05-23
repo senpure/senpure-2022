@@ -10,10 +10,10 @@ import java.util.Locale;
 
 /**
  * @author senpure
- * @version 2020-5-20 18:21:46
+ * @version 2020-5-22 17:23:15
  */
 public class PermissionRecordResult extends ActionResult {
-    private static final long serialVersionUID = 534669811L;
+    private static final long serialVersionUID = 2096486843L;
 
     public static final String RECORD_NAME = "permission";
 

@@ -1,5 +1,4 @@
 package com.senpure.base.model;
-
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -7,11 +6,11 @@ import java.io.Serializable;
 
 /**
  * @author senpure
- * @version 2020-5-20 18:21:46
+ * @version 2020-5-22 17:23:15
  */
 @ApiModel
 public class Permission implements Serializable {
-    private static final long serialVersionUID = 534669811L;
+    private static final long serialVersionUID = 2096486843L;
 
     //(主键)
     private Long id;
@@ -25,19 +24,22 @@ public class Permission implements Serializable {
     //是否从数据库更新过
     @ApiModelProperty(value = "是否从数据库更新过", dataType = "boolean", position = 3)
     private Boolean databaseUpdate;
+    //服务名(多个服务可能共用一个数据库来存放权限)
+    @ApiModelProperty(value = "服务名(多个服务可能共用一个数据库来存放权限)", example = "serverName", position = 4)
+    private String serverName;
     //NORMAL 正常 ，OWNER 检查所有者，IGNORE 可以忽略(正常放行)
-    @ApiModelProperty(value = "NORMAL 正常 ，OWNER 检查所有者，IGNORE 可以忽略(正常放行)", example = "type", position = 4)
+    @ApiModelProperty(value = "NORMAL 正常 ，OWNER 检查所有者，IGNORE 可以忽略(正常放行)", example = "type", position = 5)
     private String type;
     //'1,2' type为OWNER 配合verifyName使用
-    @ApiModelProperty(value = "'1,2' type为OWNER 配合verifyName使用", example = "offset", position = 5)
+    @ApiModelProperty(value = "'1,2' type为OWNER 配合verifyName使用", example = "offset", position = 6)
     private String offset;
     //'containerResource',roleResource' type为OWNER 配合offset使用
-    @ApiModelProperty(value = "'containerResource',roleResource' type为OWNER 配合offset使用", example = "verifyName", position = 6)
+    @ApiModelProperty(value = "'containerResource',roleResource' type为OWNER 配合offset使用", example = "verifyName", position = 7)
     private String verifyName;
-    @ApiModelProperty(example = "description", position = 7)
+    @ApiModelProperty(example = "description", position = 8)
     private String description;
     //排序
-    @ApiModelProperty(value = "排序", dataType = "int", example = "666666", position = 8)
+    @ApiModelProperty(value = "排序", dataType = "int", example = "666666", position = 9)
     private Integer sort;
 
     /**
@@ -98,6 +100,26 @@ public class Permission implements Serializable {
      */
     public Permission setDatabaseUpdate(Boolean databaseUpdate) {
         this.databaseUpdate = databaseUpdate;
+        return this;
+    }
+
+
+    /**
+     * get 服务名(多个服务可能共用一个数据库来存放权限)
+     *
+     * @return
+     */
+    public String getServerName() {
+        return serverName;
+    }
+
+    /**
+     * set 服务名(多个服务可能共用一个数据库来存放权限)
+     *
+     * @return
+     */
+    public Permission setServerName(String serverName) {
+        this.serverName = serverName;
         return this;
     }
 
@@ -221,6 +243,7 @@ public class Permission implements Serializable {
                 + ",name=" + name
                 + ",readableName=" + readableName
                 + ",databaseUpdate=" + databaseUpdate
+                + ",serverName=" + serverName
                 + ",type=" + type
                 + ",offset=" + offset
                 + ",verifyName=" + verifyName

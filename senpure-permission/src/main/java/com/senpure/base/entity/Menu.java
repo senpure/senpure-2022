@@ -27,7 +27,8 @@ public class Menu extends VersionEntity implements Serializable {
     private Boolean directView = false;
     private String i18nKey;
     private String description;
-
+    //服务名(多个服务可能共用一个数据库来存放权限)
+    private String serverName;
     public Integer getSort() {
         return sort;
     }
@@ -114,5 +115,14 @@ public class Menu extends VersionEntity implements Serializable {
 
     public void setI18nKey(String i18nKey) {
         this.i18nKey = i18nKey;
+    }
+
+    public String getServerName() {
+        return serverName;
+    }
+
+    public Menu setServerName(String serverName) {
+        this.serverName = serverName;
+        return this;
     }
 }

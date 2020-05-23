@@ -10,7 +10,7 @@ import java.util.Locale;
 
 /**
  * @author senpure
- * @version 2020-5-20 18:21:46
+ * @version 2020-5-22 16:52:02
  */
 public class AccountValuePageResult extends ActionResult {
     private static final long serialVersionUID = 846733638L;

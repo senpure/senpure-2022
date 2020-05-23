@@ -3,17 +3,17 @@ package ${servicePackage};
 import ${modelPackage}.${name};
 import ${criteriaPackage}.${name}${config.criteriaSuffix};
 import ${mapperPackage}.${name}${config.mapperSuffix};
+import ${resultPackage}.${name}${config.resultPageSuffix};
 <#if version??>
 import com.senpure.base.exception.OptimisticLockingFailureException;
 </#if>
 <#if modelPackage !="com.senpure.base.model">
 import com.senpure.base.service.BaseService;
 </#if>
-import com.senpure.ResultMap;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,13 +35,8 @@ ${sovereignty}
 public class ${name}${config.serviceSuffix} extends BaseService {
 
     private ConcurrentMap<String, ${name}> localCache = new ConcurrentHashMap(128);
-
+    @Resource
     private ${name}${config.mapperSuffix} ${nameRule(name)}${config.mapperSuffix};
-
-    @Autowired
-    public void set${name?cap_first}${config.mapperSuffix}(${name}${config.mapperSuffix} ${nameRule(name)}${config.mapperSuffix}) {
-        this.${nameRule(name)}${config.mapperSuffix} = ${nameRule(name)}${config.mapperSuffix};
-    }
 
     private String cacheKey(${id.clazzType} ${id.name}) {
         return "${nameRule(name)}:" + ${id.name};
@@ -235,8 +230,8 @@ public class ${name}${config.serviceSuffix} extends BaseService {
 </#if>
 
     @Transactional(readOnly = true)
-    public ResultMap findPage(${name?cap_first}Criteria criteria) {
-        ResultMap resultMap = ResultMap.success();
+    public ${name}${config.resultPageSuffix} findPage(${name?cap_first}Criteria criteria) {
+        ${name}${config.resultPageSuffix} pageResult = ${name}${config.resultPageSuffix}.success();
         //是否是主键查找
         <#if id.javaNullable>
         if (criteria.get${id.name?cap_first}() != null) {
@@ -247,23 +242,23 @@ public class ${name}${config.serviceSuffix} extends BaseService {
             if (${nameRule(name)} != null) {
                 List<${name}> ${pluralize(nameRule(name))} = new ArrayList<>(16);
                 ${pluralize(nameRule(name))}.add(${nameRule(name)});
-                resultMap.putTotal(1);
-                resultMap.putItems(${pluralize(nameRule(name))});
+                pageResult.setTotal(1);
+                pageResult.set${pluralize(nameRule(name))?cap_first}(${pluralize(nameRule(name))});
             } else {
-                resultMap.putTotal(0);
+            pageResult.setTotal(0);
             }
-            return resultMap;
+            return pageResult;
         }
         int total = ${nameRule(name)}${config.mapperSuffix}.countByCriteria(criteria);
-        resultMap.putTotal(total);
+        pageResult.setTotal(total);
         if (total == 0) {
-            return resultMap;
+            return pageResult;
         }
         //检查页数是否合法
         checkPage(criteria, total);
         List<${name}> ${pluralize(nameRule(name))} = ${nameRule(name)}${config.mapperSuffix}.findByCriteria(criteria);
-        resultMap.putItems(${pluralize(nameRule(name))});
-        return resultMap;
+        pageResult.set${pluralize(nameRule(name))?cap_first}(${pluralize(nameRule(name))});
+        return pageResult;
     }
 
     public List<${name}> find(${name?cap_first}Criteria criteria) {

@@ -10,8 +10,6 @@ import com.senpure.base.exception.OptimisticLockingFailureException;
 <#if modelPackage !="com.senpure.base.model">
 import com.senpure.base.service.BaseService;
 </#if>
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -19,6 +17,7 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -30,12 +29,8 @@ ${sovereignty}
 @CacheConfig(cacheNames = "${nameRule(name)}")
 public class ${name}${config.serviceSuffix} extends BaseService {
 
+    @Resource
     private ${name}${config.mapperSuffix} ${nameRule(name)}${config.mapperSuffix};
-
-    @Autowired
-    public void set${name?cap_first}${config.mapperSuffix}(${name}${config.mapperSuffix} ${nameRule(name)}${config.mapperSuffix}) {
-        this.${nameRule(name)}${config.mapperSuffix} = ${nameRule(name)}${config.mapperSuffix};
-    }
 
     @CacheEvict(key = "#${id.name}")
     public void clearCache(${id.clazzType} ${id.name}) {

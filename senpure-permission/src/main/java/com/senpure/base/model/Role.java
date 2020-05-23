@@ -1,5 +1,4 @@
 package com.senpure.base.model;
-
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -8,7 +7,7 @@ import java.util.Date;
 
 /**
  * @author senpure
- * @version 2020-5-20 18:21:46
+ * @version 2020-5-22 16:52:02
  */
 @ApiModel
 public class Role implements Serializable {
@@ -21,9 +20,9 @@ public class Role implements Serializable {
     private Integer version;
     @ApiModelProperty(example = "name", position = 1)
     private String name;
-    @ApiModelProperty(dataType = "date-time", example = "2020-05-20 00:00:00", position = 2)
+    @ApiModelProperty(dataType = "date-time", example = "2020-05-22 00:00:00", position = 2)
     private Date createDate;
-    @ApiModelProperty(dataType = "long", example = "1589904000000", position = 3)
+    @ApiModelProperty(dataType = "long", example = "1590076800000", position = 3)
     private Long createTime;
     @ApiModelProperty(example = "description", position = 4)
     private String description;

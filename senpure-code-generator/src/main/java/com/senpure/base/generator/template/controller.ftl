@@ -11,7 +11,6 @@ import com.senpure.base.ActionResult;
 import com.senpure.base.ResultMap;
 import ${resultPackage}.${name}${config.resultPageSuffix};
 import ${resultPackage}.${name}${config.resultRecordSuffix};
-import org.springframework.beans.factory.annotation.Autowired;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiResponse;
@@ -27,6 +26,7 @@ import com.senpure.base.annotation.PermissionVerify;
 import com.senpure.base.menu.MenuGenerator;
 </#if>
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
@@ -41,14 +41,10 @@ ${sovereignty}
 </#if>
 public class ${name}Controller extends BaseController {
 
+    @Resource
     private ${name}${config.serviceSuffix} ${nameRule(name)}${config.serviceSuffix};
     // Field can be converted to a local variable 警告，不用管，方便以后修改
     private String view = "/${module}/${nameRule(name)}";
-
-    @Autowired
-    public void set${name?cap_first}${config.serviceSuffix}(${name}${config.serviceSuffix} ${nameRule(name)}${config.serviceSuffix}) {
-        this.${nameRule(name)}${config.serviceSuffix} = ${nameRule(name)}${config.serviceSuffix};
-    }
 
     //Cannot resolve @PathVariable 'page' 警告，不用管
     @RequestMapping(value = {"/${pluralize(nameRule(name))}", "/${pluralize(nameRule(name))}/{page}"}, method = {RequestMethod.GET, RequestMethod.POST})

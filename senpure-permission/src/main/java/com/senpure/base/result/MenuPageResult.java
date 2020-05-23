@@ -10,10 +10,10 @@ import java.util.Locale;
 
 /**
  * @author senpure
- * @version 2020-5-20 18:21:45
+ * @version 2020-5-22 17:34:33
  */
 public class MenuPageResult extends ActionResult {
-    private static final long serialVersionUID = 1493076390L;
+    private static final long serialVersionUID = 32275000L;
 
     public static final String RECORDS_NAME = "menus";
 

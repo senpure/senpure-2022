@@ -12,7 +12,7 @@ import java.util.Locale;
  * 只记录账号信息相关信息
  *
  * @author senpure
- * @version 2020-5-20 18:21:45
+ * @version 2020-5-22 16:52:02
  */
 public class AccountPageResult extends ActionResult {
     private static final long serialVersionUID = 1379989838L;

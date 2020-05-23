@@ -22,6 +22,8 @@ public class Permission extends LongAndVersionEntity {
     private String readableName;
     //是否从数据库更新过
     private Boolean databaseUpdate = false;
+    //服务名(多个服务可能共用一个数据库来存放权限)
+    private String serverName;
 
     /**
      * NORMAL 正常 ，OWNER 检查所有者，IGNORE 可以忽略(正常放行)
@@ -102,5 +104,12 @@ public class Permission extends LongAndVersionEntity {
         this.verifyName = verifyName;
     }
 
+    public String getServerName() {
+        return serverName;
+    }
 
+    public Permission setServerName(String serverName) {
+        this.serverName = serverName;
+        return this;
+    }
 }

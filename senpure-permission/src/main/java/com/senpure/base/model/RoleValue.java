@@ -1,5 +1,4 @@
 package com.senpure.base.model;
-
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -7,7 +6,7 @@ import java.io.Serializable;
 
 /**
  * @author senpure
- * @version 2020-5-20 18:21:45
+ * @version 2020-5-22 16:52:02
  */
 @ApiModel
 public class RoleValue implements Serializable {

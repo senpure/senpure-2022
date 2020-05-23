@@ -1,5 +1,4 @@
 package com.senpure.base.model;
-
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -10,7 +9,7 @@ import java.util.Date;
  * 只记录账号信息相关信息
  * 
  * @author senpure
- * @version 2020-5-20 18:21:45
+ * @version 2020-5-22 16:52:02
  */
 @ApiModel(description = "只记录账号信息相关信息")
 public class Account implements Serializable {
@@ -29,9 +28,9 @@ public class Account implements Serializable {
     private String password;
     @ApiModelProperty(example = "name", position = 3)
     private String name;
-    @ApiModelProperty(dataType = "long", example = "1589904000000", position = 4)
+    @ApiModelProperty(dataType = "long", example = "1590076800000", position = 4)
     private Long createTime;
-    @ApiModelProperty(dataType = "date-time", example = "2020-05-20 00:00:00", position = 5)
+    @ApiModelProperty(dataType = "date-time", example = "2020-05-22 00:00:00", position = 5)
     private Date createDate;
     //当前ip255.255.255.255
     @ApiModelProperty(value = "当前ip255.255.255.255", example = "ip", position = 6)
@@ -45,15 +44,15 @@ public class Account implements Serializable {
     //账号禁止登录的说明
     @ApiModelProperty(value = "账号禁止登录的说明", example = "banStr", position = 9)
     private String banStr;
-    @ApiModelProperty(dataType = "long", example = "1589904000000", position = 10)
+    @ApiModelProperty(dataType = "long", example = "1590076800000", position = 10)
     private Long banExpiryTime;
-    @ApiModelProperty(dataType = "date-time", example = "2020-05-20 00:00:00", position = 11)
+    @ApiModelProperty(dataType = "date-time", example = "2020-05-22 00:00:00", position = 11)
     private Date banExpiryDate;
     //本次登录时间
-    @ApiModelProperty(value = "本次登录时间", dataType = "long", example = "1589904000000", position = 12)
+    @ApiModelProperty(value = "本次登录时间", dataType = "long", example = "1590076800000", position = 12)
     private Long loginTime;
     //本次登录时间
-    @ApiModelProperty(value = "本次登录时间", dataType = "date-time", example = "2020-05-20 00:00:00", position = 13)
+    @ApiModelProperty(value = "本次登录时间", dataType = "date-time", example = "2020-05-22 00:00:00", position = 13)
     private Date loginDate;
     @ApiModelProperty(example = "loginType", position = 14)
     private String loginType;
@@ -67,13 +66,13 @@ public class Account implements Serializable {
     private String clientVersion;
     @ApiModelProperty(dataType = "int", example = "666666", position = 19)
     private Integer clientVersionNumber;
-    @ApiModelProperty(dataType = "long", example = "1589904000000", position = 20)
+    @ApiModelProperty(dataType = "long", example = "1590076800000", position = 20)
     private Long lastLoginTime;
-    @ApiModelProperty(dataType = "date-time", example = "2020-05-20 00:00:00", position = 21)
+    @ApiModelProperty(dataType = "date-time", example = "2020-05-22 00:00:00", position = 21)
     private Date lastLoginDate;
-    @ApiModelProperty(dataType = "long", example = "1589904000000", position = 22)
+    @ApiModelProperty(dataType = "long", example = "1590076800000", position = 22)
     private Long lastLogoutTime;
-    @ApiModelProperty(dataType = "date-time", example = "2020-05-20 00:00:00", position = 23)
+    @ApiModelProperty(dataType = "date-time", example = "2020-05-22 00:00:00", position = 23)
     private Date lastLogoutDate;
     @ApiModelProperty(example = "lastLoginType", position = 24)
     private String lastLoginType;

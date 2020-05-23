@@ -315,9 +315,7 @@ public class JpaGenerator {
             }
         } else {
             for (ModelField modelField : modelFieldCollection) {
-                if (modelConfig.getFindConfigs().size() > 0) {
-                    findBySystem(model, modelField);
-                }
+                findBySystem(model, modelField);
             }
         }
     }

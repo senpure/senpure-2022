@@ -6,9 +6,9 @@ import java.util.List;
 public interface ResourceVerifyService<T> {
 
 
-    String getName();
+    public String getName();
 
-    boolean verify(long accountId, String resourceId);
+    public boolean verify(long accountId, String resourceId);
 
-    List<T> check(long accountId, List<T> resourceId);
+    public List<T> check(long accountId, List<T> resourceId);
 }

@@ -1,5 +1,4 @@
 package com.senpure.base.model;
-
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -7,11 +6,11 @@ import java.io.Serializable;
 
 /**
  * @author senpure
- * @version 2020-5-20 18:21:45
+ * @version 2020-5-22 17:34:33
  */
 @ApiModel
 public class Menu implements Serializable {
-    private static final long serialVersionUID = 1493076390L;
+    private static final long serialVersionUID = 32275000L;
 
     //(主键)
     private Integer id;
@@ -39,6 +38,9 @@ public class Menu implements Serializable {
     private String i18nKey;
     @ApiModelProperty(example = "description", position = 10)
     private String description;
+    //服务名(多个服务可能共用一个数据库来存放权限)
+    @ApiModelProperty(value = "服务名(多个服务可能共用一个数据库来存放权限)", example = "serverName", position = 11)
+    private String serverName;
 
     /**
      * get (主键)
@@ -180,6 +182,26 @@ public class Menu implements Serializable {
 
 
     /**
+     * get 服务名(多个服务可能共用一个数据库来存放权限)
+     *
+     * @return
+     */
+    public String getServerName() {
+        return serverName;
+    }
+
+    /**
+     * set 服务名(多个服务可能共用一个数据库来存放权限)
+     *
+     * @return
+     */
+    public Menu setServerName(String serverName) {
+        this.serverName = serverName;
+        return this;
+    }
+
+
+    /**
      * get 乐观锁，版本控制
      *
      * @return
@@ -214,6 +236,7 @@ public class Menu implements Serializable {
                 + ",directView=" + directView
                 + ",i18nKey=" + i18nKey
                 + ",description=" + description
+                + ",serverName=" + serverName
                 + "}";
     }
 
