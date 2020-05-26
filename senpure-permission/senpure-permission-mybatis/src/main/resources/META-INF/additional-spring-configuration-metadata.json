@@ -1,0 +1,73 @@
+{
+  "hints": [
+    {
+      "name": "senpure.permission.account",
+      "values": [
+        {
+          "value": "senpure"
+        },
+        {
+          "value": "admin0"
+        }
+      ],
+      "providers": [
+        {
+          "name": "any"
+        }
+      ]
+    },
+    {
+      "name": "senpure.permission.password",
+      "values": [
+        {
+          "value": "senpure"
+        },
+        {
+          "value": "admin0"
+        }
+      ],
+      "providers": [
+        {
+          "name": "any"
+        }
+      ]
+    }
+  ],
+  "properties": [
+    {
+      "name": "senpure.permission.mapper.enable",
+      "type": "java.lang.Boolean",
+      "description": "是否自动扫描permission定义的mapper.",
+      "sourceType": "com.senpure.base.autoconfigure.PermissionMapperAutoConfiguration",
+      "defaultValue": true
+    },
+    {
+      "name": "senpure.permission.entity.enable",
+      "type": "java.lang.Boolean",
+      "description": "是否自动扫描permission定义的entity.",
+      "sourceType": "com.senpure.base.autoconfigure.PermissionEntityAutoConfiguration",
+      "defaultValue": true
+    },
+    {
+      "name": "senpure.permission.druid.enable",
+      "type": "java.lang.Boolean",
+      "description": "是否记录druid相关权限.",
+      "sourceType": "com.senpure.base.autoconfigure.DruidPermissionAutoConfiguration",
+      "defaultValue": true
+    },
+    {
+      "name": "senpure.permission.actuator.enable",
+      "type": "java.lang.Boolean",
+      "description": "是否记录actuator相关权限.",
+      "sourceType": "com.senpure.base.autoconfigure.ActuatorPermissionAutoConfiguration",
+      "defaultValue": true
+    },
+    {
+      "name": "senpure.permission.password",
+      "type": "java.lang.String",
+      "description": "权限系统账号密码.",
+      "sourceType": "com.senpure.base.init.BaseDataGenerator$PermissionProperties",
+      "defaultValue": "******"
+    }
+  ]
+}

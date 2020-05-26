@@ -6,41 +6,58 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 
+import javax.annotation.Resource;
 
-@ConfigurationProperties(
-        prefix = "snowflake"
+@ConditionalOnProperty(
+        prefix = "senpure.snowflake",
+        name = {"enabled"}
+        , matchIfMissing = true
 )
+@EnableConfigurationProperties(IDGeneratorAutoConfiguration.SnowflakeProperties.class)
 public class IDGeneratorAutoConfiguration {
-
     protected Logger logger = LoggerFactory.getLogger(IDGeneratorAutoConfiguration.class);
-    private int dataCenterId = 0;
-    private int workerId = 0;
+    @Resource
+    private SnowflakeProperties snowflakeProperties;
 
-    @ConditionalOnProperty(
-            prefix = "snowflake",
-            name = {"enabled"}
-    )
     @Bean
     public IDGenerator getIdGenerator() {
-        logger.debug("workerId is {} dataCenterId is {}", workerId, dataCenterId);
-        return new IDGenerator(dataCenterId, workerId);
+        logger.debug("workerId is {} dataCenterId is {}", snowflakeProperties.getWorkerId(), snowflakeProperties.getDataCenterId());
+        return new IDGenerator(snowflakeProperties.getDataCenterId(), snowflakeProperties.getWorkerId());
     }
 
-    public int getDataCenterId() {
-        return dataCenterId;
+    @ConfigurationProperties(
+            prefix = "senpure.snowflake")
+    public static class SnowflakeProperties {
+        /**
+         * 数据中心id
+         */
+        private int dataCenterId = 0;
+        /**
+         * 工作机器id
+         */
+        private int workerId = 0;
+
+        public int getDataCenterId() {
+            return dataCenterId;
+        }
+
+        public SnowflakeProperties setDataCenterId(int dataCenterId) {
+            this.dataCenterId = dataCenterId;
+            return this;
+        }
+
+        public int getWorkerId() {
+            return workerId;
+        }
+
+        public SnowflakeProperties setWorkerId(int workerId) {
+            this.workerId = workerId;
+            return this;
+        }
     }
 
-    public void setDataCenterId(int dataCenterId) {
-        this.dataCenterId = dataCenterId;
-    }
 
-    public int getWorkerId() {
-        return workerId;
-    }
-
-    public void setWorkerId(int workerId) {
-        this.workerId = workerId;
-    }
 }

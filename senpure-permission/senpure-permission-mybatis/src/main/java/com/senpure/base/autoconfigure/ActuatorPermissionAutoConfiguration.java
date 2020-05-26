@@ -1,0 +1,87 @@
+package com.senpure.base.autoconfigure;
+
+import com.senpure.base.annotation.ExtPermission;
+import io.micrometer.core.instrument.MeterRegistry;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Bean;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+@ConditionalOnClass({MeterRegistry.class})
+@ConditionalOnProperty(value = "senpure.permission.actuator.enable", matchIfMissing = true)
+public class ActuatorPermissionAutoConfiguration {
+
+    @Bean
+    public ActuatorPermission actuatorPermission() {
+        return new ActuatorPermission();
+    }
+
+    @ExtPermission
+    static class ActuatorPermission {
+
+        @ExtPermission(value = {"/actuator/auditevents", "/actuator/auditevents.json"}, name = "/actuator_read")
+        public void readAuditevents() {
+        }
+
+        @ExtPermission(value = {"/actuator/beans", "/actuator/beans.json"}, name = "/actuator_read")
+        public void readBeans() {
+        }
+
+        @ExtPermission(value = {"/actuator/health", "/actuator/health.json"}, name = "/actuator_read")
+        public void readHealth() {
+        }
+
+        @ExtPermission(value = {"/actuator/conditions", "/actuator/conditions.json"}, name = "/actuator_read")
+        public void readConditions() {
+        }
+
+        @ExtPermission(value = {"/actuator/configprops", "/actuator/configprops.json"}, name = "/actuator_read")
+        public void readConfigprops() {
+        }
+
+        @ExtPermission(value = {"/actuator/env", "/actuator/env.json", "/actuator/env/{toMatch:.*}"}, name = "/actuator_read")
+        public void readEnv() {
+        }
+
+        @ExtPermission(value = {"/actuator/info", "/actuator/info.json"}, name = "/actuator_read")
+        public void readInfo() {
+        }
+
+        @ExtPermission(value = {"/actuator/loggers", "/actuator/loggers.json", "/actuator/loggers/{name:.*}"}, name = "/actuator_read")
+        public void readLoggers() {
+        }
+
+        @ExtPermission(value = {"/actuator/heapdump", "/actuator/heapdump.json"}, name = "/actuator_read")
+        public void readHeapdump() {
+        }
+
+        @ExtPermission(value = {"/actuator/threaddump", "/actuator/threaddump.json"}, name = "/actuator_read")
+        public void readThreaddump() {
+        }
+
+        @ExtPermission(value = {"/actuator/metrics", "/actuator/metrics.json", "/actuator/metrics/{requiredMetricName}"}, name = "/actuator_read")
+        public void readMetrics() {
+        }
+
+        @ExtPermission(value = {"/actuator/scheduledtasks", "/actuator/scheduledtasks.json"}, name = "/actuator_read")
+        public void readScheduledtasks() {
+        }
+
+        @ExtPermission(value = {"/actuator/httptrace", "/actuator/httptrace.json"}, name = "/actuator_read")
+        public void readHttptrace() {
+        }
+
+        @ExtPermission(value = {"/actuator/mappings", "/actuator/mappings.json"}, name = "/actuator_read")
+        public void readMappings() {
+        }
+
+        @ExtPermission(value = {"/actuator/loggers/{name:.*}"}, name = "/actuator_update", method = RequestMethod.POST)
+        public void updateLoggers() {
+        }
+
+        @ExtPermission(value = {"/actuator/shutdown"}, name = "/actuator_update", method = RequestMethod.POST)
+        public void updateShutdown() {
+        }
+
+    }
+}

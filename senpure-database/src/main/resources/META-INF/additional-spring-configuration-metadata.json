@@ -1,0 +1,11 @@
+{
+  "properties": [
+    {
+      "name": "senpure.snowflake.enable",
+      "type": "java.lang.Boolean",
+      "description": "是否注册一个雪花id生成器.",
+      "sourceType": "com.senpure.base.autoconfigure.IDGeneratorAutoConfiguration",
+      "defaultValue": true
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.senpure.base.autoconfigure.PermissionAutoConfiguration,\
+  com.senpure.base.autoconfigure.PermissionMapperAutoConfiguration,\
+  com.senpure.base.autoconfigure.PermissionEntityAutoConfiguration,\
+  com.senpure.base.autoconfigure.DruidPermissionAutoConfiguration,\
+  com.senpure.base.autoconfigure.ActuatorPermissionAutoConfiguration
+
+
+
+

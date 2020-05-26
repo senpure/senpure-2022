@@ -8,11 +8,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
 
 
-
 public class DefaultBannerShowAutoConfiguration {
 
-    @Value("${default.banner:true}")
-    private boolean banner = true;
+    @Value("${senpure.default.banner.enable:true}")
+    private boolean enable = true;
+
+    public void setEnable(boolean enable) {
+        this.enable = enable;
+    }
 
     @Bean
     @Order
@@ -24,8 +27,7 @@ public class DefaultBannerShowAutoConfiguration {
 
         @Override
         public void run(ApplicationArguments applicationArguments) throws Exception {
-
-            if (banner) {
+            if (enable) {
                 BannerShow.show();
                 Thread.sleep(1500);
             }
