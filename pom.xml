@@ -20,6 +20,8 @@
         <module>senpure-code-generator</module>
         <module>senpure-dispatcher-parent</module>
         <module>senpure-permission</module>
+        <module>senpure-dependencies</module>
+
     </modules>
 
     <dependencyManagement>

@@ -18,6 +18,8 @@ import com.senpure.base.util.StringUtil;
 import com.senpure.base.verify.ResourcesVerifyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.web.servlet.filter.OrderedFilter;
+import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.mvc.condition.PatternsRequestCondition;
 
@@ -32,7 +34,7 @@ import java.util.*;
 
 
 @WebFilter(urlPatterns = "/*", filterName = "verifyFilter")
-public class VerifyFilter implements Filter {
+public class VerifyFilter extends OncePerRequestFilter implements OrderedFilter {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     private String loginURI = "/authorize/loginView";
@@ -52,8 +54,9 @@ public class VerifyFilter implements Filter {
     protected LocaleResolver localeResolver;
     private List<PatternsRequestCondition> patternsRequestConditions = new ArrayList<>();
 
+
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
+    protected void initFilterBean() throws ServletException {
         initPatterns();
     }
 
@@ -81,9 +84,9 @@ public class VerifyFilter implements Filter {
 
     }
 
-    @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        HttpServletRequest request = (HttpServletRequest) servletRequest;
+
+    public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
+
         LoginedAccount account = Http.getSubject(request, LoginedAccount.class);
         if (account != null) {
             Account lastAccount = authorizeService.findAccount(account.getId());
@@ -96,7 +99,6 @@ public class VerifyFilter implements Filter {
                 logger.info("由于在其他地方登陆，该次请求中断,跳转登陆界面{}", request.getRequestURI());
                 logger.debug(result.toString());
                 afterLogin(request, result, false);
-                HttpServletResponse response = (HttpServletResponse) servletResponse;
                 dispatcher.forward(new HttpMethodRequestWrapper(request, "GET"), response);
                 return;
             }
@@ -123,7 +125,7 @@ public class VerifyFilter implements Filter {
                 logger.debug("{}:{} > {} {}", request.getMethod(), request.getRequestURI(), "不需要任何权限检查", bestMatch);
                 // Assert.error("error ["+bestMatch+"]没有找到权限配置");
             } else {
-                HttpServletResponse response = (HttpServletResponse) servletResponse;
+
 
                 if (account == null) {
                     logger.debug("{} > {}", request.getRequestURI(), "没有登陆或者登陆超时");
@@ -231,8 +233,9 @@ public class VerifyFilter implements Filter {
         } else {
             logger.trace("{} > {}", request.getRequestURI(), "不需要任何权限检查（没有配置）");
         }
-        filterChain.doFilter(servletRequest, servletResponse);
+        filterChain.doFilter(request, response);
     }
+
 
     private boolean hasPermission(LoginedAccount account, String permissionName) {
         int size = account.getPermissions().size();
@@ -273,6 +276,11 @@ public class VerifyFilter implements Filter {
     @Override
     public void destroy() {
 
+    }
+
+    @Override
+    public int getOrder() {
+        return 0;
     }
 
 

@@ -82,7 +82,7 @@ public class BaseDataGenerator implements ApplicationRunner {
             account.setAccount(useAccount);
             String password = permissionProperties.getPassword();
             if (password == null || password.length() < 6) {
-                password = UUID.randomUUID().toString().substring(6).toLowerCase();
+                password = UUID.randomUUID().toString().substring(0,6).toLowerCase();
                 logger.info("系统账号使用密码 {}", password);
             }
             account.setPassword(password);

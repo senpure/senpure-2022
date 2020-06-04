@@ -29,7 +29,7 @@ public class SilenceBoot {
         AppEvn.tryMarkClassRootPath();
         AppEvn.installAnsiConsole();
         ProjectConfig config = null;
-        String useProject = System.getProperty("useProject");
+        String useProject = System.getProperty("project");
         if (useProject == null) {
             config = HabitUtil.getUseConfig();
         } else {
@@ -59,7 +59,7 @@ public class SilenceBoot {
                 useSensitive = true;
             }
         }
-        String fileStr = System.getProperty("protocolFile");
+        String fileStr = System.getProperty("file");
         List<File> files = new ArrayList<>();
         if (fileStr != null) {
             String[] fileNames = fileStr.split(",");
@@ -169,7 +169,7 @@ public class SilenceBoot {
 
     private static boolean checkGenerateJava(JavaConfig config) {
         String generateOut = System.getProperty("javaOut");
-        String generateJava = System.getProperty("generateJava");
+        String generateJava = System.getProperty("genJava");
         if (isFalse(generateJava)) {
             return false;
         }
@@ -183,7 +183,7 @@ public class SilenceBoot {
     }
 
     private static boolean checkGenerateLua(LuaConfig config) {
-        String generateLua = System.getProperty("generateLua");
+        String generateLua = System.getProperty("genLua");
         if (isFalse(generateLua)) {
             return false;
         }
@@ -198,7 +198,7 @@ public class SilenceBoot {
     }
 
     private static boolean checkGenerateJs(JavaScriptConfig config) {
-        String generate = System.getProperty("generateJs");
+        String generate = System.getProperty("genJs");
         if (isFalse(generate)) {
             return false;
         }

@@ -267,7 +267,7 @@ public class Model extends TemplateBean {
         int maxLen = 0;
         for (ModelField modelField : allFields) {
             int len = modelField.getXmlLen();
-            maxLen = len > maxLen ? len : maxLen;
+            maxLen = Math.max(len, maxLen);
         }
         return maxLen + 1;
     }
@@ -277,7 +277,7 @@ public class Model extends TemplateBean {
         int maxLen = 0;
         for (ModelField modelField : allFields) {
             int len = modelField.getColumnLen();
-            maxLen = len > maxLen ? len : maxLen;
+            maxLen = Math.max(len, maxLen);
         }
         return maxLen + 1;
     }
@@ -287,7 +287,7 @@ public class Model extends TemplateBean {
         int maxLen = 0;
         for (ModelField modelField : allFields) {
             int len = modelField.getNameLen();
-            maxLen = len > maxLen ? len : maxLen;
+            maxLen = Math.max(len, maxLen);
         }
         return maxLen + 1;
     }
@@ -297,7 +297,7 @@ public class Model extends TemplateBean {
         int maxLen = 0;
         for (ModelField modelField : allFields) {
             int len = modelField.getJdbcLen();
-            maxLen = len > maxLen ? len : maxLen;
+            maxLen = Math.max(len, maxLen);
         }
         return maxLen + 1;
     }

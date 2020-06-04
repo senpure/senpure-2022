@@ -45,7 +45,7 @@
       "name": "senpure.permission.entity.enable",
       "type": "java.lang.Boolean",
       "description": "是否自动扫描permission定义的entity.",
-      "sourceType": "com.senpure.base.autoconfigure.PermissionEntityAutoConfiguration",
+      "sourceType": "org.springframework.boot.autoconfigure.orm.jpa.PermissionEntityAutoConfiguration",
       "defaultValue": true
     },
     {

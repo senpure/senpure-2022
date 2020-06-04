@@ -31,7 +31,7 @@
             <groupId>com.senpure</groupId>
             <artifactId>senpure-code-generator</artifactId>
             <version>1.0-SNAPSHOT</version>
-            <scope>true</scope>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.belerweb</groupId>
