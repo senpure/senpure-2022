@@ -91,17 +91,17 @@
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-common</artifactId>
-                <version>4.1.44.Final</version>
+                <version>4.1.50.Final</version>
             </dependency>
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-buffer</artifactId>
-                <version>4.1.44.Final</version>
+                <version>4.1.50.Final</version>
             </dependency>
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-handler</artifactId>
-                <version>4.1.44.Final</version>
+                <version>4.1.50.Final</version>
             </dependency>
             <dependency>
                 <groupId>org.antlr</groupId>
