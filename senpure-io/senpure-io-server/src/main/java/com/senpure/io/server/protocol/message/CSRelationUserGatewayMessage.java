@@ -7,7 +7,7 @@ import io.netty.buffer.ByteBuf;
  * 关联用户与网关
  * 
  * @author senpure
- * @time 2020-1-9 11:19:16
+ * @time 2020-6-5 14:22:50
  */
 public class CSRelationUserGatewayMessage extends CompressMessage {
 
@@ -149,7 +149,7 @@ public class CSRelationUserGatewayMessage extends CompressMessage {
     @Override
     public String toString() {
         return "CSRelationUserGatewayMessage[105]{"
-                + "channelToken=" + token
+                + "token=" + token
                 + ",userId=" + userId
                 + ",relationToken=" + relationToken
                 + "}";
@@ -163,7 +163,7 @@ public class CSRelationUserGatewayMessage extends CompressMessage {
         sb.append("CSRelationUserGatewayMessage").append("[105]").append("{");
         //channel token
         sb.append("\n");
-        sb.append(indent).append("channelToken  = ").append(token);
+        sb.append(indent).append("token         = ").append(token);
         //userId
         sb.append("\n");
         sb.append(indent).append("userId        = ").append(userId);

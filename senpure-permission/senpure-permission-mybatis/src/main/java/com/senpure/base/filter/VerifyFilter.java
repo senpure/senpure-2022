@@ -260,6 +260,10 @@ public class VerifyFilter extends OncePerRequestFilter implements OrderedFilter 
         request.setAttribute("args", result);
         if ("get".equalsIgnoreCase(request.getMethod())) {
             String uri = request.getRequestURI();
+            String query = request.getQueryString();
+            if (query != null) {
+                uri = uri + "?" + query;
+            }
             logger.debug("get 请求，登陆后直接重定向....,uri=" + uri);
             Http.setToSession(request, "loginToURI", uri);
         } else {

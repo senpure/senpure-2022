@@ -2,6 +2,9 @@ package com.senpure.io.server.gateway;
 
 
 import com.senpure.io.server.Constant;
+import com.senpure.io.server.gateway.producer.Producer;
+import com.senpure.io.server.gateway.producer.ProducerDefaultNextStrategy;
+import com.senpure.io.server.gateway.producer.ProducerNextStrategy;
 import com.senpure.io.server.protocol.message.CSBreakUserGatewayMessage;
 import com.senpure.io.server.protocol.message.CSRelationUserGatewayMessage;
 import com.senpure.io.server.protocol.message.SCInnerErrorMessage;
@@ -25,38 +28,38 @@ public class ProducerManager {
     private Logger logger = LoggerFactory.getLogger(getClass());
     private GatewayMessageExecutor messageExecutor;
 
+    private ProducerNextStrategy nextStrategy = new ProducerDefaultNextStrategy();
+
     public ProducerManager(GatewayMessageExecutor messageExecutor) {
         this.messageExecutor = messageExecutor;
     }
 
 
+    private final ConcurrentMap<Long, ProducerRelation> tokenProducerMap = new ConcurrentHashMap<>();
 
+    private final List<Producer> useProducers = new ArrayList<>();
 
-    private ConcurrentMap<Long, ServerRelation> tokenServerChannelManagerMap = new ConcurrentHashMap<>();
-
-    private List<ProducerChannelManager> useChannelManagers = new ArrayList<>();
-
-    private List<ProducerChannelManager> prepStopOldInstance = new ArrayList<>();
-    private Map<Integer, Boolean> handleIdsMap = new HashMap<>();
+    private final List<Producer> prepStopOldInstance = new ArrayList<>();
+    private final Map<Integer, Boolean> handleIdsMap = new HashMap<>();
+    private final AtomicInteger atomicIndex = new AtomicInteger(-1);
     private String serverName;
-    private AtomicInteger atomicIndex = new AtomicInteger(-1);
 
 
-    public void bind(Long token, Long relationToken, ProducerChannelManager serverChannelManager) {
-        ServerRelation serverRelation = new ServerRelation();
-        serverRelation.serverChannelManager = serverChannelManager;
-        serverRelation.relationToken = relationToken;
-        tokenServerChannelManagerMap.put(token, serverRelation);
+    public void bind(Long token, Long relationToken, Producer producer) {
+        ProducerRelation producerRelation = new ProducerRelation();
+        producerRelation.producer = producer;
+        producerRelation.relationToken = relationToken;
+        tokenProducerMap.put(token, producerRelation);
 
     }
 
 
     public void sendMessage(Client2GatewayMessage client2GatewayMessage) {
-        ServerRelation serverRelation = tokenServerChannelManagerMap.get(client2GatewayMessage.getToken());
-        ProducerChannelManager serverChannelManager;
-        if (serverRelation == null) {
-            serverChannelManager = nextServerChannelManager();
-            if (serverChannelManager == null) {
+        ProducerRelation producerRelation = tokenProducerMap.get(client2GatewayMessage.getToken());
+        Producer producer;
+        if (producerRelation == null) {
+            producer = nextProducer();
+            if (producer == null) {
                 logger.warn("{}没有服务实例可以使用", serverName);
                 SCInnerErrorMessage errorMessage = new SCInnerErrorMessage();
                 errorMessage.setCode(Constant.ERROR_NOT_FOUND_SERVER);
@@ -64,32 +67,32 @@ public class ProducerManager {
                 errorMessage.setMessage("没有服务器处理" + MessageIdReader.read(client2GatewayMessage.getMessageId()));
                 messageExecutor.sendMessage2Client(client2GatewayMessage.getRequestId(), errorMessage, client2GatewayMessage.getToken());
             } else {
-                relationAndWaitSendMessage(serverChannelManager, client2GatewayMessage);
+                relationAndWaitSendMessage(producer, client2GatewayMessage);
             }
 
         } else {
-            serverRelation.serverChannelManager.sendMessage(client2GatewayMessage);
+            producerRelation.producer.sendMessage(client2GatewayMessage);
 
         }
     }
 
     /**
-     * @param serverChannelManager
+     * @param producer
      * @param relationToken
      * @param client2GatewayMessage 可以为空
      */
-    private void waitRelationTask(ProducerChannelManager serverChannelManager,
+    private void waitRelationTask(Producer producer,
                                   Long relationToken,
                                   Client2GatewayMessage client2GatewayMessage) {
         WaitRelationTask waitRelationTask = new WaitRelationTask();
         waitRelationTask.setRelationToken(relationToken);
         waitRelationTask.setMessage(client2GatewayMessage);
-        waitRelationTask.setServerChannelManager(serverChannelManager);
+        waitRelationTask.setServerChannelManager(producer);
         waitRelationTask.setServerManager(this);
         messageExecutor.waitRelationMap.put(relationToken, waitRelationTask);
     }
 
-    public void relationAndWaitSendMessage(ProducerChannelManager serverChannelManager, Client2GatewayMessage client2GatewayMessage) {
+    public void relationAndWaitSendMessage(Producer serverChannelManager, Client2GatewayMessage client2GatewayMessage) {
         long relationToken = messageExecutor.idGenerator.nextId();
         CSRelationUserGatewayMessage message = new CSRelationUserGatewayMessage();
         message.setToken(client2GatewayMessage.getToken());
@@ -100,24 +103,24 @@ public class ProducerManager {
         serverChannelManager.sendMessage(toMessage);
     }
 
-    protected ProducerChannelManager nextServerChannelManager() {
-        if (useChannelManagers.size() == 0) {
-            return null;
+    protected Producer nextProducer() {
+        int size = useProducers.size();
+        switch (size) {
+            case 0:
+                return null;
+            case 1:
+                return useProducers.get(0);
+            default:
+                return nextStrategy.next(useProducers);
         }
-        return useChannelManagers.get(nextIndex());
+
     }
 
-    private int nextIndex() {
-        if (useChannelManagers.size() == 1) {
-            return 0;
-        }
-        int index = atomicIndex.incrementAndGet();
-        return Math.abs(index % useChannelManagers.size());
-    }
+
 
     public synchronized void prepStopOldInstance() {
-        prepStopOldInstance.addAll(useChannelManagers);
-        useChannelManagers.clear();
+        prepStopOldInstance.addAll(useProducers);
+        useProducers.clear();
     }
 
     /**
@@ -127,17 +130,17 @@ public class ProducerManager {
      */
     public synchronized void serverOffLine(Channel channel) {
         serverOffLine(channel, prepStopOldInstance);
-        serverOffLine(channel, useChannelManagers);
+        serverOffLine(channel, useProducers);
     }
 
-    private void serverOffLine(Channel channel, List<ProducerChannelManager> channelManagers) {
-        Iterator<ProducerChannelManager> iterator = channelManagers.iterator();
+    private void serverOffLine(Channel channel, List<Producer> channelManagers) {
+        Iterator<Producer> iterator = channelManagers.iterator();
         while (iterator.hasNext()) {
-            ProducerChannelManager serverChannelManager = iterator.next();
-            if (serverChannelManager.offline(channel)) {
-                if (!serverChannelManager.isActive()) {
+            Producer producer = iterator.next();
+            if (producer.offline(channel)) {
+                if (!producer.isActive()) {
                     iterator.remove();
-                    clearRelation(serverChannelManager);
+                    clearRelation(producer);
                 }
             }
         }
@@ -146,15 +149,15 @@ public class ProducerManager {
     }
 
     public void afterUserAuthorize(long channelToken, long userId) {
-        ServerRelation serverRelation = tokenServerChannelManagerMap.get(channelToken);
-        if (serverRelation != null) {
-            logger.info("对 {} --> {} 进行userId关联", serverName, serverRelation.serverChannelManager.getServerKey());
+        ProducerRelation producerRelation = tokenProducerMap.get(channelToken);
+        if (producerRelation != null) {
+            logger.info("对 {} --> {} 进行userId关联", serverName, producerRelation.producer.getServerKey());
             CSRelationUserGatewayMessage message = new CSRelationUserGatewayMessage();
             message.setUserId(userId);
-            message.setRelationToken(serverRelation.relationToken);
+            message.setRelationToken(producerRelation.relationToken);
             Client2GatewayMessage toMessage = messageExecutor.createMessage(message);
-            waitRelationTask(serverRelation.serverChannelManager, serverRelation.relationToken, null);
-            serverRelation.serverChannelManager.sendMessage(toMessage);
+            waitRelationTask(producerRelation.producer, producerRelation.relationToken, null);
+            producerRelation.producer.sendMessage(toMessage);
         }
     }
 
@@ -163,12 +166,12 @@ public class ProducerManager {
     }
 
     public void breakUserGateway(Channel clientChannel, Long token, Long userId, String type, boolean localRemove) {
-        ServerRelation serverRelation = localRemove ? tokenServerChannelManagerMap.remove(token) : tokenServerChannelManagerMap.get(token);
-        if (serverRelation != null) {
+        ProducerRelation producerRelation = localRemove ? tokenProducerMap.remove(token) : tokenProducerMap.get(token);
+        if (producerRelation != null) {
             logger.info("{} {} 取消 对{} :token{} userId:{}的 关联  {}",
-                    serverName, serverRelation.serverChannelManager.getServerKey(), clientChannel, token, userId, localRemove ? "移除" : "不移除");
+                    serverName, producerRelation.producer.getServerKey(), clientChannel, token, userId, localRemove ? "移除" : "不移除");
             CSBreakUserGatewayMessage breakUserGatewayMessage = new CSBreakUserGatewayMessage();
-            breakUserGatewayMessage.setRelationToken(serverRelation.relationToken);
+            breakUserGatewayMessage.setRelationToken(producerRelation.relationToken);
             breakUserGatewayMessage.setUserId(userId);
             breakUserGatewayMessage.setToken(localRemove ? token : 0);
             breakUserGatewayMessage.setType(type);
@@ -176,7 +179,7 @@ public class ProducerManager {
             client2GatewayMessage.setMessageId(breakUserGatewayMessage.getMessageId());
             client2GatewayMessage.setUserId(breakUserGatewayMessage.getUserId());
             client2GatewayMessage.setToken(breakUserGatewayMessage.getToken());
-            serverRelation.serverChannelManager.sendMessage(client2GatewayMessage);
+            producerRelation.producer.sendMessage(client2GatewayMessage);
         } else {
             logger.info("{} 没有对{} 有关联 :token{} userId:{} ",
                     serverName, clientChannel, token, userId);
@@ -185,17 +188,17 @@ public class ProducerManager {
     }
 
 
-    private void clearRelation(ProducerChannelManager serverChannelManager) {
+    private void clearRelation(Producer serverChannelManager) {
         logger.warn("{} {} 全部channel已经下线 清空关联列表", serverName, serverChannelManager.getServerKey());
         List<Long> tokens = new ArrayList<>();
-        for (Map.Entry<Long, ServerRelation> entry : tokenServerChannelManagerMap.entrySet()) {
-            if (serverChannelManager == entry.getValue().serverChannelManager) {
+        for (Map.Entry<Long, ProducerRelation> entry : tokenProducerMap.entrySet()) {
+            if (serverChannelManager == entry.getValue().producer) {
                 tokens.add(entry.getKey());
             }
         }
         for (Long token : tokens) {
             logger.info("{} 取消关联 {} {} ", token, serverName, serverChannelManager.getServerKey());
-            tokenServerChannelManagerMap.remove(token);
+            tokenProducerMap.remove(token);
         }
     }
 
@@ -208,29 +211,29 @@ public class ProducerManager {
     }
 
 
-    public ProducerChannelManager getChannelServer(String serverKey) {
-        for (ProducerChannelManager manager : useChannelManagers) {
-            if (manager.getServerKey().equals(serverKey)) {
-                return manager;
+    public Producer getProducer(String producerKey) {
+        for (Producer producer : useProducers) {
+            if (producer.getServerKey().equals(producerKey)) {
+                return producer;
             }
         }
-        ProducerChannelManager manager = new ProducerChannelManager();
-        manager.setServerKey(serverKey);
+        Producer manager = new Producer();
+        manager.setServerKey(producerKey);
         return manager;
 
     }
 
-    public List<ProducerChannelManager> getUseChannelManagers() {
-        return useChannelManagers;
+    public List<Producer> getUseProducers() {
+        return useProducers;
     }
 
-    public synchronized void checkChannelServer(String serverKey, ProducerChannelManager channelManager) {
-        for (ProducerChannelManager manager : useChannelManagers) {
+    public synchronized void checkChannelServer(String serverKey, Producer channelManager) {
+        for (Producer manager : useProducers) {
             if (manager.getServerKey().equals(serverKey)) {
                 return;
             }
         }
-        useChannelManagers.add(channelManager);
+        useProducers.add(channelManager);
     }
 
     public void markHandleId(int messageId) {
@@ -246,8 +249,8 @@ public class ProducerManager {
         return handleIdsMap.get(messageId) != null;
     }
 
-    static class ServerRelation {
-        ProducerChannelManager serverChannelManager;
+    static class ProducerRelation {
+        Producer producer;
         Long relationToken;
     }
 

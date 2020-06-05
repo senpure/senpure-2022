@@ -1,29 +1,26 @@
 package com.senpure.io.server.protocol.message;
 
-import com.senpure.io.server.protocol.bean.IdName;
+import com.senpure.io.server.protocol.bean.Statistic;
 import com.senpure.io.protocol.CompressMessage;
 import io.netty.buffer.ByteBuf;
 
-import java.util.List;
-import java.util.ArrayList;
-
 /**
- * 数字id与字符串的关联
- * 
  * @author senpure
  * @time 2020-6-5 14:22:50
  */
-public class SCIdNameMessage extends CompressMessage {
+public class SCStatisticMessage extends CompressMessage {
 
-    public static final int MESSAGE_ID = 104;
-    private List<IdName> idNames = new ArrayList<>(16);
+    public static final int MESSAGE_ID = 114;
+    private Statistic statistic;
 
-    public void copy(SCIdNameMessage source) {
-        this.idNames.clear();
-        for (IdName idName : source.getIdNames()) {
-            IdName tempIdName = new IdName();
-            tempIdName.copy(idName);
-        }
+    public void copy(SCStatisticMessage source) {
+        if (source.getStatistic() != null) {
+            Statistic tempStatistic = new Statistic();
+            tempStatistic.copy(source.getStatistic());
+            this.statistic = tempStatistic;
+        } else {
+            this.statistic = null;
+            }
     }
 
     /**
@@ -32,8 +29,8 @@ public class SCIdNameMessage extends CompressMessage {
     @Override
     public void write(ByteBuf buf) {
         getSerializedSize();
-        for (IdName value : idNames) {
-             writeBean(buf, 11, value);
+        if (statistic != null) {
+            writeBean(buf, 11, statistic);
         }
     }
 
@@ -48,9 +45,8 @@ public class SCIdNameMessage extends CompressMessage {
                 case 0://end
                     return;
                 case 11:// 1 << 3 | 3
-                    IdName tempIdNamesBean = new IdName();
-                    readBean(buf,tempIdNamesBean);
-                    idNames.add(tempIdNamesBean);
+                    statistic = new Statistic();
+                    readBean(buf,statistic);
                     break;
                 default://skip
                     skip(buf, tag);
@@ -68,49 +64,50 @@ public class SCIdNameMessage extends CompressMessage {
             return size;
         }
         size = 0;
-        for (IdName value : idNames) {
-            size += computeBeanSize(1, value);
+        if (statistic != null) {
+             //tag size 11
+            size += computeBeanSize(1, statistic);
         }
         serializedSize = size ;
         return size ;
     }
 
-    public List<IdName> getIdNames() {
-        return idNames;
+    public Statistic getStatistic() {
+        return statistic;
     }
 
-    public SCIdNameMessage setIdNames(List<IdName> idNames) {
-        if (idNames == null) {
-            this.idNames = new ArrayList<>(16);
-            return this;
-        }
-        this.idNames = idNames;
+    public SCStatisticMessage setStatistic(Statistic statistic) {
+        this.statistic = statistic;
         return this;
     }
 
     @Override
     public int getMessageId() {
-        return 104;
+        return 114;
     }
 
     @Override
     public String toString() {
-        return "SCIdNameMessage[104]{"
-                + "idNames=" + idNames
+        return "SCStatisticMessage[114]{"
+                + "statistic=" + statistic
                 + "}";
     }
 
     @Override
     public String toString(String indent) {
-        //7 + 3 = 10 个空格
-        String nextIndent = "          ";
-        //最长字段长度 7
+        //9 + 3 = 12 个空格
+        String nextIndent = "            ";
+        //最长字段长度 9
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("SCIdNameMessage").append("[104]").append("{");
+        sb.append("SCStatisticMessage").append("[114]").append("{");
         sb.append("\n");
-        sb.append(indent).append("idNames = ");
-        appendBeans(sb,idNames,indent,nextIndent);
+        sb.append(indent).append("statistic = ");
+        if (statistic != null){
+            sb.append(statistic.toString(indent+nextIndent));
+        } else {
+            sb.append("null");
+        }
         sb.append("\n");
         sb.append(indent).append("}");
         return sb.toString();

@@ -1,5 +1,7 @@
 package com.senpure.io.server.gateway;
 
+import com.senpure.io.server.gateway.producer.Producer;
+
 /**
  * WaitAskTask
  *
@@ -30,7 +32,7 @@ public class WaitAskTask {
 
     private  int  fromMessageId;
     private int requestId;
-    private ProducerChannelManager serverChannelManager;
+    private Producer serverChannelManager;
 
     private ProducerManager serverManager;
     private Client2GatewayMessage message;
@@ -41,7 +43,7 @@ public class WaitAskTask {
         startTime = System.currentTimeMillis();
     }
 
-    public synchronized void answer(ProducerManager serverManager, ProducerChannelManager serverChannelManager, boolean canHandle) {
+    public synchronized void answer(ProducerManager serverManager, Producer serverChannelManager, boolean canHandle) {
         answerTimes++;
         if (canHandle) {
             if (this.serverChannelManager != null) {
@@ -65,11 +67,11 @@ public class WaitAskTask {
         return System.currentTimeMillis() - startTime > maxDelay;
     }
 
-    public ProducerChannelManager getServerChannelManager() {
+    public Producer getServerChannelManager() {
         return serverChannelManager;
     }
 
-    public void setServerChannelManager(ProducerChannelManager serverChannelManager) {
+    public void setServerChannelManager(Producer serverChannelManager) {
         this.serverChannelManager = serverChannelManager;
     }
 

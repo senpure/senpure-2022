@@ -1,7 +1,9 @@
-package com.senpure.io.server.gateway;
+package com.senpure.io.server.gateway.producer;
 
 
 import com.senpure.io.server.ChannelAttributeUtil;
+import com.senpure.io.server.gateway.Client2GatewayMessage;
+import com.senpure.io.server.protocol.bean.Statistic;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,23 +17,14 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
-public class ProducerChannelManager {
+public class Producer {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
-
-    // private ConcurrentMap<Integer, Channel> serverChannels = new ConcurrentHashMap<>();
     protected List<Channel> channels = new ArrayList<>(16);
-
-    private AtomicInteger atomicIndex = new AtomicInteger(-1);
-
-    private Set<Integer> handleIds = new HashSet<>();
-
-    private long start;
-    private long end;
-
-
+    private final AtomicInteger atomicIndex = new AtomicInteger(-1);
+    private final Set<Integer> handleIds = new HashSet<>();
+    private final Statistic statistic = new Statistic();
     private String serverKey;
-
 
     public void sendMessage(Client2GatewayMessage message) {
         Channel channel = nextChannel();
@@ -47,9 +40,6 @@ public class ProducerChannelManager {
         return channels.size() > 0;
     }
 
-    public boolean handleRange(long num) {
-        return num >= start && num <= end;
-    }
 
     public synchronized void addChannel(Channel channel) {
         if (channels.contains(channel)) {
@@ -69,8 +59,9 @@ public class ProducerChannelManager {
         return false;
     }
 
-    public boolean handle(long value) {
-        return value >= start && value <= end;
+    public synchronized void updateStatistic(Statistic statistic) {
+        this.statistic.copy(statistic);
+
     }
 
     public String getServerKey() {
@@ -125,23 +116,9 @@ public class ProducerChannelManager {
         //  return index;
     }
 
-
-    public long getStart() {
-        return start;
+    public Statistic getStatistic() {
+        return statistic;
     }
-
-    public void setStart(long start) {
-        this.start = start;
-    }
-
-    public long getEnd() {
-        return end;
-    }
-
-    public void setEnd(long end) {
-        this.end = end;
-    }
-
 
     public static void main(String[] args) {
         ConcurrentMap<Integer, Integer> ids = new ConcurrentHashMap<>();

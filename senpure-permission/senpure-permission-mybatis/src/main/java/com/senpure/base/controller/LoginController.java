@@ -115,11 +115,11 @@ public class LoginController extends BaseController {
         return view(request, view);
     }
 
-    @RequestMapping(value = {"loginout"}, method = {RequestMethod.GET, RequestMethod.POST})
-    public ModelAndView loginOut(HttpServletRequest request, HttpServletResponse response, @ModelAttribute("criteria") LoginCriteria criteria) {
+    @RequestMapping(value = {"logout"}, method = {RequestMethod.GET, RequestMethod.POST})
+    public ModelAndView logout(HttpServletRequest request, HttpServletResponse response, @ModelAttribute("criteria") LoginCriteria criteria) {
         LoginedAccount account = Http.getSubject(request, LoginedAccount.class);
         if (account != null) {
-            authorizeService.loginOut(account);
+            authorizeService.logout(account);
             Http.removeSubject(request);
         }
         Cookie cookie = new Cookie(cookieKey, "");

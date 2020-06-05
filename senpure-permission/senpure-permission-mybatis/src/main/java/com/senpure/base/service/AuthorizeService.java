@@ -97,7 +97,7 @@ public class AuthorizeService extends BaseService {
 
 
     @Transactional(rollbackOn = Exception.class)
-    public void loginOut(LoginedAccount account) {
+    public void logout(LoginedAccount account) {
 
         Account a = accountService.find(account.getId());
         a.setOnline(false);

@@ -5,7 +5,7 @@ import io.netty.buffer.ByteBuf;
 
 /**
  * @author senpure
- * @time 2020-1-9 11:19:16
+ * @time 2020-6-5 14:22:50
  */
 public class CSBreakUserGatewayMessage extends CompressMessage {
 
@@ -180,7 +180,7 @@ public class CSBreakUserGatewayMessage extends CompressMessage {
     @Override
     public String toString() {
         return "CSBreakUserGatewayMessage[107]{"
-                + "channelToken=" + token
+                + "token=" + token
                 + ",userId=" + userId
                 + ",relationToken=" + relationToken
                 + ",type=" + type
@@ -195,7 +195,7 @@ public class CSBreakUserGatewayMessage extends CompressMessage {
         sb.append("CSBreakUserGatewayMessage").append("[107]").append("{");
         //channel token
         sb.append("\n");
-        sb.append(indent).append("channelToken  = ").append(token);
+        sb.append(indent).append("token         = ").append(token);
         //用户Id
         sb.append("\n");
         sb.append(indent).append("userId        = ").append(userId);

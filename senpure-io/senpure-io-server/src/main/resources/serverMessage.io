@@ -11,6 +11,10 @@ bean IdName {
     String messageName = 2;               //有意义的字符串
 }
 
+bean Statistic {
+    int score = 1;                        //分数0-100
+}
+
 //网关注册处理消息返回
 message CS RegServerHandleMessage 101 {
     boolean success = 1;
@@ -70,6 +74,10 @@ message SC AskHandle 110 {
 message SC KickOff 112 {
     long token;                           // token
     long userId;                          //userId
+}
+
+message SC Statistic 114 {
+    Statistic statistic = 1;
 }
 
 #以下是客户端会用到的

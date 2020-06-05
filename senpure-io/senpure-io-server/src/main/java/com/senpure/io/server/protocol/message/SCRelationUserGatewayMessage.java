@@ -5,7 +5,7 @@ import io.netty.buffer.ByteBuf;
 
 /**
  * @author senpure
- * @time 2020-1-9 11:19:16
+ * @time 2020-6-5 14:22:50
  */
 public class SCRelationUserGatewayMessage extends CompressMessage {
 
@@ -147,7 +147,7 @@ public class SCRelationUserGatewayMessage extends CompressMessage {
     @Override
     public String toString() {
         return "SCRelationUserGatewayMessage[106]{"
-                + "channelToken=" + token
+                + "token=" + token
                 + ",userId=" + userId
                 + ",relationToken=" + relationToken
                 + "}";
@@ -161,7 +161,7 @@ public class SCRelationUserGatewayMessage extends CompressMessage {
         sb.append("SCRelationUserGatewayMessage").append("[106]").append("{");
         //channel token
         sb.append("\n");
-        sb.append(indent).append("channelToken  = ").append(token);
+        sb.append(indent).append("token         = ").append(token);
         //userId
         sb.append("\n");
         sb.append(indent).append("userId        = ").append(userId);
