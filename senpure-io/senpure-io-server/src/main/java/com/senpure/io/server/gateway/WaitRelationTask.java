@@ -1,7 +1,7 @@
 package com.senpure.io.server.gateway;
 
 
-import com.senpure.io.server.gateway.producer.Producer;
+import com.senpure.io.server.gateway.provider.Producer;
 import com.senpure.io.server.protocol.message.CSBreakUserGatewayMessage;
 
 /**
@@ -21,7 +21,7 @@ public class WaitRelationTask {
 
     private Producer serverChannelManager;
 
-    private ProducerManager serverManager;
+    private ProviderManager serverManager;
     private Long relationToken;
 
 
@@ -72,11 +72,11 @@ public class WaitRelationTask {
         return serverChannelManager;
     }
 
-    public ProducerManager getServerManager() {
+    public ProviderManager getServerManager() {
         return serverManager;
     }
 
-    public void setServerManager(ProducerManager serverManager) {
+    public void setServerManager(ProviderManager serverManager) {
         this.serverManager = serverManager;
     }
 

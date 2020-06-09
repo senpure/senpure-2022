@@ -8,7 +8,7 @@ import com.senpure.io.protocol.Message;
 import com.senpure.io.server.ChannelAttributeUtil;
 import com.senpure.io.server.Constant;
 import com.senpure.io.server.ServerProperties;
-import com.senpure.io.server.gateway.producer.Producer;
+import com.senpure.io.server.gateway.provider.Producer;
 import com.senpure.io.server.protocol.bean.HandleMessage;
 import com.senpure.io.server.protocol.message.*;
 import com.senpure.io.server.support.MessageIdReader;
@@ -40,23 +40,23 @@ public class GatewayMessageExecutor {
 
     private int scLoginMessageId = 0;
 
-    private int csHeartMessageId = CSHeartMessage.MESSAGE_ID;
+    private final int csHeartMessageId = CSHeartMessage.MESSAGE_ID;
 
-    private ConcurrentMap<Long, Channel> prepLoginChannels = new ConcurrentHashMap<>(2048);
+    private final ConcurrentMap<Long, Channel> prepLoginChannels = new ConcurrentHashMap<>(2048);
 
-    private ConcurrentMap<Long, Channel> userClientChannel = new ConcurrentHashMap<>(32768);
-    private ConcurrentMap<Long, Channel> tokenChannel = new ConcurrentHashMap<>(32768);
-    public ConcurrentMap<String, ProducerManager> producerManagerMap = new ConcurrentHashMap<>(128);
+    private final ConcurrentMap<Long, Channel> userClientChannel = new ConcurrentHashMap<>(32768);
+    private final ConcurrentMap<Long, Channel> tokenChannel = new ConcurrentHashMap<>(32768);
+    public final ConcurrentMap<String, ProviderManager> producerManagerMap = new ConcurrentHashMap<>(128);
 
-    public ConcurrentMap<Integer, ProducerManager> messageHandleMap = new ConcurrentHashMap<>(2048);
+    public ConcurrentMap<Integer, ProviderManager> messageHandleMap = new ConcurrentHashMap<>(2048);
     public ConcurrentMap<Integer, HandleMessageManager> handleMessageManagerMap = new ConcurrentHashMap<>(2048);
 
 
     protected IDGenerator idGenerator;
-    protected ConcurrentHashMap<Long, WaitRelationTask> waitRelationMap = new ConcurrentHashMap(16);
-    protected ConcurrentHashMap<Long, WaitAskTask> waitAskMap = new ConcurrentHashMap(16);
+    protected final ConcurrentHashMap<Long, WaitRelationTask> waitRelationMap = new ConcurrentHashMap<>(16);
+    protected final ConcurrentHashMap<Long, WaitAskTask> waitAskMap = new ConcurrentHashMap<>(16);
 
-    private Map<Integer, SGInnerHandler> sgHandlerMap = new HashMap<>();
+    private final Map<Integer, SGInnerHandler> sgHandlerMap = new HashMap<>();
 
     private boolean init = false;
 
@@ -242,10 +242,11 @@ public class GatewayMessageExecutor {
     }
 
 
-    private void userOffline(Channel channel, Long token, Long userId) {
-        for (Map.Entry<String, ProducerManager> entry : producerManagerMap.entrySet()) {
-            ProducerManager producerManager = entry.getValue();
-            producerManager.breakUserGateway(channel, token, userId, Constant.BREAK_TYPE_USER_OFFlINE);
+    private void consumerOffline(Channel channel, Long token, Long userId) {
+        for (Map.Entry<String, ProviderManager> entry : producerManagerMap.entrySet()) {
+            ProviderManager providerManager = entry.getValue();
+            providerManager.consumerOffline(channel, token, userId);
+
         }
     }
 
@@ -256,25 +257,26 @@ public class GatewayMessageExecutor {
      * @param token
      * @param userId
      */
-    private void userChange(Channel channel, Long token, Long userId) {
-        for (Map.Entry<String, ProducerManager> entry : producerManagerMap.entrySet()) {
-            ProducerManager producerManager = entry.getValue();
-            if (producerManager.getHandleIds().contains(csLoginMessageId)) {
-                producerManager.breakUserGateway(channel, token, userId, Constant.BREAK_TYPE_USER_CHANGE, false);
-            } else {
-                producerManager.breakUserGateway(channel, token, userId, Constant.BREAK_TYPE_USER_CHANGE);
-            }
+    private void consumerUserChange(Channel channel, Long token, Long userId) {
+        for (Map.Entry<String, ProviderManager> entry : producerManagerMap.entrySet()) {
+            ProviderManager providerManager = entry.getValue();
+            providerManager.consumerUserChange(channel, token, userId, csLoginMessageId);
         }
     }
 
 
-    public void clientOffline(Channel channel) {
+    /**
+     * 消费方离线
+     *
+     * @param channel
+     */
+    public void consumerOffline(Channel channel) {
         service.execute(() -> {
             Long token = ChannelAttributeUtil.getToken(channel);
             Long userId = ChannelAttributeUtil.getUserId(channel);
             userId = userId == null ? 0 : userId;
             tokenChannel.remove(token);
-            userOffline(channel, token, userId);
+            consumerOffline(channel, token, userId);
         });
     }
 
@@ -303,19 +305,19 @@ public class GatewayMessageExecutor {
             for (HandleMessage handleMessage : handleMessages) {
                 logger.info("{}", handleMessage);
             }
-            ProducerManager producerManager = producerManagerMap.get(message.getServerName());
-            if (producerManager == null) {
-                producerManager = new ProducerManager(this);
-                producerManagerMap.put(message.getServerName(), producerManager);
+            ProviderManager providerManager = producerManagerMap.get(message.getServerName());
+            if (providerManager == null) {
+                providerManager = new ProviderManager(this);
+                producerManagerMap.put(message.getServerName(), providerManager);
                 for (HandleMessage handleMessage : handleMessages) {
-                    producerManager.markHandleId(handleMessage.getHandleMessageId());
-                    messageHandleMap.putIfAbsent(handleMessage.getHandleMessageId(), producerManager);
+                    providerManager.markHandleId(handleMessage.getHandleMessageId());
+                    messageHandleMap.putIfAbsent(handleMessage.getHandleMessageId(), providerManager);
                 }
-                producerManager.setServerName(message.getServerName());
+                providerManager.setServerName(message.getServerName());
             }
             //如果同一个服务处理消息id不一致，旧得实例停止接收新的连接
             for (HandleMessage handleMessage : handleMessages) {
-                if (!producerManager.handleId(handleMessage.getHandleMessageId())) {
+                if (!providerManager.handleId(handleMessage.getHandleMessageId())) {
                     if (sb.length() > 0) {
                         sb.append("\n");
                     }
@@ -323,14 +325,14 @@ public class GatewayMessageExecutor {
                             .append(handleMessage.getMessageName()).append("] ,旧的服务器停止接收新的请求分发");
                     logger.info("{} 处理了新的消息{}[{}] ，旧的服务器停止接收新的请求分发", message.getServerName(),
                             handleMessage.getHandleMessageId(), handleMessage.getMessageName());
-                    producerManager.prepStopOldInstance();
+                    providerManager.prepStopOldInstance();
                     for (HandleMessage hm : handleMessages) {
-                        producerManager.markHandleId(hm.getHandleMessageId());
+                        providerManager.markHandleId(hm.getHandleMessageId());
                     }
                     break;
                 }
             }
-            for (Integer id : producerManager.getHandleIds()) {
+            for (Integer id : providerManager.getHandleIds()) {
                 boolean discard = true;
                 for (HandleMessage handleMessage : handleMessages) {
                     if (handleMessage.getHandleMessageId() == id) {
@@ -345,23 +347,23 @@ public class GatewayMessageExecutor {
                     sb.append(message.getServerName()).append(" 丢弃了消息 ").append(MessageIdReader.read(id))
                             .append(" ，旧的服务器停止接收新的请求分发");
                     logger.info("{} 丢弃了消息 {} ，旧的服务器停止接收新的请求分发", message.getServerName(), MessageIdReader.read(id));
-                    producerManager.prepStopOldInstance();
+                    providerManager.prepStopOldInstance();
                     for (HandleMessage hm : handleMessages) {
-                        producerManager.markHandleId(hm.getHandleMessageId());
+                        providerManager.markHandleId(hm.getHandleMessageId());
                     }
                     break;
                 }
             }
-            Producer producer = producerManager.getProducer(serverKey);
+            Producer producer = providerManager.getProducer(serverKey);
             producer.addChannel(channel);
-            producerManager.checkChannelServer(serverKey, producer);
+            providerManager.checkChannelServer(serverKey, producer);
             for (HandleMessage handleMessage : handleMessages) {
                 HandleMessageManager handleMessageManager = handleMessageManagerMap.get(handleMessage.getHandleMessageId());
                 if (handleMessageManager == null) {
                     handleMessageManager = new HandleMessageManager(handleMessage.getHandleMessageId(), handleMessage.isDirect(), this);
                     handleMessageManagerMap.put(handleMessage.getHandleMessageId(), handleMessageManager);
                 }
-                handleMessageManager.addProducerManager(handleMessage.getHandleMessageId(), producerManager);
+                handleMessageManager.addProducerManager(handleMessage.getHandleMessageId(), providerManager);
             }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -441,11 +443,11 @@ public class GatewayMessageExecutor {
         readMessage(message, server2GatewayMessage);
         String producerKey = ChannelAttributeUtil.getRemoteServerKey(channel);
         String producerName = ChannelAttributeUtil.getRemoteServerName(channel);
-        ProducerManager producerManager = producerManagerMap.get(producerName);
-        if (producerManager != null) {
-            Producer producer = producerManager.getProducer(producerKey);
+        ProviderManager providerManager = producerManagerMap.get(producerName);
+        if (providerManager != null) {
+            Producer producer = providerManager.getProducer(producerKey);
             if (producer != null) {
-                producer.updateStatistic(message.getStatistic());
+                producer.updateScore(message.getStatistic().getScore());
             } else {
                 logger.warn("{} producer is null", producerKey);
             }
@@ -473,9 +475,10 @@ public class GatewayMessageExecutor {
             userId = userId == null ? 0 : userId;
             Long token = ChannelAttributeUtil.getToken(userChannel);
             String serverName = ChannelAttributeUtil.getRemoteServerName(channel);
-            ProducerManager serverManager = producerManagerMap.get(serverName);
+            ProviderManager serverManager = producerManagerMap.get(serverName);
             if (serverManager != null) {
-                serverManager.breakUserGateway(userChannel, token, userId, Constant.BREAK_TYPE_ERROR);
+                serverManager.consumerLeaveProducer(userChannel, token, userId);
+                // serverManager.breakUserGateway(userChannel, token, userId, Constant.BREAK_TYPE_ERROR);
             }
         }
         return true;
@@ -512,14 +515,14 @@ public class GatewayMessageExecutor {
                     logger.info("{}重复登陆 {} 不做额外的处理", clientChannel, userId);
                 } else {
                     logger.info("{}切换账号{}  -》  {} ", clientChannel, oldUserId, userId);
-                    userChange(clientChannel, token, oldUserId);
+                    consumerUserChange(clientChannel, token, oldUserId);
                 }
             }
             ChannelAttributeUtil.setUserId(clientChannel, userId);
             userClientChannel.put(userId, clientChannel);
-            for (Map.Entry<String, ProducerManager> entry : producerManagerMap.entrySet()) {
-                ProducerManager producerManager = entry.getValue();
-                producerManager.afterUserAuthorize(token, userId);
+            for (Map.Entry<String, ProviderManager> entry : producerManagerMap.entrySet()) {
+                ProviderManager providerManager = entry.getValue();
+                providerManager.afterUserAuthorize(token, userId);
 
             }
         } else {
@@ -558,7 +561,7 @@ public class GatewayMessageExecutor {
                 String serverKey = ChannelAttributeUtil.getRemoteServerKey(channel);
                 logger.debug("{} {} 可以处理 {} 值位 {} 的请求", serverName, serverKey,
                         MessageIdReader.read(waitAskTask.getFromMessageId()), waitAskTask.getValue());
-                ProducerManager serverManager = producerManagerMap.get(serverName);
+                ProviderManager serverManager = producerManagerMap.get(serverName);
                 for (Producer useChannelManager : serverManager.getUseProducers()) {
                     if (useChannelManager.getServerKey().equalsIgnoreCase(serverKey)) {
                         waitAskTask.answer(serverManager, useChannelManager, true);

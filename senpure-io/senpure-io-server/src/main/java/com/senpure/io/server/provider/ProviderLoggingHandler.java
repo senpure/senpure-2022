@@ -1,4 +1,4 @@
-package com.senpure.io.server.producer;
+package com.senpure.io.server.provider;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
@@ -13,13 +13,13 @@ import java.util.Arrays;
  * @author senpure
  * @time 2019-08-06 14:59:59
  */
-public class ProducerLoggingHandler extends LoggingHandler {
+public class ProviderLoggingHandler extends LoggingHandler {
 
     private boolean outFormat;
 
     private boolean inFormat;
 
-    public ProducerLoggingHandler(LogLevel level, boolean inFormat, boolean outFormat) {
+    public ProviderLoggingHandler(LogLevel level, boolean inFormat, boolean outFormat) {
         super(level);
         this.inFormat = inFormat;
         this.outFormat = outFormat;
@@ -29,9 +29,9 @@ public class ProducerLoggingHandler extends LoggingHandler {
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
 
         if (this.logger.isEnabled(this.internalLevel)) {
-            if (msg instanceof Producer2GatewayMessage) {
+            if (msg instanceof Provider2GatewayMessage) {
                 if (outFormat) {
-                    Producer2GatewayMessage message = (Producer2GatewayMessage) msg;
+                    Provider2GatewayMessage message = (Provider2GatewayMessage) msg;
                     this.logger.log(this.internalLevel, "{} token:{} userIds:{}{}{}",
                             "WRITE", message.getToken(), Arrays.toString(message.getUserIds()), "\n", message.getMessage().toString(null));
                     //this.logger.log(this.internalLevel, this.format(ctx, ChannelAttributeUtil.getChannelPlayerStr(ctx.channel())+" WRITE", "\n"+((Message) msg).toString(null)));
@@ -55,9 +55,9 @@ public class ProducerLoggingHandler extends LoggingHandler {
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
 
         if (this.logger.isEnabled(this.internalLevel)) {
-            if (msg instanceof Gateway2ProducerMessage) {
+            if (msg instanceof Gateway2ProviderMessage) {
                 if (inFormat) {
-                    Gateway2ProducerMessage message = (Gateway2ProducerMessage) msg;
+                    Gateway2ProviderMessage message = (Gateway2ProviderMessage) msg;
                     this.logger.log(this.internalLevel, "{} token:{} userId:{}{}{}",
                             "RECEIVED", message.getToken(), message.getUserId(), "\n", message.getMessage().toString(null));
                     // this.logger.log(this.internalLevel, this.format(ctx, ChannelAttributeUtil.getChannelPlayerStr(ctx.channel()) + " RECEIVED", "\n" + ((Message) msg).toString(null)));

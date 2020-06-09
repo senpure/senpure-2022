@@ -1,37 +1,30 @@
-package com.senpure.io.server.producer;
+package com.senpure.io.server.provider;
 
 import com.senpure.io.protocol.Message;
 
 /**
- * Producer2GatewayMessage
+ * Gateway2ProducerMessage
  *
  * @author senpure
- * @time 2019-06-26 17:37:32
+ * @time 2019-06-26 16:52:09
  */
-public class Producer2GatewayMessage {
+public class Gateway2ProviderMessage {
 
-    private int requestId;
-    private Long[] userIds;
+    //请求编号
 
+    private int  requestId;
     private long token;
+    private long userId;
     private int messageId;
-
     private Message message;
 
-    public int getRequestId() {
+
+    public int  getRequestId() {
         return requestId;
     }
 
     public void setRequestId(int requestId) {
         this.requestId = requestId;
-    }
-
-    public Long[] getUserIds() {
-        return userIds;
-    }
-
-    public void setUserIds(Long[] userIds) {
-        this.userIds = userIds;
     }
 
     public long getToken() {
@@ -42,12 +35,12 @@ public class Producer2GatewayMessage {
         this.token = token;
     }
 
-    public int getMessageId() {
-        return messageId;
+    public long getUserId() {
+        return userId;
     }
 
-    public void setMessageId(int messageId) {
-        this.messageId = messageId;
+    public void setUserId(long userId) {
+        this.userId = userId;
     }
 
     public Message getMessage() {
@@ -57,4 +50,14 @@ public class Producer2GatewayMessage {
     public void setMessage(Message message) {
         this.message = message;
     }
+
+    public int getMessageId() {
+        return messageId;
+    }
+
+    public void setMessageId(int messageId) {
+        this.messageId = messageId;
+    }
+
+
 }

@@ -1,4 +1,4 @@
-package com.senpure.io.server.producer;
+package com.senpure.io.server.provider;
 
 import com.senpure.base.util.Assert;
 import com.senpure.io.protocol.CompressBean;
@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * 解析网关发过来的消息
  */
-public class ProducerMessageDecoder extends ByteToMessageDecoder {
+public class ProviderMessageDecoder extends ByteToMessageDecoder {
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
 
@@ -41,8 +41,8 @@ public class ProducerMessageDecoder extends ByteToMessageDecoder {
             long channelToken = CompressBean.readVar64(in);
             long userId = CompressBean.readVar64(in);
 
-            Message message = ProducerMessageHandlerUtil.getEmptyMessage(messageId);
-            Gateway2ProducerMessage frame = new Gateway2ProducerMessage();
+            Message message = ProviderMessageHandlerUtil.getEmptyMessage(messageId);
+            Gateway2ProviderMessage frame = new Gateway2ProviderMessage();
             frame.setRequestId(requestId);
             frame.setMessageId(messageId);
             frame.setToken(channelToken);

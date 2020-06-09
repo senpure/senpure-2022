@@ -3,7 +3,7 @@ package com.senpure.io.server.gateway;
 import com.senpure.base.util.Assert;
 import com.senpure.io.protocol.CompressBean;
 import com.senpure.io.server.Constant;
-import com.senpure.io.server.gateway.producer.Producer;
+import com.senpure.io.server.gateway.provider.Producer;
 import com.senpure.io.server.protocol.message.CSAskHandleMessage;
 import com.senpure.io.server.protocol.message.SCInnerErrorMessage;
 import com.senpure.io.server.support.MessageIdReader;
@@ -22,8 +22,8 @@ public class HandleMessageManager {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
     private boolean direct;
-    private List<ProducerManager> producerManagers = new ArrayList<>();
-    private ProducerManager producerManager;
+    private List<ProviderManager> providerManagers = new ArrayList<>();
+    private ProviderManager providerManager;
     private GatewayMessageExecutor messageExecutor;
     private int csAskHandleMessageId =  CSAskHandleMessage.MESSAGE_ID;
     //   private AtomicInteger atomicIndex = new AtomicInteger(-1);
@@ -35,32 +35,32 @@ public class HandleMessageManager {
         this.handId = handId;
     }
 
-    public synchronized void addProducerManager(int handId, ProducerManager producerManager) {
+    public synchronized void addProducerManager(int handId, ProviderManager providerManager) {
         if (this.handId != handId) {
             Assert.error("handId 不匹配");
         }
         boolean add = true;
-        for (ProducerManager manager : producerManagers) {
-            if (manager.getServerName().equalsIgnoreCase(producerManager.getServerName())) {
+        for (ProviderManager manager : providerManagers) {
+            if (manager.getServerName().equalsIgnoreCase(providerManager.getServerName())) {
                 add = false;
                 break;
             }
         }
         if (add) {
             //不同的服务处理相同的id,容易编码疏忽,取消这种模式
-            if (producerManagers.size() >= 1 && direct) {
+            if (providerManagers.size() >= 1 && direct) {
                 Assert.error("不同的服务处理了相同的非ask消息id,该模式容易编码疏忽,产出bug,强制不允许  id:"+ MessageIdReader.read(handId));
             }
-            producerManagers.add(producerManager);
+            providerManagers.add(providerManager);
         }
         if (direct) {
-            this.producerManager = producerManager;
+            this.providerManager = providerManager;
         }
     }
 
     public void execute(Client2GatewayMessage message) {
         if (direct) {
-            producerManager.sendMessage(message);
+            providerManager.sendMessage(message);
         } else {
             ByteBuf buf = Unpooled.buffer(message.getData().length);
             buf.writeBytes(message.getData());
@@ -99,14 +99,14 @@ public class HandleMessageManager {
             waitAskTask.setValue(value);
 
             int askTimes = 0;
-            for (ProducerManager serverManager : producerManagers) {
+            for (ProviderManager serverManager : providerManagers) {
                 askTimes += serverManager.getUseProducers().size();
             }
             waitAskTask.setAskTimes(askTimes);
             waitAskTask.setMessage(message);
 
             messageExecutor.waitAskMap.put(waitAskTask.getAskToken(), waitAskTask);
-            for (ProducerManager serverManager : producerManagers) {
+            for (ProviderManager serverManager : providerManagers) {
                 for (Producer channelManager : serverManager.getUseProducers()) {
                     Channel channel = channelManager.nextChannel();
                     if (channel != null) {

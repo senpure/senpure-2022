@@ -1,4 +1,4 @@
-package com.senpure.io.server.producer;
+package com.senpure.io.server.provider;
 
 
 import com.senpure.io.server.ChannelAttributeUtil;
@@ -11,22 +11,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class ProducerServerHandler extends SimpleChannelInboundHandler<Gateway2ProducerMessage> {
+public class ProviderServerHandler extends SimpleChannelInboundHandler<Gateway2ProviderMessage> {
 
 
-    private ProducerMessageExecutor messageExecutor;
+    private ProviderMessageExecutor messageExecutor;
     private GatewayManager gatewayManager;
 
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public ProducerServerHandler(ProducerMessageExecutor messageExecutor, GatewayManager gatewayManager) {
+    public ProviderServerHandler(ProviderMessageExecutor messageExecutor, GatewayManager gatewayManager) {
         this.messageExecutor = messageExecutor;
         this.gatewayManager = gatewayManager;
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, Gateway2ProducerMessage msg)  {
+    protected void channelRead0(ChannelHandlerContext ctx, Gateway2ProviderMessage msg)  {
         messageExecutor.execute(ctx.channel(), msg);
     }
 
@@ -51,7 +51,7 @@ public class ProducerServerHandler extends SimpleChannelInboundHandler<Gateway2P
             if (channel.isWritable()) {
                 logger.info("维持网关心跳{} : {}", ChannelAttributeUtil.getRemoteServerKey(channel), channel);
                 SCHeartMessage heartMessage = new SCHeartMessage();
-                Producer2GatewayMessage toGateway = new Producer2GatewayMessage();
+                Provider2GatewayMessage toGateway = new Provider2GatewayMessage();
                 toGateway.setUserIds(new Long[0]);
                 toGateway.setMessage(heartMessage);
                 toGateway.setMessageId(heartMessage.getMessageId());

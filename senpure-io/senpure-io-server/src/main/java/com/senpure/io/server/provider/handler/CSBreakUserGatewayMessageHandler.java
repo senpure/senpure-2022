@@ -1,12 +1,11 @@
-package com.senpure.io.server.producer.handler;
+package com.senpure.io.server.provider.handler;
 
 
-import com.senpure.io.server.producer.GatewayManager;
+import com.senpure.io.server.provider.GatewayManager;
 import com.senpure.io.server.protocol.message.CSBreakUserGatewayMessage;
 import io.netty.channel.Channel;
 
 import javax.annotation.Resource;
-import java.util.function.Consumer;
 
 /**
  * 断开用户与网关处理器

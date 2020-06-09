@@ -1,4 +1,4 @@
-package com.senpure.io.server.producer;
+package com.senpure.io.server.provider;
 
 
 import com.senpure.io.protocol.Message;
@@ -131,7 +131,7 @@ public class GatewayManager {
      *
      * @param message
      */
-    public void dispatchMessage(Producer2GatewayMessage message) {
+    public void dispatchMessage(Provider2GatewayMessage message) {
         for (GatewayChannelManager value : gatewayChannelMap.values()) {
             value.sendMessage(message);
         }
@@ -139,7 +139,7 @@ public class GatewayManager {
     }
 
     public void dispatchMessage(Message message) {
-        Producer2GatewayMessage toGateway = new Producer2GatewayMessage();
+        Provider2GatewayMessage toGateway = new Provider2GatewayMessage();
         toGateway.setUserIds(new Long[]{0L});
         toGateway.setMessage(message);
         toGateway.setMessageId(message.getMessageId());
@@ -157,7 +157,7 @@ public class GatewayManager {
             logger.warn("userId 不能为0");
             return;
         }
-        Producer2GatewayMessage toGateway = new Producer2GatewayMessage();
+        Provider2GatewayMessage toGateway = new Provider2GatewayMessage();
         toGateway.setToken(token);
         toGateway.setUserIds(new Long[]{userId});
         toGateway.setMessage(message);
@@ -243,8 +243,8 @@ public class GatewayManager {
     }
 
 
-    private Producer2GatewayMessage createMessageByToken(Long token, Message message) {
-        Producer2GatewayMessage toGateway = new Producer2GatewayMessage();
+    private Provider2GatewayMessage createMessageByToken(Long token, Message message) {
+        Provider2GatewayMessage toGateway = new Provider2GatewayMessage();
         toGateway.setToken(token);
         toGateway.setUserIds(new Long[0]);
         toGateway.setMessage(message);
@@ -264,7 +264,7 @@ public class GatewayManager {
      * @param requestId
      */
     public void respondMessageByToken(Long token, Message message, int requestId) {
-        Producer2GatewayMessage toGateway = createMessageByToken(token, message);
+        Provider2GatewayMessage toGateway = createMessageByToken(token, message);
         toGateway.setRequestId(requestId);
         GatewayRelation gatewayRelation = tokenGatewayMap.get(token);
         if (gatewayRelation != null) {
@@ -274,8 +274,8 @@ public class GatewayManager {
         }
     }
 
-    private Producer2GatewayMessage createMessage(Long userId, Message message) {
-        Producer2GatewayMessage toGateway = new Producer2GatewayMessage();
+    private Provider2GatewayMessage createMessage(Long userId, Message message) {
+        Provider2GatewayMessage toGateway = new Provider2GatewayMessage();
         toGateway.setUserIds(new Long[]{userId});
         toGateway.setMessage(message);
         toGateway.setMessageId(message.getMessageId());
@@ -290,7 +290,7 @@ public class GatewayManager {
      * @param requestId
      */
     public void respondMessage(Long userId, Message message, int requestId) {
-        Producer2GatewayMessage toGateway = createMessage(userId, message);
+        Provider2GatewayMessage toGateway = createMessage(userId, message);
         toGateway.setRequestId(requestId);
         GatewayRelation gatewayRelation = userGatewayMap.get(userId);
         if (gatewayRelation != null) {
@@ -305,7 +305,7 @@ public class GatewayManager {
     }
 
     public void sendMessageByToken(Long token, Message message) {
-        Producer2GatewayMessage toGateway = new Producer2GatewayMessage();
+        Provider2GatewayMessage toGateway = new Provider2GatewayMessage();
         toGateway.setToken(token);
         toGateway.setUserIds(new Long[0]);
         toGateway.setMessage(message);
@@ -320,7 +320,7 @@ public class GatewayManager {
 
 
     public void sendMessage(Long userId, Message message) {
-        Producer2GatewayMessage toGateway = new Producer2GatewayMessage();
+        Provider2GatewayMessage toGateway = new Provider2GatewayMessage();
         toGateway.setUserIds(new Long[]{userId});
         toGateway.setMessage(message);
         toGateway.setMessageId(message.getMessageId());
@@ -341,9 +341,9 @@ public class GatewayManager {
         GatewayRelation gatewayRelation = userGatewayMap.get(userId);
         if (gatewayRelation != null) {
             Long[] userIds = new Long[]{userId};
-            List<Producer2GatewayMessage> frames = new ArrayList<>(messages.size());
+            List<Provider2GatewayMessage> frames = new ArrayList<>(messages.size());
             for (Message message : messages) {
-                Producer2GatewayMessage toGateway = new Producer2GatewayMessage();
+                Provider2GatewayMessage toGateway = new Provider2GatewayMessage();
                 toGateway.setUserIds(userIds);
                 toGateway.setMessage(message);
                 toGateway.setMessageId(message.getMessageId());
@@ -375,7 +375,7 @@ public class GatewayManager {
             }
         }
         map.values().forEach(gatewayUsers -> {
-            Producer2GatewayMessage toGateway = new Producer2GatewayMessage();
+            Provider2GatewayMessage toGateway = new Provider2GatewayMessage();
             toGateway.setMessage(message);
             toGateway.setMessageId(message.getMessageId());
             Long[] users = new Long[gatewayUsers.userIds.size()];

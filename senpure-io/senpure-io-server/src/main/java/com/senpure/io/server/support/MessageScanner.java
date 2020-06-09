@@ -5,12 +5,10 @@ import com.senpure.io.protocol.Message;
 import com.senpure.io.server.protocol.bean.IdName;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * MessageScanner
@@ -25,10 +23,20 @@ public class MessageScanner {
     }
 
     public static List<IdName> scan(String[] packages) {
-        Set<BeanDefinition> beanDefinitions = new LinkedHashSet();
+        Set<BeanDefinition> beanDefinitions = new LinkedHashSet<>();
         ClassPathScanningCandidateComponentProvider scan =
                 new ClassPathScanningCandidateComponentProvider(false);
-        scan.addIncludeFilter((metadataReader, metadataReaderFactory) -> Message.class.getName().equals(metadataReader.getClassMetadata().getSuperClassName()));
+        scan.addIncludeFilter((metadataReader, metadataReaderFactory) ->
+                {
+                    try {
+                        Class<?> clazz = ClassUtils.forName(metadataReader.getClassMetadata().getClassName(), MessageScanner.class.getClassLoader());
+                        return Message.class.isAssignableFrom(clazz);
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                    return Message.class.getName().equals(metadataReader.getClassMetadata().getSuperClassName());
+                }
+        );
         for (String aPackage : packages) {
             beanDefinitions.addAll(scan.findCandidateComponents(aPackage));
         }
@@ -49,8 +57,6 @@ public class MessageScanner {
         }
         return idNames;
     }
-
-
 
 
     public static void main(String[] args) {

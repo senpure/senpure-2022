@@ -2,6 +2,7 @@ package com.senpure.io.server.support;
 
 
 import com.senpure.io.server.protocol.bean.IdName;
+import com.senpure.io.server.protocol.message.CSHeartMessage;
 
 import java.util.HashMap;
 import java.util.List;
@@ -32,11 +33,11 @@ public class MessageIdReader {
     }
 
     static {
-        relation(MessageScanner.scan("com.senpure.io.message"));
+        relation(MessageScanner.scan("com.senpure.io.server.protocol.message"));
     }
 
     public static void main(String[] args) {
-        System.out.println(MessageIdReader.read(11056));
+        System.out.println(MessageIdReader.read(CSHeartMessage.MESSAGE_ID));
         System.out.println(MessageIdReader.read(1105));
         System.out.println(MessageIdReader.read(1104));
     }

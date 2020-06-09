@@ -4,13 +4,13 @@ import com.senpure.base.util.Assert;
 import com.senpure.executor.DefaultTaskLoopGroup;
 import com.senpure.executor.TaskLoopGroup;
 import com.senpure.io.server.ServerProperties;
-import com.senpure.io.server.producer.GatewayManager;
-import com.senpure.io.server.producer.ProducerMessageExecutor;
-import com.senpure.io.server.producer.ProducerMessageHandlerUtil;
-import com.senpure.io.server.producer.handler.CSAskHandleMessageHandler;
-import com.senpure.io.server.producer.handler.CSRegServerHandleMessageMessageHandler;
-import com.senpure.io.server.producer.handler.CSRelationUserGatewayMessageHandler;
-import com.senpure.io.server.producer.handler.ProducerMessageHandler;
+import com.senpure.io.server.provider.GatewayManager;
+import com.senpure.io.server.provider.ProviderMessageExecutor;
+import com.senpure.io.server.provider.ProviderMessageHandlerUtil;
+import com.senpure.io.server.provider.handler.CSAskHandleMessageHandler;
+import com.senpure.io.server.provider.handler.CSRegServerHandleMessageMessageHandler;
+import com.senpure.io.server.provider.handler.CSRelationUserGatewayMessageHandler;
+import com.senpure.io.server.provider.handler.ProviderMessageHandler;
 import com.senpure.io.server.protocol.message.CSBreakUserGatewayMessage;
 import com.senpure.io.server.support.ProducerServerStarter;
 import io.netty.util.concurrent.DefaultThreadFactory;
@@ -47,9 +47,9 @@ public class ProducerAutoConfiguration {
         if (StringUtils.isEmpty(serverProperties.getName())) {
             serverProperties.setName("producerServer");
         }
-        ServerProperties.Producer producer = serverProperties.getProducer();
-        if (!producer.isSetReadableName()) {
-            producer.setReadableName(serverProperties.getName());
+        ServerProperties.Provider provider = serverProperties.getProvider();
+        if (!provider.isSetReadableName()) {
+            provider.setReadableName(serverProperties.getName());
         }
         //io *2 logic *1 综合1.5
         double size = Runtime.getRuntime().availableProcessors() * 1.5;
@@ -57,18 +57,18 @@ public class ProducerAutoConfiguration {
         ioSize = Math.max(ioSize, 1);
         int logicSize = (int) (size * 0.4);
         logicSize = Math.max(logicSize, 1);
-        if (producer.getIoWorkThreadPoolSize() < 1) {
-            producer.setIoWorkThreadPoolSize(ioSize);
+        if (provider.getIoWorkThreadPoolSize() < 1) {
+            provider.setIoWorkThreadPoolSize(ioSize);
         }
-        if (producer.getExecutorThreadPoolSize() < 1) {
-            producer.setExecutorThreadPoolSize(logicSize);
+        if (provider.getExecutorThreadPoolSize() < 1) {
+            provider.setExecutorThreadPoolSize(logicSize);
         }
     }
 
     @Bean
     @ConditionalOnMissingBean(TaskLoopGroup.class)
     public TaskLoopGroup taskLoopGroup() {
-        TaskLoopGroup service = new DefaultTaskLoopGroup(serverProperties.getProducer().getExecutorThreadPoolSize(),
+        TaskLoopGroup service = new DefaultTaskLoopGroup(serverProperties.getProvider().getExecutorThreadPoolSize(),
                 new DefaultThreadFactory(serverProperties.getName() + "-executor"));
         this.taskLoopGroup = service;
         return service;
@@ -105,9 +105,9 @@ public class ProducerAutoConfiguration {
     }
 
     @Bean
-    public ProducerMessageExecutor producerMessageExecutor() {
+    public ProviderMessageExecutor producerMessageExecutor() {
 
-        return new ProducerMessageExecutor();
+        return new ProviderMessageExecutor();
     }
 
     @Bean
@@ -124,7 +124,7 @@ public class ProducerAutoConfiguration {
     static class ProducerHandlerChecker implements ApplicationRunner {
         @Override
         public void run(ApplicationArguments args) {
-            ProducerMessageHandler<?> handler = ProducerMessageHandlerUtil.getHandler(CSBreakUserGatewayMessage.MESSAGE_ID);
+            ProviderMessageHandler<?> handler = ProviderMessageHandlerUtil.getHandler(CSBreakUserGatewayMessage.MESSAGE_ID);
             if (handler == null) {
                 Assert.error("缺少[CSBreakUserGatewayMessage]处理器");
             }

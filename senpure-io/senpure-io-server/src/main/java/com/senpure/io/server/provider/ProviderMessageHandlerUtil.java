@@ -1,9 +1,9 @@
-package com.senpure.io.server.producer;
+package com.senpure.io.server.provider;
 
 
 import com.senpure.base.util.Assert;
 import com.senpure.io.protocol.Message;
-import com.senpure.io.server.producer.handler.ProducerMessageHandler;
+import com.senpure.io.server.provider.handler.ProviderMessageHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,18 +11,18 @@ import java.util.List;
 import java.util.Map;
 
 
-public class ProducerMessageHandlerUtil {
+public class ProviderMessageHandlerUtil {
 
-    private static Map<Integer, ProducerMessageHandler> handlerMap = new HashMap<>();
+    private static Map<Integer, ProviderMessageHandler> handlerMap = new HashMap<>();
 
-    public static ProducerMessageHandler getHandler(int messageId) {
+    public static ProviderMessageHandler getHandler(int messageId) {
         return handlerMap.get(messageId);
     }
 
     private static List<Integer> regMessageIds = new ArrayList<>(128);
 
-    public static void regMessageHandler(ProducerMessageHandler handler) {
-        ProducerMessageHandler old = handlerMap.get(handler.handlerId());
+    public static void regMessageHandler(ProviderMessageHandler handler) {
+        ProviderMessageHandler old = handlerMap.get(handler.handlerId());
         if (old != null) {
             Assert.error(handler.handlerId() + " -> " + handler.getEmptyMessage()
                     .getClass().getName() + "  处理程序已经存在"
@@ -40,7 +40,7 @@ public class ProducerMessageHandlerUtil {
     }
 
     public static Message getEmptyMessage(int messageId) {
-        ProducerMessageHandler handler = handlerMap.get(messageId);
+        ProviderMessageHandler handler = handlerMap.get(messageId);
         if (handler == null) {
             return null;
         }

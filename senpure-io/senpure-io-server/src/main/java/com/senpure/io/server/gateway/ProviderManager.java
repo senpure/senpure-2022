@@ -2,9 +2,9 @@ package com.senpure.io.server.gateway;
 
 
 import com.senpure.io.server.Constant;
-import com.senpure.io.server.gateway.producer.Producer;
-import com.senpure.io.server.gateway.producer.ProducerDefaultNextStrategy;
-import com.senpure.io.server.gateway.producer.ProducerNextStrategy;
+import com.senpure.io.server.gateway.provider.Producer;
+import com.senpure.io.server.gateway.provider.ProviderDefaultNextStrategy;
+import com.senpure.io.server.gateway.provider.ProviderNextStrategy;
 import com.senpure.io.server.protocol.message.CSBreakUserGatewayMessage;
 import com.senpure.io.server.protocol.message.CSRelationUserGatewayMessage;
 import com.senpure.io.server.protocol.message.SCInnerErrorMessage;
@@ -22,15 +22,15 @@ import java.util.concurrent.atomic.AtomicInteger;
  * 网关管理一个服务的多个实例 每个实例可能含有多个管道channel
  * 一个服务对应一个 producerManager
  */
-public class ProducerManager {
+public class ProviderManager {
 
 
     private Logger logger = LoggerFactory.getLogger(getClass());
     private GatewayMessageExecutor messageExecutor;
 
-    private ProducerNextStrategy nextStrategy = new ProducerDefaultNextStrategy();
+    private ProviderNextStrategy nextStrategy = new ProviderDefaultNextStrategy();
 
-    public ProducerManager(GatewayMessageExecutor messageExecutor) {
+    public ProviderManager(GatewayMessageExecutor messageExecutor) {
         this.messageExecutor = messageExecutor;
     }
 
@@ -117,7 +117,6 @@ public class ProducerManager {
     }
 
 
-
     public synchronized void prepStopOldInstance() {
         prepStopOldInstance.addAll(useProducers);
         useProducers.clear();
@@ -161,15 +160,37 @@ public class ProducerManager {
         }
     }
 
-    public void breakUserGateway(Channel clientChannel, Long token, Long userId, String type) {
-        breakUserGateway(clientChannel, token, userId, type, true);
+    //消费方离开了生产方
+    public void consumerLeaveProducer(Channel consumerChannel, Long token, Long userId) {
+        breakUserGateway(consumerChannel, token, userId, Constant.BREAK_TYPE_USER_LEAVE);
     }
 
-    public void breakUserGateway(Channel clientChannel, Long token, Long userId, String type, boolean localRemove) {
+    //消费方离线
+    public void consumerOffline(Channel consumerChannel, Long token, Long userId) {
+        breakUserGateway(consumerChannel, token, userId, Constant.BREAK_TYPE_USER_OFFlINE);
+    }
+
+    //消费方切换用户
+    public void consumerUserChange(Channel consumerChannel, Long token, Long userId, int csLoginMessageId) {
+        if (getHandleIds().contains(csLoginMessageId)) {
+            breakUserGateway(consumerChannel, token, userId, Constant.BREAK_TYPE_USER_CHANGE, false);
+        } else {
+            breakUserGateway(consumerChannel, token, userId, Constant.BREAK_TYPE_USER_CHANGE);
+        }
+    }
+
+    private void breakUserGateway(Channel consumerChannel, Long token, Long userId, String type) {
+        breakUserGateway(consumerChannel, token, userId, type, true);
+    }
+
+    private void breakUserGateway(Channel consumerChannel, Long token, Long userId, String type, boolean localRemove) {
         ProducerRelation producerRelation = localRemove ? tokenProducerMap.remove(token) : tokenProducerMap.get(token);
         if (producerRelation != null) {
+            if (localRemove) {
+
+            }
             logger.info("{} {} 取消 对{} :token{} userId:{}的 关联  {}",
-                    serverName, producerRelation.producer.getServerKey(), clientChannel, token, userId, localRemove ? "移除" : "不移除");
+                    serverName, producerRelation.producer.getServerKey(), consumerChannel, token, userId, localRemove ? "移除" : "不移除");
             CSBreakUserGatewayMessage breakUserGatewayMessage = new CSBreakUserGatewayMessage();
             breakUserGatewayMessage.setRelationToken(producerRelation.relationToken);
             breakUserGatewayMessage.setUserId(userId);
@@ -182,7 +203,7 @@ public class ProducerManager {
             producerRelation.producer.sendMessage(client2GatewayMessage);
         } else {
             logger.info("{} 没有对{} 有关联 :token{} userId:{} ",
-                    serverName, clientChannel, token, userId);
+                    serverName, consumerChannel, token, userId);
 
         }
     }

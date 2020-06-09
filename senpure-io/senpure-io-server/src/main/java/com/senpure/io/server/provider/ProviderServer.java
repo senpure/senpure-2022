@@ -1,4 +1,4 @@
-package com.senpure.io.server.producer;
+package com.senpure.io.server.provider;
 
 import com.senpure.base.util.Assert;
 import com.senpure.io.server.ChannelAttributeUtil;
@@ -20,15 +20,15 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
 
-public class ProducerServer {
-    protected static Logger logger = LoggerFactory.getLogger(ProducerServer.class);
-    private ServerProperties.Producer properties;
+public class ProviderServer {
+    protected static Logger logger = LoggerFactory.getLogger(ProviderServer.class);
+    private ServerProperties.Provider properties;
 
     private ChannelFuture channelFuture;
     private String serverName = "producerServer";
     private String readableServerName = "producerServer";
     private boolean setReadableServerName = false;
-    private ProducerMessageExecutor messageExecutor;
+    private ProviderMessageExecutor messageExecutor;
     private int httpPort = 0;
     private boolean addLoggingHandler = true;
     private Channel channel;
@@ -73,15 +73,15 @@ public class ProducerServer {
                                     if (finalSslCtx != null) {
                                         p.addLast(finalSslCtx.newHandler(ch.alloc(), host, port));
                                     }
-                                    p.addLast(new ProducerMessageDecoder());
-                                    p.addLast(new ProducerMessageEncoder());
+                                    p.addLast(new ProviderMessageDecoder());
+                                    p.addLast(new ProviderMessageEncoder());
                                     if (addLoggingHandler) {
-                                        p.addLast(new ProducerLoggingHandler(LogLevel.DEBUG, properties.isInFormat(), properties.isOutFormat()));
+                                        p.addLast(new ProviderLoggingHandler(LogLevel.DEBUG, properties.isInFormat(), properties.isOutFormat()));
                                     }
                                     if (properties.isEnableHeartCheck()) {
                                         p.addLast(new IdleStateHandler(0, properties.getWriterIdleTime(), 0, TimeUnit.MILLISECONDS));
                                     }
-                                    p.addLast(new ProducerServerHandler(messageExecutor, gatewayManager));
+                                    p.addLast(new ProviderServerHandler(messageExecutor, gatewayManager));
                                 }
                             });
 
@@ -123,7 +123,7 @@ public class ProducerServer {
     }
 
 
-    public void setProperties(ServerProperties.Producer properties) {
+    public void setProperties(ServerProperties.Provider properties) {
         this.properties = properties;
     }
 
@@ -178,7 +178,7 @@ public class ProducerServer {
     }
 
 
-    public void setMessageExecutor(ProducerMessageExecutor messageExecutor) {
+    public void setMessageExecutor(ProviderMessageExecutor messageExecutor) {
         this.messageExecutor = messageExecutor;
     }
 

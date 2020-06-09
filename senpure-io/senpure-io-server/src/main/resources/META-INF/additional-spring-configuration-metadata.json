@@ -45,7 +45,7 @@
       ]
     },
     {
-      "name": "server.io.producer.writer-idle-time",
+      "name": "server.io.provider.writer-idle-time",
       "values": [
         {
           "value": 5000

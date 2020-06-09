@@ -1,21 +1,21 @@
-package com.senpure.io.server.producer;
+package com.senpure.io.server.provider;
 
 import com.senpure.executor.TaskLoopGroup;
 import com.senpure.io.server.Constant;
-import com.senpure.io.server.producer.handler.ProducerMessageHandler;
+import com.senpure.io.server.provider.handler.ProviderMessageHandler;
 import com.senpure.io.server.protocol.message.SCInnerErrorMessage;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class ProducerMessageExecutor {
-    private Logger logger = LoggerFactory.getLogger(ProducerMessageExecutor.class);
+public class ProviderMessageExecutor {
+    private Logger logger = LoggerFactory.getLogger(ProviderMessageExecutor.class);
     private TaskLoopGroup service;
 
     private GatewayManager gatewayManager;
 
-    public ProducerMessageExecutor() {
+    public ProviderMessageExecutor() {
 
     }
 
@@ -36,11 +36,11 @@ public class ProducerMessageExecutor {
         service.execute(runnable);
     }
 
-    public void execute(Channel channel, Gateway2ProducerMessage frame) {
+    public void execute(Channel channel, Gateway2ProviderMessage frame) {
         long userId = frame.getUserId();
         long id = userId > 0 ? userId : frame.getToken();
         service.get(id).execute(() -> {
-            ProducerMessageHandler handler = ProducerMessageHandlerUtil.getHandler(frame.getMessageId());
+            ProviderMessageHandler handler = ProviderMessageHandlerUtil.getHandler(frame.getMessageId());
             if (handler == null) {
                 logger.warn("没有找到消息处理程序{} userId:{}", frame.getMessageId(), userId);
                 SCInnerErrorMessage scInnerErrorMessage = new SCInnerErrorMessage();

@@ -10,6 +10,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @time 2020-01-06 11:26:30
  */
 @ConfigurationProperties("server.io")
+//@EnableConfigurationProperties
 public class ServerProperties {
     /**
      * 该值不用配置读取spring.application.name
@@ -19,7 +20,7 @@ public class ServerProperties {
     private Consumer consumer = new Consumer();
     private Direct direct = new Direct();
     private Gateway gateway = new Gateway();
-    private Producer producer = new Producer();
+    private Provider provider = new Provider();
 
     public static class Direct {
 
@@ -402,7 +403,7 @@ public class ServerProperties {
         }
     }
 
-    public static class Producer {
+    public static class Provider {
         /**
          * 网关服务名
          */
@@ -887,12 +888,12 @@ public class ServerProperties {
         this.gateway = gateway;
     }
 
-    public Producer getProducer() {
-        return producer;
+    public Provider getProvider() {
+        return provider;
     }
 
-    public void setProducer(Producer producer) {
-        this.producer = producer;
+    public void setProvider(Provider provider) {
+        this.provider = provider;
     }
 
     public String getName() {

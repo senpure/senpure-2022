@@ -22,7 +22,7 @@ import java.lang.annotation.Target;
 @Documented
 @EnableConfigurationProperties({ServerProperties.class})
 @Import({ProducerAutoConfiguration.class, BreakUserSelector.class})
-public @interface EnableProducer {
+public @interface EnableProvider {
     /**
      * 注册断开处理器
      *

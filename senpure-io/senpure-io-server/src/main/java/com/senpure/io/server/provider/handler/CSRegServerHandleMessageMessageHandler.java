@@ -1,4 +1,4 @@
-package com.senpure.io.server.producer.handler;
+package com.senpure.io.server.provider.handler;
 
 import com.senpure.base.util.Spring;
 import com.senpure.io.server.ChannelAttributeUtil;

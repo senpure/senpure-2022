@@ -42,7 +42,7 @@ public class GatewayAndClientServerHandler extends SimpleChannelInboundHandler<C
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         Channel channel = ctx.channel();
         logger.debug("客户端{} 断开连接", channel);
-        messageExecutor.clientOffline(channel);
+        messageExecutor.consumerOffline(channel);
 
     }
 

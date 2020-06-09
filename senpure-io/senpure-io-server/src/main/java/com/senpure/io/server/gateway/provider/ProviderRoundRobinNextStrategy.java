@@ -1,4 +1,4 @@
-package com.senpure.io.server.gateway.producer;
+package com.senpure.io.server.gateway.provider;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author senpure
  * @time 2020-06-05 15:07:34
  */
-public class ProducerRoundRobinNextStrategy implements ProducerNextStrategy {
+public class ProviderRoundRobinNextStrategy implements ProviderNextStrategy {
 
     private final AtomicInteger atomicIndex = new AtomicInteger(-1);
 

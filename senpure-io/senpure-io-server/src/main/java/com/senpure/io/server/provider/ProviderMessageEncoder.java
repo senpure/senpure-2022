@@ -1,4 +1,4 @@
-package com.senpure.io.server.producer;
+package com.senpure.io.server.provider;
 
 import com.senpure.io.protocol.CompressBean;
 import io.netty.buffer.ByteBuf;
@@ -8,12 +8,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class ProducerMessageEncoder extends MessageToByteEncoder<Producer2GatewayMessage> {
+public class ProviderMessageEncoder extends MessageToByteEncoder<Provider2GatewayMessage> {
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
 
     @Override
-    protected void encode(ChannelHandlerContext ctx, Producer2GatewayMessage frame, ByteBuf out) throws Exception {
+    protected void encode(ChannelHandlerContext ctx, Provider2GatewayMessage frame, ByteBuf out) throws Exception {
         int dataLength = frame.getMessage().getSerializedSize();
         int headLength = CompressBean.computeVar32Size(frame.getRequestId());
         headLength += CompressBean.computeVar32Size(frame.getMessageId());

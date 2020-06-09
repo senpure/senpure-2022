@@ -1,4 +1,4 @@
-package com.senpure.io.server.producer;
+package com.senpure.io.server.provider;
 
 import io.netty.util.concurrent.FastThreadLocalThread;
 
@@ -8,7 +8,7 @@ import io.netty.util.concurrent.FastThreadLocalThread;
  * @author senpure
  * @time 2019-12-30 17:40:10
  */
-public class ProducerHelper {
+public class ProviderHelper {
 
     /**
      * 包装一个可传递requestId的 Runnable 释放该 requestId 依赖 FastThreadLocalThread 的包装

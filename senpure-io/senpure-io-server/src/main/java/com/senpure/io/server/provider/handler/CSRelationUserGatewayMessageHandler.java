@@ -1,8 +1,8 @@
-package com.senpure.io.server.producer.handler;
+package com.senpure.io.server.provider.handler;
 
 
 import com.senpure.io.server.ChannelAttributeUtil;
-import com.senpure.io.server.producer.GatewayManager;
+import com.senpure.io.server.provider.GatewayManager;
 import com.senpure.io.server.protocol.message.CSRelationUserGatewayMessage;
 import com.senpure.io.server.protocol.message.SCRelationUserGatewayMessage;
 import io.netty.channel.Channel;

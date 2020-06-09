@@ -4,9 +4,9 @@ import com.senpure.executor.TaskLoopGroup;
 import com.senpure.io.server.ChannelAttributeUtil;
 import com.senpure.io.server.ServerProperties;
 import com.senpure.io.server.event.EventHelper;
-import com.senpure.io.server.producer.*;
-import com.senpure.io.server.producer.handler.ProducerAskMessageHandler;
-import com.senpure.io.server.producer.handler.ProducerMessageHandler;
+import com.senpure.io.server.provider.*;
+import com.senpure.io.server.provider.handler.ProviderAskMessageHandler;
+import com.senpure.io.server.provider.handler.ProviderMessageHandler;
 import com.senpure.io.server.protocol.bean.HandleMessage;
 import com.senpure.io.server.protocol.bean.IdName;
 import com.senpure.io.server.protocol.message.SCIdNameMessage;
@@ -46,17 +46,17 @@ public class ProducerServerStarter implements ApplicationRunner {
     @Resource
     private GatewayManager gatewayManager;
     @Resource
-    private ProducerMessageExecutor messageExecutor;
+    private ProviderMessageExecutor messageExecutor;
     @Resource
     private TaskLoopGroup service;
     @Value("${server.port:8080}")
     private int httpPort;
 
-    private ServerProperties.Producer producer;
+    private ServerProperties.Provider provider;
     private ServerProperties.Gateway gateway = new ServerProperties.Gateway();
 
 
-    private List<ProducerServer> servers = new ArrayList<>();
+    private List<ProviderServer> servers = new ArrayList<>();
 
 
     private Map<String, Long> failGatewayMap = new HashMap<>();
@@ -67,7 +67,7 @@ public class ProducerServerStarter implements ApplicationRunner {
     @PostConstruct
     public void init() {
 
-        producer = serverProperties.getProducer();
+        provider = serverProperties.getProvider();
         messageExecutor();
     }
 
@@ -82,7 +82,7 @@ public class ProducerServerStarter implements ApplicationRunner {
 
     @PreDestroy
     public void destroy() {
-        for (ProducerServer server : servers) {
+        for (ProviderServer server : servers) {
             server.destroy();
         }
 
@@ -90,13 +90,13 @@ public class ProducerServerStarter implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        List<Integer> ids = ProducerMessageHandlerUtil.getHandlerMessageIds();
+        List<Integer> ids = ProviderMessageHandlerUtil.getHandlerMessageIds();
         List<HandleMessage> handleMessages = new ArrayList<>();
         for (Integer id : ids) {
             HandleMessage handleMessage = new HandleMessage();
             handleMessage.setHandleMessageId(id);
-            ProducerMessageHandler handler = ProducerMessageHandlerUtil.getHandler(id);
-            if (handler instanceof ProducerAskMessageHandler) {
+            ProviderMessageHandler handler = ProviderMessageHandlerUtil.getHandler(id);
+            if (handler instanceof ProviderAskMessageHandler) {
                 //避免编码出错
                 handleMessage.setDirect(false);
                 if (handler.direct()) {
@@ -106,18 +106,18 @@ public class ProducerServerStarter implements ApplicationRunner {
                 handleMessage.setDirect(true);
             }
 
-            handleMessage.setMessageName(ProducerMessageHandlerUtil.getEmptyMessage(id).getClass().getName());
+            handleMessage.setMessageName(ProviderMessageHandlerUtil.getEmptyMessage(id).getClass().getName());
             handleMessages.add(handleMessage);
             MessageIdReader.relation(id, handler.getEmptyMessage().getClass().getSimpleName());
         }
         List<IdName> idNames = null;
-        if (StringUtils.isNoneEmpty(producer.getIdNamesPackage())) {
-            idNames = MessageScanner.scan(producer.getIdNamesPackage());
+        if (StringUtils.isNoneEmpty(provider.getIdNamesPackage())) {
+            idNames = MessageScanner.scan(provider.getIdNamesPackage());
 
         }
         List<IdName> finalIdNames = idNames;
         service.scheduleWithFixedDelay(() -> {
-            List<ServiceInstance> serviceInstances = discoveryClient.getInstances(producer.getGatewayName());
+            List<ServiceInstance> serviceInstances = discoveryClient.getInstances(provider.getGatewayName());
             for (ServiceInstance instance : serviceInstances) {
                 boolean useDefault = false;
                 String portStr = instance.getMetadata().get("scPort");
@@ -133,46 +133,46 @@ public class ProducerServerStarter implements ApplicationRunner {
                 GatewayChannelManager gatewayChannelManager = gatewayManager.getGatewayChannelServer(gatewayKey);
 
                 if (gatewayChannelManager == null) {
-                    gatewayChannelManager = new GatewayChannelManager(gatewayKey, producer.getGatewayChannel());
+                    gatewayChannelManager = new GatewayChannelManager(gatewayKey, provider.getGatewayChannel());
                     gatewayChannelManager = gatewayManager.addGatewayChannelServer(gatewayChannelManager);
                 }
                 if (gatewayChannelManager.isConnecting()) {
                     continue;
                 }
                 long now = System.currentTimeMillis();
-                if (gatewayChannelManager.getChannelSize() < producer.getGatewayChannel()) {
+                if (gatewayChannelManager.getChannelSize() < provider.getGatewayChannel()) {
                     Long lastFailTime = failGatewayMap.get(gatewayKey);
                     boolean start = false;
                     if (lastFailTime == null) {
                         start = true;
                     } else {
-                        if (now - lastFailTime >= producer.getConnectFailInterval()) {
+                        if (now - lastFailTime >= provider.getConnectFailInterval()) {
                             start = true;
                         }
                     }
                     if (start) {
                         if (useDefault) {
-                            logger.info("网关 [{}] {} {} 没有 没有配置sc socket端口,使用默认端口 {}", producer.getGatewayName(), instance.getHost(), instance.getUri(), gateway.getScPort());
+                            logger.info("网关 [{}] {} {} 没有 没有配置sc socket端口,使用默认端口 {}", provider.getGatewayName(), instance.getHost(), instance.getUri(), gateway.getScPort());
                         }
                         gatewayChannelManager.setConnecting(true);
-                        ProducerServer producerServer = new ProducerServer();
-                        producerServer.setGatewayManager(gatewayManager);
-                        producerServer.setProperties(producer);
-                        producerServer.setMessageExecutor(messageExecutor);
-                        producerServer.setServerName(serverProperties.getName());
-                        producerServer.setHttpPort(httpPort);
-                        producerServer.setReadableServerName(producer.getReadableName());
-                        if (producerServer.start(instance.getHost(), port)) {
-                            servers.add(producerServer);
-                            regServer(producerServer, handleMessages);
+                        ProviderServer providerServer = new ProviderServer();
+                        providerServer.setGatewayManager(gatewayManager);
+                        providerServer.setProperties(provider);
+                        providerServer.setMessageExecutor(messageExecutor);
+                        providerServer.setServerName(serverProperties.getName());
+                        providerServer.setHttpPort(httpPort);
+                        providerServer.setReadableServerName(provider.getReadableName());
+                        if (providerServer.start(instance.getHost(), port)) {
+                            servers.add(providerServer);
+                            regServer(providerServer, handleMessages);
                             if (gatewayChannelManager.getChannelSize() == 0) {
-                                gatewayChannelManager.setDefaultMessageRetryTimeLimit(producer.getMessageRetryTimeLimit());
+                                gatewayChannelManager.setDefaultMessageRetryTimeLimit(provider.getMessageRetryTimeLimit());
                                 if (finalIdNames != null && finalIdNames.size() > 0) {
-                                    regIdNames(producerServer, finalIdNames);
+                                    regIdNames(providerServer, finalIdNames);
                                 }
                             }
                             //认证
-                            gatewayChannelManager.addChannel(producerServer.getChannel());
+                            gatewayChannelManager.addChannel(providerServer.getChannel());
 
                         } else {
                             failGatewayMap.put(gatewayKey, now);
@@ -189,13 +189,13 @@ public class ProducerServerStarter implements ApplicationRunner {
         }, 2000, 50, TimeUnit.MILLISECONDS);
     }
 
-    public void regServer(ProducerServer server, List<HandleMessage> handleMessages) {
+    public void regServer(ProviderServer server, List<HandleMessage> handleMessages) {
         SCRegServerHandleMessageMessage message = new SCRegServerHandleMessageMessage();
         message.setServerName(serverProperties.getName());
         message.setReadableServerName(server.getReadableServerName());
         message.setServerKey(ChannelAttributeUtil.getLocalServerKey(server.getChannel()));
         message.setMessages(handleMessages);
-        Producer2GatewayMessage gatewayMessage = new Producer2GatewayMessage();
+        Provider2GatewayMessage gatewayMessage = new Provider2GatewayMessage();
         gatewayMessage.setMessageId(message.getMessageId());
         gatewayMessage.setMessage(message);
         gatewayMessage.setUserIds(new Long[]{0L});
@@ -206,7 +206,7 @@ public class ProducerServerStarter implements ApplicationRunner {
         server.getChannel().writeAndFlush(gatewayMessage);
     }
 
-    public void regIdNames(ProducerServer server, List<IdName> idNames) {
+    public void regIdNames(ProviderServer server, List<IdName> idNames) {
         SCIdNameMessage message = new SCIdNameMessage();
         for (int i = 0; i < idNames.size(); i++) {
             if (i > 0 && i % 100 == 0) {
@@ -220,8 +220,8 @@ public class ProducerServerStarter implements ApplicationRunner {
         }
     }
 
-    private void regIdNames(ProducerServer server, SCIdNameMessage message) {
-        Producer2GatewayMessage gatewayMessage = new Producer2GatewayMessage();
+    private void regIdNames(ProviderServer server, SCIdNameMessage message) {
+        Provider2GatewayMessage gatewayMessage = new Provider2GatewayMessage();
         gatewayMessage.setMessageId(message.getMessageId());
         gatewayMessage.setMessage(message);
         gatewayMessage.setUserIds(new Long[]{0L});

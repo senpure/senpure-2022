@@ -1,9 +1,8 @@
-package com.senpure.io.server.gateway.producer;
+package com.senpure.io.server.gateway.provider;
 
 
 import com.senpure.io.server.ChannelAttributeUtil;
 import com.senpure.io.server.gateway.Client2GatewayMessage;
-import com.senpure.io.server.protocol.bean.Statistic;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +24,8 @@ public class Producer {
     private final Set<Integer> handleIds = new HashSet<>();
     private final Statistic statistic = new Statistic();
     private String serverKey;
+    private final AtomicInteger consumerCount = new AtomicInteger();
+
 
     public void sendMessage(Client2GatewayMessage message) {
         Channel channel = nextChannel();
@@ -59,8 +60,8 @@ public class Producer {
         return false;
     }
 
-    public synchronized void updateStatistic(Statistic statistic) {
-        this.statistic.copy(statistic);
+    public synchronized void updateScore(int score) {
+        this.statistic.setScore(score);
 
     }
 
@@ -118,6 +119,31 @@ public class Producer {
 
     public Statistic getStatistic() {
         return statistic;
+    }
+
+    static class Statistic {
+        //producer 汇报的分数
+        int score;
+        //生产者链接数量
+        int consumerCount;
+
+        public void consumerIncr() {
+            consumerCount++;
+        }
+        public void consumerDecr() {
+            consumerCount--;
+        }
+        public void setScore(int score) {
+            this.score = score;
+        }
+
+        public int getScore() {
+            return score;
+        }
+
+        public int getConsumerCount() {
+            return consumerCount;
+        }
     }
 
     public static void main(String[] args) {

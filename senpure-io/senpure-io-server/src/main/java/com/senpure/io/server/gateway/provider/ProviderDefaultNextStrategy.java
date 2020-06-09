@@ -1,4 +1,4 @@
-package com.senpure.io.server.gateway.producer;
+package com.senpure.io.server.gateway.provider;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -10,7 +10,7 @@ import java.util.List;
  * @author senpure
  * @time 2020-06-05 15:23:27
  */
-public class ProducerDefaultNextStrategy implements ProducerNextStrategy {
+public class ProviderDefaultNextStrategy implements ProviderNextStrategy {
     private final Comparator<Producer> comparator=new StatisticComparator();
     @Override
     public String strategyName() {

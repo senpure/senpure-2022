@@ -1,4 +1,4 @@
-package com.senpure.io.server.gateway.producer;
+package com.senpure.io.server.gateway.provider;
 
 import java.util.List;
 
@@ -8,7 +8,7 @@ import java.util.List;
  * @author senpure
  * @time 2020-06-05 15:03:10
  */
-public interface ProducerNextStrategy {
+public interface ProviderNextStrategy {
     String strategyName();
     Producer next(List<Producer> producers);
 }

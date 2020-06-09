@@ -1,4 +1,4 @@
-package com.senpure.io.server.producer;
+package com.senpure.io.server.provider;
 
 
 import com.senpure.base.util.Assert;
@@ -63,7 +63,7 @@ public class GatewayChannelManager {
     private void checkFailMessage() {
         synchronized (failMessages) {
             if (failMessages.size() > 0) {
-                ProducerMessageExecutor executor = Spring.getBean(ProducerMessageExecutor.class);
+                ProviderMessageExecutor executor = Spring.getBean(ProviderMessageExecutor.class);
                 if (executor != null) {
                     executor.execute(this::sendFailMessage);
                 } else {
@@ -123,16 +123,16 @@ public class GatewayChannelManager {
         }
     }
 
-    public void sendMessage(List<Producer2GatewayMessage> frames) {
+    public void sendMessage(List<Provider2GatewayMessage> frames) {
 
         sendMessage(frames, 100);
     }
 
-    public void sendMessage(List<Producer2GatewayMessage> frames, int flushValue) {
+    public void sendMessage(List<Provider2GatewayMessage> frames, int flushValue) {
         Channel channel = channelManager.nextChannel();
         if (channel != null) {
             int temp = 1;
-            for (Producer2GatewayMessage frame : frames) {
+            for (Provider2GatewayMessage frame : frames) {
                 channel.write(frame);
                 if (temp % flushValue == 0) {
                     channel.flush();
@@ -146,7 +146,7 @@ public class GatewayChannelManager {
         }
     }
 
-    public void sendMessage(Producer2GatewayMessage frame) {
+    public void sendMessage(Provider2GatewayMessage frame) {
         Channel channel = channelManager.nextChannel();
         if (channel != null) {
             channel.writeAndFlush(frame);
@@ -221,11 +221,11 @@ public class GatewayChannelManager {
 
     private static class FailMessage {
         private long startTime;
-        private Producer2GatewayMessage frame;
+        private Provider2GatewayMessage frame;
 
         private int messageRetryTimeLimit;
 
-        public void setFrame(Producer2GatewayMessage frame) {
+        public void setFrame(Provider2GatewayMessage frame) {
             this.frame = frame;
         }
 

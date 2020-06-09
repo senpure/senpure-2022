@@ -1,11 +1,11 @@
-package com.senpure.io.server.producer.handler;
+package com.senpure.io.server.provider.handler;
 
 
 import com.senpure.io.protocol.Message;
 import io.netty.channel.Channel;
 
 
-public interface ProducerMessageHandler<T extends Message> {
+public interface ProviderMessageHandler<T extends Message> {
 
 
     T getEmptyMessage();
