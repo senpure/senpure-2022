@@ -6,16 +6,16 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
 
 public class ChannelAttributeUtil {
-    private static String USER_ID = "userId";
-    private static String TOKEN = "token";
-    private static String USER_NAME = "userName";
+    private static final String USER_ID = "userId";
+    private static final String TOKEN = "token";
+    private static final String USER_NAME = "userName";
 
-    private static String OFFLINE_HANDLER = "offlineHandler";
-    private static String CHANNEL_USER = "channelUser";
+    private static final String OFFLINE_HANDLER = "offlineHandler";
+    private static final String CHANNEL_USER = "channelUser";
 
-    private static String REMOTE_SERVER_NAME = "remoteServerName";
-    private static String REMOTE_SERVER_KEY = "remoteServerKeyKey";
-    private static String LOCAL_SERVER_KEY = "localServerKeyKey";
+    private static final String REMOTE_SERVER_NAME = "remoteServerName";
+    private static final String REMOTE_SERVER_KEY = "remoteServerKeyKey";
+    private static final String LOCAL_SERVER_KEY = "localServerKeyKey";
     public static AttributeKey<Long> userIdKey = AttributeKey.valueOf(USER_ID);
     public static AttributeKey<Long> tokenKey = AttributeKey.valueOf(TOKEN);
     public static AttributeKey<String> userNameKey = AttributeKey.valueOf(USER_NAME);
