@@ -32,7 +32,7 @@ public class GatewayMessageExecutor {
     protected static Logger logger = LoggerFactory.getLogger(GatewayMessageExecutor.class);
 
 
-    private TaskLoopGroup service;
+    private final TaskLoopGroup service;
     private int serviceRefCount = 0;
     private int csLoginMessageId = 0;
 
@@ -561,10 +561,10 @@ public class GatewayMessageExecutor {
                 String serverKey = ChannelAttributeUtil.getRemoteServerKey(channel);
                 logger.debug("{} {} 可以处理 {} 值位 {} 的请求", serverName, serverKey,
                         MessageIdReader.read(waitAskTask.getFromMessageId()), waitAskTask.getValue());
-                ProviderManager serverManager = producerManagerMap.get(serverName);
-                for (Provider useChannelManager : serverManager.getUseProviders()) {
-                    if (useChannelManager.getServerKey().equalsIgnoreCase(serverKey)) {
-                        waitAskTask.answer(serverManager, useChannelManager, true);
+                ProviderManager providerManager = producerManagerMap.get(serverName);
+                for (Provider useProvider : providerManager.getUseProviders()) {
+                    if (useProvider.getServerKey().equalsIgnoreCase(serverKey)) {
+                        waitAskTask.answer(providerManager, useProvider, true);
                         return true;
                     }
                 }
@@ -587,9 +587,10 @@ public class GatewayMessageExecutor {
         long now = System.currentTimeMillis();
         for (Map.Entry<Long, WaitAskTask> entry : waitAskMap.entrySet()) {
             WaitAskTask waitAskTask = entry.getValue();
-            if (waitAskTask.getServerChannelManager() != null) {
+            if (waitAskTask.getProvider() != null) {
                 tokens.add(entry.getKey());
-                waitAskTask.sendMessage();
+                service.get(waitAskTask.getToken()).execute(waitAskTask::sendMessage);
+
             } else {
                 //超时
                 if (now - waitAskTask.getStartTime() > waitAskTask.getMaxDelay()) {

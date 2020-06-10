@@ -30,11 +30,11 @@ public class WaitAskTask {
     private int answerTimes;
     private long maxDelay = 3000;
 
-    private  int  fromMessageId;
+    private int fromMessageId;
     private int requestId;
-    private Provider serverChannelManager;
+    private Provider provider;
 
-    private ProviderManager serverManager;
+    private ProviderManager providerManager;
     private Client2GatewayMessage message;
 
 
@@ -43,36 +43,40 @@ public class WaitAskTask {
         startTime = System.currentTimeMillis();
     }
 
-    public synchronized void answer(ProviderManager serverManager, Provider serverChannelManager, boolean canHandle) {
+    public synchronized void answer(ProviderManager providerManager, Provider provider, boolean canHandle) {
         answerTimes++;
         if (canHandle) {
-            if (this.serverChannelManager != null) {
+            if (this.provider != null) {
                 return;
             }
-            this.serverManager = serverManager;
-            this.serverChannelManager = serverChannelManager;
+            this.providerManager = providerManager;
+            this.provider = provider;
             return;
         }
     }
 
+    public long getToken() {
+        return message.getToken();
+    }
+
     public void sendMessage() {
-        serverManager.relationAndWaitSendMessage(serverChannelManager, message);
+        providerManager.relationAndWaitSendMessage(provider, message);
 
     }
 
     public boolean cancel() {
-        if (serverChannelManager != null) {
+        if (provider != null) {
             return false;
         }
         return System.currentTimeMillis() - startTime > maxDelay;
     }
 
-    public Provider getServerChannelManager() {
-        return serverChannelManager;
+    public Provider getProvider() {
+        return provider;
     }
 
-    public void setServerChannelManager(Provider serverChannelManager) {
-        this.serverChannelManager = serverChannelManager;
+    public void setProvider(Provider provider) {
+        this.provider = provider;
     }
 
     public long getAnswerTime() {
@@ -132,11 +136,11 @@ public class WaitAskTask {
         this.askTimes = askTimes;
     }
 
-    public int  getFromMessageId() {
+    public int getFromMessageId() {
         return fromMessageId;
     }
 
-    public void setFromMessageId(int  fromMessageId) {
+    public void setFromMessageId(int fromMessageId) {
         this.fromMessageId = fromMessageId;
     }
 

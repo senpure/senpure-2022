@@ -9,7 +9,6 @@ import com.senpure.io.server.protocol.message.SCInnerErrorMessage;
 import com.senpure.io.server.support.MessageIdReader;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,24 +19,23 @@ import java.util.List;
 public class HandleMessageManager {
 
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
+    private  final  Logger logger = LoggerFactory.getLogger(getClass());
     private boolean direct;
-    private List<ProviderManager> providerManagers = new ArrayList<>();
+    private final List<ProviderManager> providerManagers = new ArrayList<>();
     private ProviderManager providerManager;
-    private GatewayMessageExecutor messageExecutor;
-    private int csAskHandleMessageId =  CSAskHandleMessage.MESSAGE_ID;
-    //   private AtomicInteger atomicIndex = new AtomicInteger(-1);
-    private int handId;
+    private final GatewayMessageExecutor messageExecutor;
 
-    public HandleMessageManager(int handId, boolean direct, GatewayMessageExecutor messageExecutor) {
+    private final int handleMessageId;
+
+    public HandleMessageManager(int handleMessageId, boolean direct, GatewayMessageExecutor messageExecutor) {
         this.direct = direct;
         this.messageExecutor = messageExecutor;
-        this.handId = handId;
+        this.handleMessageId = handleMessageId;
     }
 
-    public synchronized void addProducerManager(int handId, ProviderManager providerManager) {
-        if (this.handId != handId) {
-            Assert.error("handId 不匹配");
+    public synchronized void addProducerManager(int messageId, ProviderManager providerManager) {
+        if (this.handleMessageId != messageId) {
+            Assert.error("handleMessageId  不匹配");
         }
         boolean add = true;
         for (ProviderManager manager : providerManagers) {
@@ -49,7 +47,7 @@ public class HandleMessageManager {
         if (add) {
             //不同的服务处理相同的id,容易编码疏忽,取消这种模式
             if (providerManagers.size() >= 1 && direct) {
-                Assert.error("不同的服务处理了相同的非ask消息id,该模式容易编码疏忽,产出bug,强制不允许  id:"+ MessageIdReader.read(handId));
+                Assert.error("不同的服务处理了相同的非ask消息id,该模式容易编码疏忽,产出bug,强制不允许  id:"+ MessageIdReader.read(messageId));
             }
             providerManagers.add(providerManager);
         }
@@ -83,7 +81,7 @@ public class HandleMessageManager {
             askHandleMessage.setAskToken(messageExecutor.idGenerator.nextId());
             askHandleMessage.setAskValue(value);
             Client2GatewayMessage temp = new Client2GatewayMessage();
-            temp.setMessageId(csAskHandleMessageId);
+            temp.setMessageId(CSAskHandleMessage.MESSAGE_ID);
             temp.setToken(message.getToken());
             temp.setUserId(message.getUserId());
             buf = Unpooled.buffer();
@@ -108,10 +106,7 @@ public class HandleMessageManager {
             messageExecutor.waitAskMap.put(waitAskTask.getAskToken(), waitAskTask);
             for (ProviderManager providerManager : providerManagers) {
                 for (Provider provider : providerManager.getUseProviders()) {
-                    Channel channel = provider.nextChannel();
-                    if (channel != null) {
-                        channel.writeAndFlush(temp);
-                    }
+                    provider.sendMessage(temp);
                 }
             }
         }
