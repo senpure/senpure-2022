@@ -49,8 +49,10 @@ public class ProviderManager {
         ProducerRelation producerRelation = new ProducerRelation();
         producerRelation.provider = provider;
         producerRelation.relationToken = relationToken;
-        tokenProducerMap.put(token, producerRelation);
-
+        ProducerRelation old = tokenProducerMap.put(token, producerRelation);
+        if (old == null) {
+            provider.getStatistic().consumerIncr();
+        }
     }
 
 
@@ -127,13 +129,13 @@ public class ProviderManager {
      *
      * @param channel
      */
-    public synchronized void serverOffLine(Channel channel) {
-        serverOffLine(channel, prepStopOldInstance);
-        serverOffLine(channel, useProviders);
+    public synchronized void providerOffLine(Channel channel) {
+        providerOffLine(channel, prepStopOldInstance);
+        providerOffLine(channel, useProviders);
     }
 
-    private void serverOffLine(Channel channel, List<Provider> channelManagers) {
-        Iterator<Provider> iterator = channelManagers.iterator();
+    private void providerOffLine(Channel channel, List<Provider> providers) {
+        Iterator<Provider> iterator = providers.iterator();
         while (iterator.hasNext()) {
             Provider provider = iterator.next();
             if (provider.offline(channel)) {
@@ -160,7 +162,7 @@ public class ProviderManager {
         }
     }
 
-    //消费方离开了生产方
+    //消费方离开了服务提供方
     public void consumerLeaveProducer(Channel consumerChannel, Long token, Long userId) {
         breakUserGateway(consumerChannel, token, userId, Constant.BREAK_TYPE_USER_LEAVE);
     }
@@ -187,7 +189,7 @@ public class ProviderManager {
         ProducerRelation producerRelation = localRemove ? tokenProducerMap.remove(token) : tokenProducerMap.get(token);
         if (producerRelation != null) {
             if (localRemove) {
-
+                producerRelation.provider.getStatistic().consumerDecr();
             }
             logger.info("{} {} 取消 对{} :token{} userId:{}的 关联  {}",
                     serverName, producerRelation.provider.getServerKey(), consumerChannel, token, userId, localRemove ? "移除" : "不移除");

@@ -121,7 +121,7 @@ public class Provider {
         return statistic;
     }
 
-    static class Statistic {
+    public  static class Statistic {
         //producer 汇报的分数
         int score;
         //生产者链接数量

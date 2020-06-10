@@ -28,7 +28,11 @@ public class ProviderDefaultNextStrategy implements ProviderNextStrategy {
 
         @Override
         public int compare(Provider x, Provider y) {
-            return Integer.compare(y.getStatistic().getScore(), x.getStatistic().getScore());
+            int result= Integer.compare(y.getStatistic().getScore(), x.getStatistic().getScore());
+            if (result == 0) {
+                result = Integer.compare(y.getStatistic().getConsumerCount(), x.getStatistic().getConsumerCount());
+            }
+            return result;
         }
     }
 }

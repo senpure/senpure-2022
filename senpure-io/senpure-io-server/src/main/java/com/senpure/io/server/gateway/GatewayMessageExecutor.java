@@ -490,11 +490,11 @@ public class GatewayMessageExecutor {
             WaitRelationTask task = entry.getValue();
             if (task.check()) {
                 tokens.add(entry.getKey());
-                service.execute(task::sendMessage);
+                service.get(task.getToken()).execute(task::sendMessage);
             } else {
                 if (task.cancel()) {
                     tokens.add(entry.getKey());
-                    service.execute(() -> task.sendCancelMessage(this));
+                    service.get(task.getToken()).execute(() -> task.sendCancelMessage(this));
                 }
             }
         }

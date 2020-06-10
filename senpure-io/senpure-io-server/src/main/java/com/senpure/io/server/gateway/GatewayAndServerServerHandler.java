@@ -40,7 +40,7 @@ public class GatewayAndServerServerHandler extends SimpleChannelInboundHandler<S
         logger.debug("{} {} {} 断开连接", serverName, ChannelAttributeUtil.getRemoteServerKey(channel), channel);
         if (serverName != null) {
             ProviderManager providerManager = messageExecutor.producerManagerMap.get(serverName);
-            messageExecutor.execute(() -> providerManager.serverOffLine(channel));
+            messageExecutor.execute(() -> providerManager.providerOffLine(channel));
         }
 
     }

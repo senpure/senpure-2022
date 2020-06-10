@@ -50,6 +50,10 @@ public class WaitRelationTask {
 
     }
 
+    public long getToken() {
+        return message.getToken();
+    }
+
     public void sendCancelMessage(GatewayMessageExecutor messageExecutor) {
         CSBreakUserGatewayMessage breakMessage = new CSBreakUserGatewayMessage();
         breakMessage.setRelationToken(relationToken);
