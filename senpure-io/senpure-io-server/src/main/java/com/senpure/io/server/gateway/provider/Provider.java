@@ -16,9 +16,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
-public class Producer {
+public class Provider {
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     protected List<Channel> channels = new ArrayList<>(16);
     private final AtomicInteger atomicIndex = new AtomicInteger(-1);
     private final Set<Integer> handleIds = new HashSet<>();

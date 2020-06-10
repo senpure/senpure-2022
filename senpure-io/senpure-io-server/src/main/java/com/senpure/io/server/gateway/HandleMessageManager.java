@@ -3,7 +3,7 @@ package com.senpure.io.server.gateway;
 import com.senpure.base.util.Assert;
 import com.senpure.io.protocol.CompressBean;
 import com.senpure.io.server.Constant;
-import com.senpure.io.server.gateway.provider.Producer;
+import com.senpure.io.server.gateway.provider.Provider;
 import com.senpure.io.server.protocol.message.CSAskHandleMessage;
 import com.senpure.io.server.protocol.message.SCInnerErrorMessage;
 import com.senpure.io.server.support.MessageIdReader;
@@ -100,15 +100,15 @@ public class HandleMessageManager {
 
             int askTimes = 0;
             for (ProviderManager serverManager : providerManagers) {
-                askTimes += serverManager.getUseProducers().size();
+                askTimes += serverManager.getUseProviders().size();
             }
             waitAskTask.setAskTimes(askTimes);
             waitAskTask.setMessage(message);
 
             messageExecutor.waitAskMap.put(waitAskTask.getAskToken(), waitAskTask);
-            for (ProviderManager serverManager : providerManagers) {
-                for (Producer channelManager : serverManager.getUseProducers()) {
-                    Channel channel = channelManager.nextChannel();
+            for (ProviderManager providerManager : providerManagers) {
+                for (Provider provider : providerManager.getUseProviders()) {
+                    Channel channel = provider.nextChannel();
                     if (channel != null) {
                         channel.writeAndFlush(temp);
                     }

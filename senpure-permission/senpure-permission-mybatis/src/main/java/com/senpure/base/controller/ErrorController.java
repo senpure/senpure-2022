@@ -17,7 +17,11 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 @ControllerAdvice
@@ -26,13 +30,30 @@ public class ErrorController extends BaseController {
     @Resource
     private MultipleInterceptor multipleInterceptor;
 
+    public static boolean innerIP(String ip) {
+
+        Pattern reg = Pattern.compile("^(0:0:0:0:0:0:0:1)|(127\\.0\\.0\\.1)|(localhost)|(10\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})|(172\\.((1[6-9])|(2\\d)|(3[01]))\\.\\d{1,3}\\.\\d{1,3})|(192\\.168\\.\\d{1,3}\\.\\d{1,3})$");
+        Matcher match = reg.matcher(ip);
+
+        return match.find();
+    }
+
     @ExceptionHandler(Exception.class)
     public ModelAndView error(HttpServletRequest request, HttpServletResponse response, Exception e) {
-
-        logger.error(request.getMethod()+": "+request.getRequestURI()+" 服务器未知错误",e);
+        logger.error(request.getMethod() + ": " + request.getRequestURI() + " 服务器未知错误", e);
+        String ip = Http.getIP(request, true);
+        boolean innerIP = innerIP(ip);
         ResultMap result = ResultMap.dim();
         ResultHelper.wrapMessage(result, getLocaleResolver().resolveLocale(request));
+        StringBuilder error = new StringBuilder();
         if (Http.isAjaxRequest(request)) {
+            if (innerIP) {
+                error.append(result.getMessage());
+                error.append("[");
+                error.append(e.toString());
+                error.append("]");
+                result.put(ResultMap.MESSAGE_KEY, error.toString());
+            }
             Http.returnJson(response, JSON.toJSONString(result));
             return null;
         }
@@ -55,7 +76,7 @@ public class ErrorController extends BaseController {
             viewLocale = locale.getLanguage();
         }
         modelAndView.addObject("viewLocale", viewLocale);
-        StringBuilder error = new StringBuilder();
+
         String format = (String) modelAndView.getModelMap().get(PermissionConstant.DATETIME_FORMAT_KEY);
         error.append("<h4>TIME:").append(DateFormatUtil.getDateFormat(format).format(new Date())).append("</h4>");
         error.append("<h5>");
@@ -63,12 +84,11 @@ public class ErrorController extends BaseController {
         error.append("</h5>");
         error.append(e.toString().replace("\n", "<br>"));
         error.append("<br>");
-        for (StackTraceElement s : e.getStackTrace()) {
-            error.append(s.toString()).append("<br>");
-
-
+        if (innerIP) {
+            for (StackTraceElement s : e.getStackTrace()) {
+                error.append(s.toString()).append("<br>");
+            }
         }
-
         result.put(ResultMap.MESSAGE_KEY, error.toString());
         logger.debug("accountValues {}", multipleInterceptor.getAccountValues().toString());
         logger.debug("menuJson {}", menuJosn);
@@ -76,5 +96,11 @@ public class ErrorController extends BaseController {
         logger.debug("{} {} > {}", request.getMethod(), request.getRequestURI(), modelAndView.getViewName());
         modelAndView.addAllObjects(result);
         return modelAndView;
+    }
+
+    public static void main(String[] args) {
+        Map<String, String> map = new HashMap<>();
+        map.put("key", "value\nvalue\nvalue");
+        System.out.println(JSON.toJSONString(map));
     }
 }

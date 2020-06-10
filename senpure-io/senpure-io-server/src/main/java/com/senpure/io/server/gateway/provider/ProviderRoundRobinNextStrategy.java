@@ -19,8 +19,8 @@ public class ProviderRoundRobinNextStrategy implements ProviderNextStrategy {
     }
 
     @Override
-    public Producer next(List<Producer> producers) {
+    public Provider next(List<Provider> providers) {
         int index = atomicIndex.incrementAndGet();
-        return producers.get(Math.abs(index % producers.size()));
+        return providers.get(Math.abs(index % providers.size()));
     }
 }

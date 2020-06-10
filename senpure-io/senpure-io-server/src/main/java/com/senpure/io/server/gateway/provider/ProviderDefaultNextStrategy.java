@@ -11,7 +11,7 @@ import java.util.List;
  * @time 2020-06-05 15:23:27
  */
 public class ProviderDefaultNextStrategy implements ProviderNextStrategy {
-    private final Comparator<Producer> comparator=new StatisticComparator();
+    private final Comparator<Provider> comparator=new StatisticComparator();
     @Override
     public String strategyName() {
         return "default";
@@ -19,15 +19,15 @@ public class ProviderDefaultNextStrategy implements ProviderNextStrategy {
 
 
     @Override
-    public Producer next(List<Producer> producers) {
-        List<Producer> sortedProducers = new ArrayList<>(producers);
-        sortedProducers.sort(comparator);
-        return sortedProducers.get(0);
+    public Provider next(List<Provider> providers) {
+        List<Provider> sortedProviders = new ArrayList<>(providers);
+        sortedProviders.sort(comparator);
+        return sortedProviders.get(0);
     }
-    static class  StatisticComparator implements  Comparator<Producer>{
+    static class  StatisticComparator implements  Comparator<Provider>{
 
         @Override
-        public int compare(Producer x, Producer y) {
+        public int compare(Provider x, Provider y) {
             return Integer.compare(y.getStatistic().getScore(), x.getStatistic().getScore());
         }
     }

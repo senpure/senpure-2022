@@ -1,7 +1,7 @@
 package com.senpure.io.server.gateway;
 
 
-import com.senpure.io.server.gateway.provider.Producer;
+import com.senpure.io.server.gateway.provider.Provider;
 import com.senpure.io.server.protocol.message.CSBreakUserGatewayMessage;
 
 /**
@@ -15,13 +15,13 @@ public class WaitRelationTask {
     private boolean relation = false;
     protected long startTime;
     private long relationTime;
-    private long maxDelay = 5000;
+    private final long maxDelay = 5000;
 
     private Client2GatewayMessage message;
 
-    private Producer serverChannelManager;
+    private Provider provider;
 
-    private ProviderManager serverManager;
+    private ProviderManager providerManager;
     private Long relationToken;
 
 
@@ -44,8 +44,8 @@ public class WaitRelationTask {
 
     public void sendMessage() {
         if (message != null) {
-            serverManager.bind(message.getToken(), relationToken, serverChannelManager);
-            serverManager.sendMessage(message);
+            providerManager.bind(message.getToken(), relationToken, provider);
+            providerManager.sendMessage(message);
         }
 
     }
@@ -55,7 +55,7 @@ public class WaitRelationTask {
         breakMessage.setRelationToken(relationToken);
         breakMessage.setToken(message.getToken());
         breakMessage.setUserId(message.getUserId());
-        messageExecutor.sendMessage(serverChannelManager, breakMessage);
+        messageExecutor.sendMessage(provider, breakMessage);
 
     }
 
@@ -68,20 +68,20 @@ public class WaitRelationTask {
         this.message = message;
     }
 
-    public Producer getServerChannelManager() {
-        return serverChannelManager;
+    public Provider getProvider() {
+        return provider;
     }
 
-    public ProviderManager getServerManager() {
-        return serverManager;
+    public ProviderManager getProviderManager() {
+        return providerManager;
     }
 
-    public void setServerManager(ProviderManager serverManager) {
-        this.serverManager = serverManager;
+    public void setProviderManager(ProviderManager providerManager) {
+        this.providerManager = providerManager;
     }
 
-    public void setServerChannelManager(Producer serverChannelManager) {
-        this.serverChannelManager = serverChannelManager;
+    public void setProvider(Provider provider) {
+        this.provider = provider;
     }
 
 

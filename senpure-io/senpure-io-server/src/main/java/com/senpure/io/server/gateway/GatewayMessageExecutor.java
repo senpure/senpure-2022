@@ -8,7 +8,7 @@ import com.senpure.io.protocol.Message;
 import com.senpure.io.server.ChannelAttributeUtil;
 import com.senpure.io.server.Constant;
 import com.senpure.io.server.ServerProperties;
-import com.senpure.io.server.gateway.provider.Producer;
+import com.senpure.io.server.gateway.provider.Provider;
 import com.senpure.io.server.protocol.bean.HandleMessage;
 import com.senpure.io.server.protocol.message.*;
 import com.senpure.io.server.support.MessageIdReader;
@@ -354,9 +354,9 @@ public class GatewayMessageExecutor {
                     break;
                 }
             }
-            Producer producer = providerManager.getProducer(serverKey);
-            producer.addChannel(channel);
-            providerManager.checkChannelServer(serverKey, producer);
+            Provider provider = providerManager.getProducer(serverKey);
+            provider.addChannel(channel);
+            providerManager.checkChannelServer(serverKey, provider);
             for (HandleMessage handleMessage : handleMessages) {
                 HandleMessageManager handleMessageManager = handleMessageManagerMap.get(handleMessage.getHandleMessageId());
                 if (handleMessageManager == null) {
@@ -399,9 +399,9 @@ public class GatewayMessageExecutor {
 
     }
 
-    public void sendMessage(Producer producer, Message message) {
+    public void sendMessage(Provider provider, Message message) {
         Client2GatewayMessage toMessage = createMessage(message);
-        producer.sendMessage(toMessage);
+        provider.sendMessage(toMessage);
     }
 
 
@@ -445,9 +445,9 @@ public class GatewayMessageExecutor {
         String producerName = ChannelAttributeUtil.getRemoteServerName(channel);
         ProviderManager providerManager = producerManagerMap.get(producerName);
         if (providerManager != null) {
-            Producer producer = providerManager.getProducer(producerKey);
-            if (producer != null) {
-                producer.updateScore(message.getStatistic().getScore());
+            Provider provider = providerManager.getProducer(producerKey);
+            if (provider != null) {
+                provider.updateScore(message.getStatistic().getScore());
             } else {
                 logger.warn("{} producer is null", producerKey);
             }
@@ -562,7 +562,7 @@ public class GatewayMessageExecutor {
                 logger.debug("{} {} 可以处理 {} 值位 {} 的请求", serverName, serverKey,
                         MessageIdReader.read(waitAskTask.getFromMessageId()), waitAskTask.getValue());
                 ProviderManager serverManager = producerManagerMap.get(serverName);
-                for (Producer useChannelManager : serverManager.getUseProducers()) {
+                for (Provider useChannelManager : serverManager.getUseProviders()) {
                     if (useChannelManager.getServerKey().equalsIgnoreCase(serverKey)) {
                         waitAskTask.answer(serverManager, useChannelManager, true);
                         return true;

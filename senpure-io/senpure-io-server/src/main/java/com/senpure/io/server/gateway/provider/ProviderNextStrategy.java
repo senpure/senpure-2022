@@ -10,5 +10,5 @@ import java.util.List;
  */
 public interface ProviderNextStrategy {
     String strategyName();
-    Producer next(List<Producer> producers);
+    Provider next(List<Provider> providers);
 }
