@@ -18,7 +18,7 @@ public class CSHeartMessageHandler extends AbstractInnerMessageHandler<CSHeartMe
     }
 
     @Override
-    public int handlerId() {
+    public int handleMessageId() {
         return CSHeartMessage.MESSAGE_ID;
     }
 

@@ -13,34 +13,34 @@ import java.util.Map;
 
 public class ProviderMessageHandlerUtil {
 
-    private static Map<Integer, ProviderMessageHandler> handlerMap = new HashMap<>();
+    private final static Map<Integer, ProviderMessageHandler<?>> handlerMap = new HashMap<>();
 
-    public static ProviderMessageHandler getHandler(int messageId) {
+    public  static ProviderMessageHandler<?> getHandler(int messageId) {
         return handlerMap.get(messageId);
     }
 
-    private static List<Integer> regMessageIds = new ArrayList<>(128);
+    private final static List<Integer> regMessageIds = new ArrayList<>(128);
 
-    public static void regMessageHandler(ProviderMessageHandler handler) {
-        ProviderMessageHandler old = handlerMap.get(handler.handlerId());
+    public static void regMessageHandler(ProviderMessageHandler<?> handler) {
+        ProviderMessageHandler<?> old = handlerMap.get(handler.handleMessageId());
         if (old != null) {
-            Assert.error(handler.handlerId() + " -> " + handler.getEmptyMessage()
+            Assert.error(handler.handleMessageId() + " -> " + handler.getEmptyMessage()
                     .getClass().getName() + "  处理程序已经存在"
                     + " 存在 " + old.getClass().getName() + " 注册 " + handler.getClass().getName());
         }
         // Assert.isNull(handlerMap.get(handler.handlerId()), handler.handlerId() + " -> " + handler.getEmptyMessage().getClass().getName() + "  处理程序已经存在");
 
-        handlerMap.put(handler.handlerId(), handler);
+        handlerMap.put(handler.handleMessageId(), handler);
         if (handler.regToGateway()) {
-            if (handler.handlerId() < 10000) {
-                Assert.error("10000 以下为保留id不允许使用 " + handler.handlerId() + " " + handler.getEmptyMessage().getClass().getName());
+            if (handler.handleMessageId() < 10000) {
+                Assert.error("10000 以下为保留id不允许使用 " + handler.handleMessageId() + " " + handler.getEmptyMessage().getClass().getName());
             }
-            regMessageIds.add(handler.handlerId());
+            regMessageIds.add(handler.handleMessageId());
         }
     }
 
     public static Message getEmptyMessage(int messageId) {
-        ProviderMessageHandler handler = handlerMap.get(messageId);
+        ProviderMessageHandler<?> handler = handlerMap.get(messageId);
         if (handler == null) {
             return null;
         }

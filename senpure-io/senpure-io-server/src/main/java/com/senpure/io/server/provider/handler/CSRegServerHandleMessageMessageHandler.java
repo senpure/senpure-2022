@@ -32,7 +32,7 @@ public class CSRegServerHandleMessageMessageHandler extends AbstractInnerMessage
     }
 
     @Override
-    public int handlerId() {
+    public int handleMessageId() {
         return CSRegServerHandleMessageMessage.MESSAGE_ID;
     }
 

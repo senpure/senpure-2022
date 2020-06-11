@@ -51,7 +51,7 @@ public class WaitRelationTask {
     }
 
     public long getToken() {
-        return message.getToken();
+        return message == null ? 0 : message.getToken();
     }
 
     public void sendCancelMessage(GatewayMessageExecutor messageExecutor) {

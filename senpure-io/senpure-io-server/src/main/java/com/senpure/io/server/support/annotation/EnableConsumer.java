@@ -2,8 +2,8 @@ package com.senpure.io.server.support.annotation;
 
 
 import com.senpure.io.server.ServerProperties;
-import com.senpure.io.server.support.configuration.ConsumerAutoConfiguration;
-import com.senpure.io.server.support.configuration.ConsumerSelector;
+import com.senpure.io.server.support.autoconfigure.ConsumerAutoConfiguration;
+import com.senpure.io.server.support.autoconfigure.ConsumerMessageHandlerAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Import;
 
@@ -21,10 +21,11 @@ import java.lang.annotation.Target;
 @Target(value = {java.lang.annotation.ElementType.TYPE})
 @Documented
 @EnableConfigurationProperties({ServerProperties.class})
-@Import({ConsumerAutoConfiguration.class, ConsumerSelector.class})
+@Import({ConsumerAutoConfiguration.class, ConsumerMessageHandlerAutoConfiguration.class})
+//, ConsumerSelector.class
 public @interface EnableConsumer {
-
-    boolean innerError() default true;
-
-    boolean heart() default true;
+//
+//    boolean innerError() default true;
+//
+//    boolean heart() default true;
 }

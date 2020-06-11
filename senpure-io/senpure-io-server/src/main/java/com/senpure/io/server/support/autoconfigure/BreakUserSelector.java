@@ -1,4 +1,4 @@
-package com.senpure.io.server.support.configuration;
+package com.senpure.io.server.support.autoconfigure;
 
 
 import com.senpure.io.server.provider.handler.CSBreakUserGatewayMessageHandler;

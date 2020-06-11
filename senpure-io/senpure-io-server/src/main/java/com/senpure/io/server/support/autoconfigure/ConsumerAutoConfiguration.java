@@ -1,4 +1,4 @@
-package com.senpure.io.server.support.configuration;
+package com.senpure.io.server.support.autoconfigure;
 
 import com.senpure.base.util.Assert;
 import com.senpure.executor.DefaultTaskLoopGroup;
@@ -106,9 +106,6 @@ public class ConsumerAutoConfiguration {
     }
 
 
-    public void setServerProperties(ServerProperties serverProperties) {
-        this.serverProperties = serverProperties;
-    }
 
     static class ConsumerHandlerChecker implements ApplicationRunner {
         @Override

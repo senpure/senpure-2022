@@ -17,7 +17,7 @@ public class SCInnerErrorMessageHandler extends AbstractConsumerMessageHandler<S
     }
 
     @Override
-    public int handlerId() {
+    public int handleMessageId() {
         return SCInnerErrorMessage.MESSAGE_ID;
     }
 

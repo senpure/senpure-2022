@@ -13,7 +13,7 @@ import io.netty.channel.Channel;
 public class SCHeartMessageHandler extends AbstractConsumerMessageHandler<SCHeartMessage> {
     @Override
     public void execute(Channel channel, SCHeartMessage message) throws Exception {
-      //  logger.debug(message.toString());
+        logger.trace("heartMessage {}", message.toString());
     }
 
     @Override
@@ -22,7 +22,7 @@ public class SCHeartMessageHandler extends AbstractConsumerMessageHandler<SCHear
     }
 
     @Override
-    public int handlerId() {
+    public int handleMessageId() {
         return SCHeartMessage.MESSAGE_ID;
     }
 }

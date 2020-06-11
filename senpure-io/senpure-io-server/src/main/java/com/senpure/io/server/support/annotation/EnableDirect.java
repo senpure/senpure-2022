@@ -2,7 +2,7 @@ package com.senpure.io.server.support.annotation;
 
 
 import com.senpure.io.server.ServerProperties;
-import com.senpure.io.server.support.configuration.DirectAutoConfiguration;
+import com.senpure.io.server.support.autoconfigure.DirectAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Import;
 

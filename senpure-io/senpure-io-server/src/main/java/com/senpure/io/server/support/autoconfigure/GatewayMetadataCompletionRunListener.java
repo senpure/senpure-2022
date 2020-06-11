@@ -1,4 +1,4 @@
-package com.senpure.io.server.support.configuration;
+package com.senpure.io.server.support.autoconfigure;
 
 import com.senpure.base.AppEvn;
 import com.senpure.base.autoconfigure.AbstractRootApplicationRunListener;

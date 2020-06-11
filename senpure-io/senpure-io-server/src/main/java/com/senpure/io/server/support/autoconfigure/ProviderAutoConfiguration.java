@@ -1,28 +1,17 @@
-package com.senpure.io.server.support.configuration;
+package com.senpure.io.server.support.autoconfigure;
 
-import com.senpure.base.util.Assert;
 import com.senpure.executor.DefaultTaskLoopGroup;
 import com.senpure.executor.TaskLoopGroup;
 import com.senpure.io.server.ServerProperties;
 import com.senpure.io.server.provider.GatewayManager;
 import com.senpure.io.server.provider.ProviderMessageExecutor;
-import com.senpure.io.server.provider.ProviderMessageHandlerUtil;
-import com.senpure.io.server.provider.handler.CSAskHandleMessageHandler;
-import com.senpure.io.server.provider.handler.CSRegServerHandleMessageMessageHandler;
-import com.senpure.io.server.provider.handler.CSRelationUserGatewayMessageHandler;
-import com.senpure.io.server.provider.handler.ProviderMessageHandler;
-import com.senpure.io.server.protocol.message.CSBreakUserGatewayMessage;
 import com.senpure.io.server.support.ProducerServerStarter;
 import io.netty.util.concurrent.DefaultThreadFactory;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.annotation.Resource;
 
 /**
  * ProducerAutoConfiguration
@@ -31,21 +20,13 @@ import javax.annotation.Resource;
  * @time 2019-03-01 11:46:50
  */
 
-public class ProducerAutoConfiguration {
-
-    @Resource
-    private ServerProperties serverProperties;
+public class ProviderAutoConfiguration {
 
     private TaskLoopGroup taskLoopGroup;
 
-    @PostConstruct
-    public void init() {
-        check();
-    }
-
-    private void check() {
+    private void check(ServerProperties serverProperties) {
         if (StringUtils.isEmpty(serverProperties.getName())) {
-            serverProperties.setName("producerServer");
+            serverProperties.setName("providerServer");
         }
         ServerProperties.Provider provider = serverProperties.getProvider();
         if (!provider.isSetReadableName()) {
@@ -65,37 +46,16 @@ public class ProducerAutoConfiguration {
         }
     }
 
+
     @Bean
     @ConditionalOnMissingBean(TaskLoopGroup.class)
-    public TaskLoopGroup taskLoopGroup() {
+    public TaskLoopGroup taskLoopGroup(ServerProperties serverProperties) {
+        check(serverProperties);
         TaskLoopGroup service = new DefaultTaskLoopGroup(serverProperties.getProvider().getExecutorThreadPoolSize(),
                 new DefaultThreadFactory(serverProperties.getName() + "-executor"));
         this.taskLoopGroup = service;
         return service;
 
-    }
-
-    @PreDestroy
-    public void destroy() {
-        if (taskLoopGroup != null) {
-            taskLoopGroup.shutdownGracefully();
-        }
-    }
-
-    @Bean
-    public CSRelationUserGatewayMessageHandler csRelationUserGatewayMessageHandler() {
-        return new CSRelationUserGatewayMessageHandler();
-    }
-
-    @Bean
-    public CSRegServerHandleMessageMessageHandler csRegServerHandleMessageMessageHandler() {
-        return new CSRegServerHandleMessageMessageHandler();
-    }
-
-
-    @Bean
-    public CSAskHandleMessageHandler csAskHandleMessageHandler() {
-        return new CSAskHandleMessageHandler();
     }
 
 
@@ -116,19 +76,12 @@ public class ProducerAutoConfiguration {
     }
 
 
-    @Bean
-    public ProducerHandlerChecker producerHandlerChecker() {
-        return new ProducerHandlerChecker();
-    }
-
-    static class ProducerHandlerChecker implements ApplicationRunner {
-        @Override
-        public void run(ApplicationArguments args) {
-            ProviderMessageHandler<?> handler = ProviderMessageHandlerUtil.getHandler(CSBreakUserGatewayMessage.MESSAGE_ID);
-            if (handler == null) {
-                Assert.error("缺少[CSBreakUserGatewayMessage]处理器");
-            }
+    @PreDestroy
+    public void destroy() {
+        if (taskLoopGroup != null) {
+            taskLoopGroup.shutdownGracefully();
         }
     }
+
 
 }

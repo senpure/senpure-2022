@@ -13,10 +13,10 @@ import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 网关管理一个服务的多个实例 每个实例可能含有多个管道channel
@@ -25,10 +25,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ProviderManager {
 
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
-    private GatewayMessageExecutor messageExecutor;
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final GatewayMessageExecutor messageExecutor;
 
-    private ProviderNextStrategy nextStrategy = new ProviderDefaultNextStrategy();
+    private  ProviderNextStrategy nextStrategy = new ProviderDefaultNextStrategy();
 
     public ProviderManager(GatewayMessageExecutor messageExecutor) {
         this.messageExecutor = messageExecutor;
@@ -41,7 +41,7 @@ public class ProviderManager {
 
     private final List<Provider> prepStopOldInstance = new ArrayList<>();
     private final Map<Integer, Boolean> handleIdsMap = new HashMap<>();
-    private final AtomicInteger atomicIndex = new AtomicInteger(-1);
+
     private String serverName;
 
 
@@ -85,7 +85,7 @@ public class ProviderManager {
      */
     private void waitRelationTask(Provider provider,
                                   Long relationToken,
-                                  Client2GatewayMessage client2GatewayMessage) {
+                                 @Nullable Client2GatewayMessage client2GatewayMessage) {
         WaitRelationTask waitRelationTask = new WaitRelationTask();
         waitRelationTask.setRelationToken(relationToken);
         waitRelationTask.setMessage(client2GatewayMessage);
@@ -270,6 +270,10 @@ public class ProviderManager {
 
     public boolean handleId(int messageId) {
         return handleIdsMap.get(messageId) != null;
+    }
+
+    public void setNextStrategy(ProviderNextStrategy nextStrategy) {
+        this.nextStrategy = nextStrategy;
     }
 
     static class ProducerRelation {

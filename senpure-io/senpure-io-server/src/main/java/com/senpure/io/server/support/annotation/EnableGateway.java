@@ -2,7 +2,7 @@ package com.senpure.io.server.support.annotation;
 
 
 import com.senpure.io.server.ServerProperties;
-import com.senpure.io.server.support.configuration.GatewayAutoConfiguration;
+import com.senpure.io.server.support.autoconfigure.GatewayAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Import;
 

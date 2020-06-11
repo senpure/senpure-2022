@@ -28,7 +28,7 @@ public class CSBreakUserGatewayMessageHandler extends AbstractInnerMessageHandle
 
 
     @Override
-    public int handlerId() {
+    public int handleMessageId() {
         return CSBreakUserGatewayMessage.MESSAGE_ID;
     }
 
