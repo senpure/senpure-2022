@@ -52,7 +52,7 @@ public class PermissionMapperAutoConfiguration {
                     return;
                 }
             }
-            logger.debug("扫描package 合并 {} -----{}", packages, SENPURE_MAPPER_PACKAGE);
+            logger.debug("扫描mapper package 合并 {} -----{}", packages, SENPURE_MAPPER_PACKAGE);
             packages = packages + "," + SENPURE_MAPPER_PACKAGE;
             definition.getPropertyValues().add("basePackage", packages);
         }
