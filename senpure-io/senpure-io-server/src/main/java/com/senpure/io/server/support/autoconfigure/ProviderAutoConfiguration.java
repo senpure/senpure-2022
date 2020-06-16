@@ -4,11 +4,11 @@ import com.senpure.base.util.Assert;
 import com.senpure.executor.DefaultTaskLoopGroup;
 import com.senpure.executor.TaskLoopGroup;
 import com.senpure.io.server.ServerProperties;
-import com.senpure.io.server.protocol.message.CSBreakUserGatewayMessage;
 import com.senpure.io.server.protocol.message.CSRelationUserGatewayMessage;
 import com.senpure.io.server.provider.GatewayManager;
 import com.senpure.io.server.provider.ProviderMessageExecutor;
 import com.senpure.io.server.provider.ProviderMessageHandlerUtil;
+import com.senpure.io.server.provider.handler.CSBreakUserGatewayMessageHandler;
 import com.senpure.io.server.provider.handler.ProviderMessageHandler;
 import com.senpure.io.server.support.ProducerServerStarter;
 import io.netty.util.concurrent.DefaultThreadFactory;
@@ -19,6 +19,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.PreDestroy;
+import javax.annotation.Resource;
 
 /**
  * ProducerAutoConfiguration
@@ -96,10 +97,17 @@ public class ProviderAutoConfiguration {
     }
 
     public static class ProviderHandlerChecker implements ApplicationRunner {
+        @Resource
+        private CSBreakUserGatewayMessageHandler csBreakUserGatewayMessageHandler;
+
         @Override
         public void run(ApplicationArguments args) {
-            ProviderMessageHandler<?> handler = ProviderMessageHandlerUtil.getHandler(CSBreakUserGatewayMessage.MESSAGE_ID);
-            if (handler == null) {
+            ProviderMessageHandler<?> handler = null;
+//            handler = ProviderMessageHandlerUtil.getHandler(CSBreakUserGatewayMessage.MESSAGE_ID);
+//            if (handler == null) {
+//                Assert.error("缺少[CSBreakUserGatewayMessage]处理器");
+//            }
+            if (csBreakUserGatewayMessageHandler == null) {
                 Assert.error("缺少[CSBreakUserGatewayMessage]处理器");
             }
             handler = ProviderMessageHandlerUtil.getHandler(CSRelationUserGatewayMessage.MESSAGE_ID);

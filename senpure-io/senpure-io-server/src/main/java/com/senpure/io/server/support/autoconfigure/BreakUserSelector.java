@@ -1,7 +1,6 @@
 package com.senpure.io.server.support.autoconfigure;
 
 
-import com.senpure.io.server.provider.handler.CSBreakUserGatewayMessageHandler;
 import com.senpure.io.server.support.annotation.EnableProvider;
 import org.springframework.context.annotation.ImportSelector;
 import org.springframework.core.annotation.MergedAnnotation;
@@ -20,7 +19,7 @@ public class BreakUserSelector implements ImportSelector {
         MergedAnnotation<EnableProvider> annotation = importingClassMetadata.getAnnotations().get(EnableProvider.class);
         if (annotation.isPresent()) {
             if (annotation.getBoolean("breakUser")) {
-                return new String[]{CSBreakUserGatewayMessageHandler.class.getName()};
+               // return new String[]{CSBreakUserGatewayMessageHandler.class.getName()};
             }
         }
         return new String[0];
