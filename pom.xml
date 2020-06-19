@@ -21,6 +21,7 @@
         <module>senpure-dispatcher-parent</module>
         <module>senpure-permission</module>
         <module>senpure-dependencies</module>
+        <module>senpure-javafx-support</module>
 
     </modules>
 

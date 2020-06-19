@@ -12,7 +12,6 @@ import org.springframework.core.annotation.Order;
 
 import java.io.*;
 import java.lang.reflect.Field;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.*;
@@ -23,10 +22,10 @@ public class ResultHelper implements ApplicationRunner {
     public static List<FieldAndInstance> fieldAndInstances = new ArrayList<>();
     private static boolean develop = false;
     private static boolean force = false;
-    private static Logger logger = LoggerFactory.getLogger(ResultHelper.class);
-    private static Map<Integer, String> codeMap = new HashMap();
-    private static Map<Integer, String> codeName = new HashMap();
-    private static Map<String, String> keyMap = new HashMap();
+    private static final Logger logger = LoggerFactory.getLogger(ResultHelper.class);
+    private static final Map<Integer, String> codeMap = new HashMap<>();
+    private static final Map<Integer, String> codeName = new HashMap<>();
+    private static final Map<String, String> keyMap = new HashMap<>();
     private static String BASE_NAME = "i18n/result/result";
 
 
@@ -80,9 +79,8 @@ public class ResultHelper implements ApplicationRunner {
     }
 
 
-
     @Override
-    public void run(ApplicationArguments args) throws Exception {
+    public void run(ApplicationArguments args) {
 
         syncResults();
     }
@@ -139,8 +137,7 @@ public class ResultHelper implements ApplicationRunner {
         try {
             if (exist) {
                 logger.debug("{} 资源文件完整路径：{}", i18n.exists(), i18n.getAbsolutePath());
-                InputStream in = null;
-                in = new FileInputStream(i18n);
+                InputStream in = new FileInputStream(i18n);
                 props.load(in);
                 in.close();
             } else if (url != null) {
@@ -158,14 +155,10 @@ public class ResultHelper implements ApplicationRunner {
         for (FieldAndInstance fieldAndInstance : fieldAndInstances) {
 
             for (Field field : fieldAndInstance.fields) {
-                int code = 0;
+                int code;
                 try {
                     code = field.getInt(fieldAndInstance.instance);
-                } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
-                    continue;
-                } catch (IllegalAccessException e) {
-
+                } catch (IllegalArgumentException | IllegalAccessException e) {
                     e.printStackTrace();
                     continue;
                 }
@@ -176,7 +169,7 @@ public class ResultHelper implements ApplicationRunner {
                 codeAndInstanceList.add(codeAndInstance);
             }
         }
-        Collections.sort(codeAndInstanceList, Comparator.comparingInt(o -> o.code));
+        codeAndInstanceList.sort(Comparator.comparingInt(o -> o.code));
 
         refreshProperties();
         keyMap.clear();
@@ -200,7 +193,7 @@ public class ResultHelper implements ApplicationRunner {
             keyMap.put(name, tempName);
             codeMap.put(code, name);
 
-            String thisValue = null;
+            String thisValue;
             if (m != null && m.value().trim().length() != 0) {
                 thisValue = m.value();
             } else {
@@ -236,8 +229,6 @@ public class ResultHelper implements ApplicationRunner {
                             + updateBuilder.toString()
                             + "############################################################################");
                 }
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
@@ -257,11 +248,11 @@ public class ResultHelper implements ApplicationRunner {
         for (Map.Entry<Integer, String> entry : codeMap.entrySet()) {
 
             int len = (entry.getKey() + "").length();
-            codeMaxLen = codeMaxLen > len ? codeMaxLen : len;
+            codeMaxLen = Math.max(codeMaxLen, len);
         }
         for (Map.Entry<String, String> entry : keyMap.entrySet()) {
             int len = entry.getKey().length();
-            keyMaxLen = keyMaxLen > len ? keyMaxLen : len;
+            keyMaxLen = Math.max(keyMaxLen, len);
         }
         for (CodeAndInstance codeAndInstance : codeAndInstanceList) {
             int codeLen = (codeAndInstance.code + "").length();
@@ -316,9 +307,7 @@ public class ResultHelper implements ApplicationRunner {
             if (object instanceof Result) {
                 findResult(map, (Result) object);
             }
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
         }
 
@@ -362,7 +351,7 @@ public class ResultHelper implements ApplicationRunner {
         BASE_NAME = resultBaseName;
     }
 
-    public static void main(String[] args) throws IllegalAccessException, InstantiationException, URISyntaxException {
+    public static void main(String[] args) {
         //AppEvn.markClassRootPath();
         devSyncResult(new Result());
 

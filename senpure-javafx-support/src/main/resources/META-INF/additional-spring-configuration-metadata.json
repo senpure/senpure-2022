@@ -1,0 +1,11 @@
+{
+  "properties": [
+    {
+      "name": "senpure.default.banner.enable",
+      "type": "java.lang.Boolean",
+      "description": "spring启动完成之后是否打印banner.",
+      "sourceType": "com.senpure.base.autoconfigure.DefaultBannerShowAutoConfiguration",
+      "defaultValue": true
+    }
+  ]
+}
