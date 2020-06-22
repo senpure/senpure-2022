@@ -13,10 +13,24 @@ import java.util.Locale;
  */
 public class JavafxProperties {
 
-    private String title;
+    /**
+     * 应用标题支持%国际化,优先级低于view中的配置
+     */
+    private String title = "javafx";
+    /**
+     * 国际化locale
+     */
     private Locale locale = Locale.getDefault();
+    /**
+     * 应用图标
+     */
     private List<String> icons;
     private Charset encoding = StandardCharsets.UTF_8;
+    /**
+     * 全局css
+     */
+    private String css;
+    private List<String> basenames;
 
     public String getTitle() {
         return title;
@@ -48,5 +62,21 @@ public class JavafxProperties {
 
     public void setLocale(Locale locale) {
         this.locale = locale;
+    }
+
+    public String getCss() {
+        return css;
+    }
+
+    public void setCss(String css) {
+        this.css = css;
+    }
+
+    public List<String> getBasenames() {
+        return basenames;
+    }
+
+    public void setBasenames(List<String> basenames) {
+        this.basenames = basenames;
     }
 }

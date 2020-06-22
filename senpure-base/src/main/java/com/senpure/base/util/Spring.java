@@ -3,11 +3,13 @@ package com.senpure.base.util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 
 import java.util.Map;
 
@@ -15,10 +17,10 @@ import java.util.Map;
 public class Spring implements ApplicationContextAware {
 
     protected static Logger logger = LogManager.getLogger(Spring.class);
-    private static AbstractApplicationContext act;
+    private static ConfigurableApplicationContext act;
 
 
-     @Override
+    @Override
     public void setApplicationContext(ApplicationContext context) throws BeansException {
 
         regApplicationContext(context);
@@ -26,17 +28,33 @@ public class Spring implements ApplicationContextAware {
     }
 
     public static void regApplicationContext(ApplicationContext context) {
-        logger.info("regApplicationContext:{}  {}" , context.getApplicationName(),context.getClass() );
+        logger.info("regApplicationContext:{}  {}", context.getApplicationName(), context.getClass());
 
         if (act == null) {
             // logger.info("Spring 获取ApplicationContext上下文:applicationName:" + context.getApplicationName() + ",displayName:" + context.getDisplayName() + ",id:" + context.getId());
-            act = (AbstractApplicationContext) context;
+            act = (ConfigurableApplicationContext) context;
         }
     }
 
-    public static void regSingleBean(String name, Object bean) {
-        act.getBeanFactory().registerSingleton(name, bean);
+    public static void regBean(Object bean) {
+        act.getBeanFactory().registerSingleton(bean.getClass().getName(), bean);
+    }
 
+    public static void regBean(String name, Object bean) {
+        act.getBeanFactory().registerSingleton(name, bean);
+    }
+
+    public static void regBean(Class<?> clazz) {
+
+        regBean(clazz.getName(), clazz);
+    }
+
+    public static void regBean(String name, Class<?> clazz) {
+
+        BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(clazz);
+        DefaultListableBeanFactory defaultListableBeanFactory = (DefaultListableBeanFactory) act.getBeanFactory();
+
+        defaultListableBeanFactory.registerBeanDefinition(name, beanDefinitionBuilder.getBeanDefinition());
     }
 
     public static boolean isRunning() {

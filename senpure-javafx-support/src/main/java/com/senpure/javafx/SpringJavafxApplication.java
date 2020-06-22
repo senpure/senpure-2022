@@ -8,7 +8,6 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 
 import java.awt.*;
@@ -17,7 +16,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
@@ -34,11 +33,10 @@ public class SpringJavafxApplication extends Application {
     private static Class<?> primarySource;
     private static final List<Image> icons = new ArrayList<>();
     private final List<Image> defaultIcons = new ArrayList<>();
-    private CompletableFuture<Runnable> startFuture = new CompletableFuture<>();
+    private final CompletableFuture<Runnable> startFuture = new CompletableFuture<>();
 
     private SplashStage splashStage;
-    @Value("javafx.icons")
-    private List<String> iconNames;
+
 
     public static void launch(Class<? extends Application> primarySource, Class<? extends JavafxView> primaryView, String[] args) {
         AppEvn.markClassRootPath(primarySource);
@@ -52,7 +50,7 @@ public class SpringJavafxApplication extends Application {
     @Override
     public void init() {
         defaultIcons.addAll(loadDefaultIcons());
-        Executor executor = Executors.newSingleThreadExecutor(r -> {
+        ExecutorService executor = Executors.newSingleThreadScheduledExecutor(r -> {
             Thread thread = new Thread(r, "single-temp-executor");
             thread.setDaemon(true);
             return thread;
@@ -62,17 +60,15 @@ public class SpringJavafxApplication extends Application {
                 SpringApplication.run(primarySource, args), executor)
                 .whenComplete((configurableApplicationContext, throwable) -> {
                     if (throwable != null) {
-                        logger.error("springboot 启动失败");
+                        logger.error("springboot 启动失败", throwable);
                         Platform.runLater(() -> showErrorAlert(throwable));
                     } else {
-                        Platform.runLater(() -> {
-
-                            // showPrimaryStage();
-                        });
+                        Platform.runLater(() -> Thread.currentThread().setUncaughtExceptionHandler(javaFxUncaughtExceptionHandler()));
                     }
                 }).thenAcceptBoth(startFuture, (configurableApplicationContext, runnable) -> {
 
             Platform.runLater(runnable);
+            executor.shutdown();
         })
         ;
 
@@ -80,9 +76,24 @@ public class SpringJavafxApplication extends Application {
     }
 
     protected void showPrimaryStage() {
-        loadIcons();
-        Javafx.showView(primaryView);
-        splashStage.close();
+        try {
+            loadIcons();
+            Javafx.getPrimaryStage().getIcons().addAll(icons);
+            Javafx.showView(primaryView);
+        } finally {
+            splashStage.close();
+        }
+    }
+
+    protected Thread.UncaughtExceptionHandler javaFxUncaughtExceptionHandler() {
+
+        return (t, e) -> {
+            e.printStackTrace();
+            logger.error("程序出现错误", e);
+            Alert alert = new Alert(Alert.AlertType.ERROR, "程序出现错误\n" +
+                    "Error: " + e);
+            alert.showAndWait();
+        };
     }
 
     @Override
@@ -108,7 +119,8 @@ public class SpringJavafxApplication extends Application {
     }
 
     protected void loadIcons() {
-        if (iconNames == null || iconNames.size() == 0) {
+        List<String> iconNames = Javafx.getJavafxProperties().getIcons();
+        if (Javafx.getJavafxProperties().getIcons() == null || iconNames.size() == 0) {
             icons.addAll(defaultIcons);
         } else {
             for (String iconName : iconNames) {
@@ -120,10 +132,9 @@ public class SpringJavafxApplication extends Application {
 
     private static void showErrorAlert(Throwable throwable) {
         Alert alert = new Alert(Alert.AlertType.ERROR, "出现错误，程序关闭\n" +
-                "Error: " + throwable.getMessage());
+                "Error: " + throwable);
         alert.showAndWait().ifPresent(response -> Platform.exit());
     }
-
 
     public static void main(String[] args) {
 

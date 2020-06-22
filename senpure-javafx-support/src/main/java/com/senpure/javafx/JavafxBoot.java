@@ -17,7 +17,6 @@ import java.lang.annotation.*;
 @Documented
 @Inherited
 @SpringBootApplication
-
 public @interface JavafxBoot {
     @AliasFor(annotation = SpringBootApplication.class)
     Class<?>[] exclude() default {};

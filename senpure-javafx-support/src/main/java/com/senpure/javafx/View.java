@@ -4,8 +4,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.stereotype.Component;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.*;
 
 /**
  * FXMLView
@@ -13,9 +12,12 @@ import java.lang.annotation.RetentionPolicy;
  * @author senpure
  * @time 2020-06-18 16:11:43
  */
+
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
 @Component
 @Lazy
-@Retention(RetentionPolicy.RUNTIME)
 public @interface View {
 
     @AliasFor("fxml")
@@ -24,11 +26,18 @@ public @interface View {
     @AliasFor("value")
     String fxml() default "";
 
-    @AliasFor(value="value", annotation = Lazy.class)
+    String title() default "";
+
+    @AliasFor(value = "value", annotation = Lazy.class)
     boolean lazy() default true;
 
     String[] css() default {};
 
 
-    String bundle() default "";
+    /**
+     * 国际化basename
+     *
+     * @return
+     */
+    String[] basenames() default {};
 }

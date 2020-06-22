@@ -4,8 +4,10 @@ import com.senpure.base.configure.BaseConfiguration;
 import com.senpure.javafx.Javafx;
 import com.senpure.javafx.JavafxProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.lang.NonNull;
 
 /**
  * JavafxAutoConfiguration
@@ -13,8 +15,8 @@ import org.springframework.context.annotation.Configuration;
  * @author senpure
  * @time 2020-06-19 15:30:23
  */
-@Configuration(proxyBeanMethods = false)
-public class JavafxAutoConfiguration extends BaseConfiguration {
+
+public class JavafxAutoConfiguration extends BaseConfiguration implements ResourceLoaderAware {
 
     @Bean
     @ConfigurationProperties(prefix = "javafx")
@@ -22,5 +24,12 @@ public class JavafxAutoConfiguration extends BaseConfiguration {
         JavafxProperties javafxProperties = new JavafxProperties();
         Javafx.setJavafxProperties(javafxProperties);
         return javafxProperties;
+    }
+
+
+    @Override
+    public void setResourceLoader(@NonNull ResourceLoader resourceLoader) {
+        Javafx.setResourceLoader(resourceLoader);
+
     }
 }
