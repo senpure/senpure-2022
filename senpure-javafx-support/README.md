@@ -24,6 +24,6 @@ springboot启动会消耗时间,默认使用一个过渡画面，在资源文件
 ### 注解
 1. `@JavafxBoot` 同 @SpringBootApplication
 2. `@View` 定义一个视图bean,默认懒加载(fxml,css,国家化属性等)遵循约定大于配置，可以省略该注解
-3. `Controller` 定义一个控制bean,默认赖加载,可以省略该注解
+3. `@Controller` 定义一个控制bean,默认赖加载,可以省略该注解
 
 
