@@ -10,6 +10,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.support.MessageSourceResourceBundle;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.core.annotation.MergedAnnotation;
+import org.springframework.core.io.Resource;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
 import org.springframework.lang.NonNull;
@@ -53,16 +54,29 @@ public class JavafxView {
         List<String> tempCss = new ArrayList<>();
         JavafxProperties javafxProperties = Javafx.getJavafxProperties();
         if (StringUtils.hasText(javafxProperties.getCss())) {
-
             String[] css = StringUtils.commaDelimitedListToStringArray(javafxProperties.getCss());
             for (String s : css) {
-                try {
-                    if (!s.endsWith(".css")) {
-                        s += ".css";
+                if (!s.endsWith(".css")) {
+                    s += ".css";
+                }
+                Resource resource = Javafx.getResourceLoader().getResource(s.trim());
+                if (resource.exists()) {
+                    try {
+                        tempCss.add(resource.getURL().toExternalForm());
+                    } catch (IOException e) {
+                        logger.error(s + "css文件定义错误,忽略该css", e);
                     }
-                    tempCss.add(Javafx.getResourceLoader().getResource(s.trim()).getURL().toExternalForm());
-                } catch (IOException e) {
-                    logger.error(s + "css文件定义错误,忽略该css", e);
+                } else {
+                    logger.warn(s + "css文件定义错误,忽略该css");
+                }
+
+            }
+        } else {
+            Resource resource = Javafx.getResourceLoader().getResource("app.css");
+            if (resource.exists()) {
+                try {
+                    tempCss.add(resource.getURL().toExternalForm());
+                } catch (IOException ignored) {
                 }
             }
         }
@@ -78,7 +92,12 @@ public class JavafxView {
         if (javafxProperties.getBasenames() != null) {
             tempBaseNames.addAll(javafxProperties.getBasenames());
         }
-
+        else {
+            Resource resource = Javafx.getResourceLoader().getResource("i18n/app.properties");
+            if (resource.exists()) {
+                tempBaseNames.add("i18n/app");
+            }
+        }
         globalBaseNames = tempBaseNames;
     }
 
@@ -112,8 +131,9 @@ public class JavafxView {
         if (modelName.endsWith("View")) {
             modelName = modelName.substring(0, modelName.length() - 4);
         }
-        return nameRule(modelName)+ suffix;
+        return nameRule(modelName) + suffix;
     }
+
     private static String nameRule(String name) {
         if (StringUtil.isUpperLetter(name.charAt(1))) {
             int len = name.length() - 1;
