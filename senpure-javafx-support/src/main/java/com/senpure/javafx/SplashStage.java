@@ -35,7 +35,7 @@ public class SplashStage {
         indicator.setPrefSize(22, 22);
         indicator.setLayoutX(imageView.getImage().getWidth() - 22);
         indicator.setLayoutY(imageView.getImage().getHeight() - 22);
-        indicator.setStyle("-fx-progress-color:#FFFFFF");
+        indicator.setStyle("-fx-progress-color:#ffffff");
         Pane pane = new Pane();
         pane.setPrefSize(imageView.getImage().getWidth(), imageView.getImage().getHeight());
         pane.getChildren().addAll(imageView, indicator);
@@ -46,6 +46,7 @@ public class SplashStage {
         stage = new Stage(StageStyle.TRANSPARENT);
         stage.setScene(new Scene(pane));
         stage.initOwner(parentStage);
+        parentStage.setIconified(true);
         parentStage.show();
         stage.show();
     }

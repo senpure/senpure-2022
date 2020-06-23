@@ -1,6 +1,7 @@
 package com.senpure.javafx;
 
 import com.senpure.base.util.Spring;
+import com.senpure.base.util.StringUtil;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import org.slf4j.Logger;
@@ -111,7 +112,27 @@ public class JavafxView {
         if (modelName.endsWith("View")) {
             modelName = modelName.substring(0, modelName.length() - 4);
         }
-        return modelName + suffix;
+        return nameRule(modelName)+ suffix;
+    }
+    private static String nameRule(String name) {
+        if (StringUtil.isUpperLetter(name.charAt(1))) {
+            int len = name.length() - 1;
+            int index = 0;
+            for (int i = 1; i < len; i++) {
+                if (!StringUtil.isUpperLetter(name.charAt(i + 1))) {
+                    index = i - 1;
+                    break;
+                }
+            }
+            if (index > 0) {
+                for (int i = 0; i <= index; i++) {
+                    name = StringUtil.toLowerLetter(name, i);
+                }
+            }
+            return name;
+
+        }
+        return StringUtil.toLowerLetter(name, 0);
     }
 
     private String getFxmlName(String name) {
@@ -154,7 +175,7 @@ public class JavafxView {
         JavafxProperties javafxProperties = Javafx.getJavafxProperties();
         String fxml = getFxmlName(annotation.getString("fxml"));
 
-        ResourceBundle resourceBundle = null;
+        ResourceBundle resourceBundle;
         String[] basenames = annotation.getStringArray("basenames");
 
         List<String> viewBasenames = new ArrayList<>(4);

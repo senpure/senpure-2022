@@ -139,7 +139,7 @@ public class JavafxSpringBootApplication extends Application {
 
     protected void loadIcons() {
         List<String> iconNames = Javafx.getJavafxProperties().getIcons();
-        if (Javafx.getJavafxProperties().getIcons() == null || iconNames.size() == 0) {
+        if (iconNames==null|| iconNames.size() == 0) {
             List<String> appIcons = new ArrayList<>(8);
             appIcons.add("icon");
             appIcons.add("icon_16x16");
