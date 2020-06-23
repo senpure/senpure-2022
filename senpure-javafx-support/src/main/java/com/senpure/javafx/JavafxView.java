@@ -18,10 +18,7 @@ import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 
 /**
  * AbstractFxmlView
@@ -91,11 +88,16 @@ public class JavafxView {
         JavafxProperties javafxProperties = Javafx.getJavafxProperties();
         if (javafxProperties.getBasenames() != null) {
             tempBaseNames.addAll(javafxProperties.getBasenames());
-        }
-        else {
+        } else {
             Resource resource = Javafx.getResourceLoader().getResource("i18n/app.properties");
             if (resource.exists()) {
                 tempBaseNames.add("i18n/app");
+            } else {
+                resource = Javafx.getResourceLoader()
+                        .getResource("i18n/app_" + javafxProperties.getLocale().toString() + ".properties");
+                if (resource.exists()) {
+                    tempBaseNames.add("i18n/app");
+                }
             }
         }
         globalBaseNames = tempBaseNames;
@@ -322,7 +324,6 @@ public class JavafxView {
 
     public static void main(String[] args) {
 
-        JavafxView javafxView = new JavafxView();
-        javafxView.getView();
+        System.out.println(Locale.getDefault().toString());
     }
 }
