@@ -3,7 +3,7 @@
 #### 快速开始
 
 ```
-@JavafxBoot
+ @JavafxBoot
  public class ExampleBoot extends SpringJavafxApplication {
      
      public static void main(String[] args) {
