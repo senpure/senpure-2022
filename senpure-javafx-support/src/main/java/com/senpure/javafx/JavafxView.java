@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.context.support.MessageSourceResourceBundle;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.core.annotation.MergedAnnotation;
@@ -179,7 +180,16 @@ public class JavafxView {
 
 
         fxmlLoader = new FXMLLoader(url, resourceBundle);
-        fxmlLoader.setControllerFactory(Spring::getBean);
+        fxmlLoader.setControllerFactory(param -> {
+            Object controller;
+            try {
+                controller = Spring.getBean(param);
+            } catch (BeansException e) {
+                Spring.regBean(param);
+                controller = Spring.getBean(param);
+            }
+            return controller;
+        });
         fxmlLoader.setCharset(javafxProperties.getEncoding());
         try {
             fxmlLoader.load();

@@ -9,8 +9,10 @@ import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
+import org.springframework.core.io.Resource;
 
 import java.awt.*;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,15 +37,21 @@ public class SpringJavafxApplication extends Application {
     private final List<Image> defaultIcons = new ArrayList<>();
     private final CompletableFuture<Runnable> startFuture = new CompletableFuture<>();
 
-    private SplashStage splashStage;
+    private static SplashStage splashStage;
 
 
     public static void launch(Class<? extends Application> primarySource, Class<? extends JavafxView> primaryView, String[] args) {
+        launch(primarySource, primaryView, new SplashStage(), args);
+    }
+
+
+    public static void launch(Class<? extends Application> primarySource, Class<? extends JavafxView> primaryView, SplashStage splashStage, String[] args) {
         AppEvn.markClassRootPath(primarySource);
         AppEvn.installAnsiConsole(primarySource);
         SpringJavafxApplication.args = args;
         SpringJavafxApplication.primaryView = primaryView;
         SpringJavafxApplication.primarySource = primarySource;
+        SpringJavafxApplication.splashStage = splashStage;
         launch(primarySource, args);
     }
 
@@ -81,8 +89,27 @@ public class SpringJavafxApplication extends Application {
             Javafx.getPrimaryStage().getIcons().addAll(icons);
             Javafx.showView(primaryView);
         } finally {
-            splashStage.close();
+            if (splashStage != null && splashStage.visible()) {
+                splashStage.close();
+            }
         }
+    }
+
+
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+        //  Class<?> primarySource
+        Javafx.setPrimaryStage(primaryStage);
+        Javafx.setHostServices(getHostServices());
+        if (SystemTray.isSupported()) {
+            Javafx.setSystemTray(SystemTray.getSystemTray());
+        }
+
+        if (splashStage != null && splashStage.visible()) {
+            splashStage.show();
+        }
+
+        startFuture.complete(this::showPrimaryStage);
     }
 
     protected Thread.UncaughtExceptionHandler javaFxUncaughtExceptionHandler() {
@@ -94,20 +121,6 @@ public class SpringJavafxApplication extends Application {
                     "Error: " + e);
             alert.showAndWait();
         };
-    }
-
-    @Override
-    public void start(Stage primaryStage) throws Exception {
-        //  Class<?> primarySource
-        Javafx.setPrimaryStage(primaryStage);
-        Javafx.setHostServices(getHostServices());
-        if (SystemTray.isSupported()) {
-            Javafx.setSystemTray(SystemTray.getSystemTray());
-        }
-        splashStage = new SplashStage();
-        splashStage.show();
-
-        startFuture.complete(this::showPrimaryStage);
     }
 
     private Collection<Image> loadDefaultIcons() {
@@ -124,8 +137,17 @@ public class SpringJavafxApplication extends Application {
             icons.addAll(defaultIcons);
         } else {
             for (String iconName : iconNames) {
-                Image img = new Image(getClass().getResource(iconName).toExternalForm());
-                icons.add(img);
+                Resource resource = Javafx.getResourceLoader().getResource(iconName);
+                if (resource.exists()) {
+                    try {
+                        Image img = new Image(resource.getURL().toExternalForm());
+                        //  Image img = new Image(getClass().getResource(iconName).toExternalForm());
+                        icons.add(img);
+                    } catch (IOException e) {
+                        logger.error("", e);
+                    }
+                }
+
             }
         }
     }

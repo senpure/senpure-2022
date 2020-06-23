@@ -56,6 +56,15 @@ public class Javafx {
             primaryStage.getScene().setRoot(view.getView());
         }
         primaryStage.show();
+//        FadeTransition fade = new FadeTransition();
+//        fade.setDuration(Duration.millis(1000));
+//        fade.setFromValue(0);
+//        fade.setToValue(1);
+//        fade.setCycleCount(1);
+//        fade.setAutoReverse(true);
+//        fade.setNode(primaryStage.getScene().getRoot());
+//        fade.play();
+
     }
 
     public static void showView(Stage stage, JavafxView view) {
