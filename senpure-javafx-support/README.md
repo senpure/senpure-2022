@@ -4,7 +4,7 @@
 
 ```
  @JavafxBoot
- public class ExampleBoot extends SpringJavafxApplication {
+ public class ExampleBoot extends JavafxSpringBootApplication {
      
      public static void main(String[] args) {
          launch(ExampleBoot.class, MainView.class, args);

@@ -25,11 +25,18 @@ public class JavafxProperties {
      * 应用图标
      */
     private List<String> icons;
+
+    /**
+     * 使用编码
+     */
     private Charset encoding = StandardCharsets.UTF_8;
     /**
      * 全局css
      */
     private String css;
+    /**
+     * 全局basename
+     */
     private List<String> basenames;
 
     public String getTitle() {

@@ -1,6 +1,7 @@
 package com.senpure.javafx;
 
 import com.senpure.base.AppEvn;
+import com.senpure.base.util.Spring;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
@@ -27,7 +28,7 @@ import java.util.concurrent.Executors;
  * @author senpure
  * @time 2020-06-18 15:52:31
  */
-public class SpringJavafxApplication extends Application {
+public class JavafxSpringBootApplication extends Application {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private static String[] args;
@@ -48,10 +49,10 @@ public class SpringJavafxApplication extends Application {
     public static void launch(Class<? extends Application> primarySource, Class<? extends JavafxView> primaryView, SplashStage splashStage, String[] args) {
         AppEvn.markClassRootPath(primarySource);
         AppEvn.installAnsiConsole(primarySource);
-        SpringJavafxApplication.args = args;
-        SpringJavafxApplication.primaryView = primaryView;
-        SpringJavafxApplication.primarySource = primarySource;
-        SpringJavafxApplication.splashStage = splashStage;
+        JavafxSpringBootApplication.args = args;
+        JavafxSpringBootApplication.primaryView = primaryView;
+        JavafxSpringBootApplication.primarySource = primarySource;
+        JavafxSpringBootApplication.splashStage = splashStage;
         launch(primarySource, args);
     }
 
@@ -97,7 +98,7 @@ public class SpringJavafxApplication extends Application {
 
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage primaryStage) {
         //  Class<?> primarySource
         Javafx.setPrimaryStage(primaryStage);
         Javafx.setHostServices(getHostServices());
@@ -110,6 +111,11 @@ public class SpringJavafxApplication extends Application {
         }
 
         startFuture.complete(this::showPrimaryStage);
+    }
+
+    @Override
+    public void stop() {
+        Spring.exit();
     }
 
     protected Thread.UncaughtExceptionHandler javaFxUncaughtExceptionHandler() {
@@ -134,7 +140,37 @@ public class SpringJavafxApplication extends Application {
     protected void loadIcons() {
         List<String> iconNames = Javafx.getJavafxProperties().getIcons();
         if (Javafx.getJavafxProperties().getIcons() == null || iconNames.size() == 0) {
-            icons.addAll(defaultIcons);
+            List<String> appIcons = new ArrayList<>(8);
+            appIcons.add("icon");
+            appIcons.add("icon_16x16");
+            appIcons.add("icon_24x24");
+            appIcons.add("icon_36x36");
+            appIcons.add("icon_42x42");
+            appIcons.add("icon_64x64");
+            List<Image> images = new ArrayList<>(8);
+            List<String> suffixList = Arrays.asList(".png", ".jpg");
+            for (String suffix : suffixList) {
+                for (String appIcon : appIcons) {
+                    appIcon += suffix;
+                    Resource resource = Javafx.getResourceLoader().getResource(appIcon);
+                    if (resource.exists()) {
+                        try {
+                            Image img = new Image(resource.getURL().toExternalForm());
+                            images.add(img);
+                        } catch (IOException e) {
+                            logger.error("", e);
+                        }
+                    }
+                }
+                if (!images.isEmpty()) {
+                    break;
+                }
+            }
+            if (images.isEmpty()) {
+                icons.addAll(defaultIcons);
+            } else {
+                icons.addAll(images);
+            }
         } else {
             for (String iconName : iconNames) {
                 Resource resource = Javafx.getResourceLoader().getResource(iconName);
@@ -152,17 +188,12 @@ public class SpringJavafxApplication extends Application {
         }
     }
 
+
     private static void showErrorAlert(Throwable throwable) {
         Alert alert = new Alert(Alert.AlertType.ERROR, "出现错误，程序关闭\n" +
                 "Error: " + throwable);
         alert.showAndWait().ifPresent(response -> Platform.exit());
     }
 
-    public static void main(String[] args) {
-
-        CompletableFuture.supplyAsync(() -> {
-            return "88";
-        });
-    }
 
 }

@@ -64,7 +64,7 @@ public class SplashStage {
 
 
     public String getImagePath() {
-        List<String> suffixList = Arrays.asList(".png", "jpg");
+        List<String> suffixList = Arrays.asList(".png", ".jpg");
         for (String suffix : suffixList) {
             String imagePath = SPLASH_IMAGE + suffix;
             URL url = getClass().getResource(imagePath);
