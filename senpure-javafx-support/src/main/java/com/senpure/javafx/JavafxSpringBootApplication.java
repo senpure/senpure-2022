@@ -84,7 +84,7 @@ public  class JavafxSpringBootApplication extends Application {
 
     }
 
-    protected void beforeShowPrimaryStage(Stage stage) {
+    protected void beforeShowPrimaryStage(Stage primaryStage) {
     }
 
     protected void showPrimaryStage() {
