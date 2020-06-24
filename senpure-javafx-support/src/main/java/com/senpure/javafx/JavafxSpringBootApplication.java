@@ -28,7 +28,7 @@ import java.util.concurrent.Executors;
  * @author senpure
  * @time 2020-06-18 15:52:31
  */
-public class JavafxSpringBootApplication extends Application {
+public  class JavafxSpringBootApplication extends Application {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private static String[] args;
@@ -84,8 +84,12 @@ public class JavafxSpringBootApplication extends Application {
 
     }
 
+    protected void beforeShowPrimaryStage(Stage stage) {
+    }
+
     protected void showPrimaryStage() {
         try {
+            beforeShowPrimaryStage(Javafx.getPrimaryStage());
             loadIcons();
             Javafx.getPrimaryStage().getIcons().addAll(icons);
             Javafx.showView(primaryView);
@@ -139,7 +143,7 @@ public class JavafxSpringBootApplication extends Application {
 
     protected void loadIcons() {
         List<String> iconNames = Javafx.getJavafxProperties().getIcons();
-        if (iconNames==null|| iconNames.size() == 0) {
+        if (iconNames == null || iconNames.size() == 0) {
             List<String> appIcons = new ArrayList<>(8);
             appIcons.add("icon");
             appIcons.add("icon_16x16");
