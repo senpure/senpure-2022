@@ -60,7 +60,7 @@ public class JavafxSpringBootApplication extends Application {
     public void init() {
         defaultIcons.addAll(loadDefaultIcons());
         ExecutorService executor = Executors.newSingleThreadScheduledExecutor(r -> {
-            Thread thread = new Thread(r, "single-temp-executor");
+            Thread thread = new Thread(r, "javafx-springboot-executor");
             thread.setDaemon(true);
             return thread;
         });
