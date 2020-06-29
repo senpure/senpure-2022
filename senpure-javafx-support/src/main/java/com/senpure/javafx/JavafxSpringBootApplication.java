@@ -2,11 +2,15 @@ package com.senpure.javafx;
 
 import com.senpure.base.AppEvn;
 import com.senpure.base.util.Spring;
+import javafx.animation.Animation;
+import javafx.animation.Interpolator;
+import javafx.animation.Transition;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -28,7 +32,7 @@ import java.util.concurrent.Executors;
  * @author senpure
  * @time 2020-06-18 15:52:31
  */
-public  class JavafxSpringBootApplication extends Application {
+public class JavafxSpringBootApplication extends Application {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private static String[] args;
@@ -88,18 +92,51 @@ public  class JavafxSpringBootApplication extends Application {
     }
 
     protected void showPrimaryStage() {
-        try {
-            beforeShowPrimaryStage(Javafx.getPrimaryStage());
-            loadIcons();
-            Javafx.getPrimaryStage().getIcons().addAll(icons);
-            Javafx.showView(primaryView);
-        } finally {
-            if (splashStage != null && splashStage.visible()) {
-                splashStage.close();
-            }
+
+        beforeShowPrimaryStage(Javafx.getPrimaryStage());
+        loadIcons();
+        Javafx.getPrimaryStage().getIcons().addAll(icons);
+        if (splashStage != null && splashStage.visible()) {
+            splashStage.close(() -> {
+                show(primaryView);
+            }, Javafx.getJavafxProperties().isSplashCloseAnimationEnable());
+
+
+        } else {
+            show(primaryView);
+
         }
+
     }
 
+    private void show(Class<? extends JavafxView> primaryView) {
+        if (Javafx.getJavafxProperties().isPrimaryStageShowAnimationEnable()) {
+            Stage stage = Javafx.getPrimaryStage();
+            double opacity = stage.getOpacity();
+            stage.setOpacity(0);
+            Javafx.showView(primaryView);
+            double width = stage.getWidth();
+            double X = stage.getX();
+            Animation transition = new Transition() {
+                {
+                    setCycleDuration(Duration.millis(300));
+                    setInterpolator(Interpolator.EASE_IN);
+                }
+
+                @Override
+                protected void interpolate(double frac) {
+                    double x = width * frac;
+                    stage.setWidth(x);
+                    stage.setX(X + width - x);
+                    stage.setOpacity(opacity * frac);
+                }
+            };
+            transition.play();
+        } else {
+            Javafx.showView(primaryView);
+        }
+
+    }
 
     @Override
     public void start(Stage primaryStage) {

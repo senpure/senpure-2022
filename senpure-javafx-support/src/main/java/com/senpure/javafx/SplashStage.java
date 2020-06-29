@@ -1,13 +1,18 @@
 package com.senpure.javafx;
 
+import javafx.animation.Animation;
+import javafx.animation.Interpolator;
+import javafx.animation.Transition;
 import javafx.scene.Scene;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.util.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.Nullable;
 
 import java.net.URL;
 import java.util.Arrays;
@@ -26,6 +31,8 @@ public class SplashStage {
     private Stage parentStage;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    private boolean close;
 
     public void show() {
         final ImageView imageView = new ImageView(getClass().getResource(getImagePath()).toExternalForm());
@@ -51,13 +58,57 @@ public class SplashStage {
         stage.show();
     }
 
-    public void close() {
+    public void close(boolean animation) {
+
+        close(null, animation);
+    }
+
+    public void close(@Nullable Runnable runnable, boolean animation) {
+        if (close) {
+            return;
+        }
+        close = true;
+        if (animation) {
+            double height = stage.getHeight();
+            double width = stage.getWidth();
+            double X = stage.getX();
+            double opacity = stage.getOpacity();
+            Animation transition = new Transition() {
+                {
+                    setCycleDuration(Duration.millis(300));
+                    setInterpolator(Interpolator.EASE_IN);
+                }
+
+                @Override
+                protected void interpolate(double frac) {
+                    stage.setHeight(height);
+                    double x = width * frac;
+                    stage.setWidth(width - x);
+                    stage.setX(X + x);
+                    stage.setOpacity(opacity - opacity * frac);
+                }
+            };
+
+            transition.setOnFinished(event -> {
+                _close(runnable);
+            });
+
+            transition.play();
+        } else {
+            _close(runnable);
+        }
+
+    }
+
+    private void _close(@Nullable Runnable runnable) {
         parentStage.hide();
         stage.hide();
         parentStage.close();
         stage.close();
+        if (runnable != null) {
+            runnable.run();
+        }
     }
-
 
     public boolean visible() {
         return true;

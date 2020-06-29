@@ -39,6 +39,15 @@ public class JavafxProperties {
      */
     private List<String> basenames;
 
+    /**
+     * 过渡场景关闭动画
+     */
+    private boolean splashCloseAnimationEnable = true;
+    /**
+     * 主舞台启动动画
+     */
+    private boolean primaryStageShowAnimationEnable = true;
+
     public String getTitle() {
         return title;
     }
@@ -85,5 +94,21 @@ public class JavafxProperties {
 
     public void setBasenames(List<String> basenames) {
         this.basenames = basenames;
+    }
+
+    public boolean isSplashCloseAnimationEnable() {
+        return splashCloseAnimationEnable;
+    }
+
+    public void setSplashCloseAnimationEnable(boolean splashCloseAnimationEnable) {
+        this.splashCloseAnimationEnable = splashCloseAnimationEnable;
+    }
+
+    public boolean isPrimaryStageShowAnimationEnable() {
+        return primaryStageShowAnimationEnable;
+    }
+
+    public void setPrimaryStageShowAnimationEnable(boolean primaryStageShowAnimationEnable) {
+        this.primaryStageShowAnimationEnable = primaryStageShowAnimationEnable;
     }
 }
