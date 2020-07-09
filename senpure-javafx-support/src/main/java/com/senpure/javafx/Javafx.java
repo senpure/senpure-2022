@@ -29,8 +29,8 @@ public class Javafx {
 
     private static ResourceLoader resourceLoader;
 
-   private static SceneFactory sceneFactory=new SceneFactory() {
-   };
+    private static SceneFactory sceneFactory = new SceneFactory() {
+    };
 
     // private static final Logger logger = LoggerFactory.getLogger(Javafx.class);
 
@@ -41,37 +41,19 @@ public class Javafx {
     }
 
     public static void showView(JavafxView view) {
-
-        if (primaryStage.getScene() == null) {
-            String title = view.getOriginalTitle();
-            if (title.length() == 0) {
-                title = javafxProperties.getTitle();
-            }
-            if (title.startsWith("%")) {
-                ResourceBundle resourceBundle = view.getResourceBundle();
-                title = resourceBundle.getString(title.substring(1));
-            }
-            primaryStage.setTitle(title);
-            Scene scene = new Scene(view.getView());
-
-            primaryStage.setScene(scene);
-        } else {
-            primaryStage.getScene().setRoot(view.getView());
-        }
+        stageSetView(primaryStage, view);
         primaryStage.show();
-//        FadeTransition fade = new FadeTransition();
-//        fade.setDuration(Duration.millis(1000));
-//        fade.setFromValue(0);
-//        fade.setToValue(1);
-//        fade.setCycleCount(1);
-//        fade.setAutoReverse(true);
-//        fade.setNode(primaryStage.getScene().getRoot());
-//        fade.play();
 
     }
 
     public static void showView(Stage stage, JavafxView view) {
 
+        stageSetView(stage, view);
+
+        stage.showAndWait();
+    }
+
+    private static void stageSetView(Stage stage, JavafxView view) {
         if (stage.getScene() == null) {
             if (stage.getTitle() == null) {
                 String title = view.getTitle();
@@ -86,7 +68,6 @@ public class Javafx {
         } else {
             stage.getScene().setRoot(view.getView());
         }
-        stage.showAndWait();
     }
 
     public static JavafxView getView(Class<? extends JavafxView> view) {
