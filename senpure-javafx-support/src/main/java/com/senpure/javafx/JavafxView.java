@@ -61,10 +61,10 @@ public class JavafxView {
                     try {
                         tempCss.add(resource.getURL().toExternalForm());
                     } catch (IOException e) {
-                        logger.error(s + "css文件定义错误,忽略该css", e);
+                        logger.error(s + " css文件定义错误,忽略该css", e);
                     }
                 } else {
-                    logger.warn(s + "css文件定义错误,忽略该css");
+                    logger.warn("{} css文件定义错误,忽略该css", s);
                 }
 
             }
@@ -283,7 +283,16 @@ public class JavafxView {
                 }
                 URL url = getClass().getResource(s);
                 if (url == null) {
-                    logger.warn(s + "css文件定义错误,忽略该css");
+                    Resource resource = Javafx.getResourceLoader().getResource(s);
+                    if (resource.exists()) {
+                        try {
+                            parent.getStylesheets().add(resource.getURL().toExternalForm());
+                        } catch (IOException e) {
+                            logger.error("", e);
+                        }
+                    } else {
+                        logger.warn("{} css文件定义错误,忽略该css", s);
+                    }
                 } else {
                     parent.getStylesheets().add(url.toExternalForm());
                 }

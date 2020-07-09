@@ -29,6 +29,9 @@ public class Javafx {
 
     private static ResourceLoader resourceLoader;
 
+   private static SceneFactory sceneFactory=new SceneFactory() {
+   };
+
     // private static final Logger logger = LoggerFactory.getLogger(Javafx.class);
 
     public static void showView(Class<? extends JavafxView> view) {
@@ -78,8 +81,7 @@ public class Javafx {
                 }
                 stage.setTitle(title);
             }
-            Scene scene = new Scene(view.getView());
-
+            Scene scene = sceneFactory.get(view.getView());
             stage.setScene(scene);
         } else {
             stage.getScene().setRoot(view.getView());
@@ -139,5 +141,13 @@ public class Javafx {
 
     public static void setResourceLoader(ResourceLoader resourceLoader) {
         Javafx.resourceLoader = resourceLoader;
+    }
+
+    public static SceneFactory getSceneFactory() {
+        return sceneFactory;
+    }
+
+    public static void setSceneFactory(SceneFactory sceneFactory) {
+        Javafx.sceneFactory = sceneFactory;
     }
 }
