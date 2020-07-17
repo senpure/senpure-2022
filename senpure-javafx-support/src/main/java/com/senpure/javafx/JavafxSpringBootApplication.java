@@ -76,7 +76,7 @@ public class JavafxSpringBootApplication extends Application {
                         logger.error("springboot 启动失败", throwable);
                         Platform.runLater(() -> showErrorAlert(throwable));
                     } else {
-                        Platform.runLater(() -> Thread.currentThread().setUncaughtExceptionHandler(javaFxUncaughtExceptionHandler()));
+                        Thread.setDefaultUncaughtExceptionHandler(uncaughtExceptionHandler());
                     }
                 }).thenAcceptBoth(startFuture, (configurableApplicationContext, runnable) -> {
 
@@ -165,14 +165,14 @@ public class JavafxSpringBootApplication extends Application {
         Spring.exit();
     }
 
-    protected Thread.UncaughtExceptionHandler javaFxUncaughtExceptionHandler() {
+    protected Thread.UncaughtExceptionHandler uncaughtExceptionHandler() {
 
         return (t, e) -> {
-            e.printStackTrace();
             logger.error("程序出现错误", e);
             Alert alert = new Alert(Alert.AlertType.ERROR, "程序出现错误\n" +
                     "Error: " + e);
-            alert.showAndWait();
+            Platform.runLater(alert::showAndWait);
+
         };
     }
 

@@ -56,7 +56,19 @@ public class Javafx {
     private static void stageSetView(Stage stage, JavafxView view) {
         if (stage.getScene() == null) {
             if (stage.getTitle() == null) {
-                String title = view.getTitle();
+                String title;
+                if (stage == primaryStage) {
+                    title = view.getOriginalTitle();
+                    if (title.isEmpty()) {
+                        title = javafxProperties.getTitle();
+                        if (title == null || title.isEmpty()) {
+                            title = view.getTitle();
+                        }
+                    }
+                } else {
+                    title = view.getTitle();
+                }
+
                 if (title.startsWith("%")) {
                     ResourceBundle resourceBundle = view.getResourceBundle();
                     title = resourceBundle.getString(title.substring(1));

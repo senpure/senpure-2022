@@ -21,7 +21,7 @@ import java.net.URL;
 import java.util.*;
 
 /**
- * AbstractFxmlView
+ * JavafxView
  *
  * @author senpure
  * @time 2020-06-18 16:09:54
