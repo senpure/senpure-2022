@@ -1,5 +1,7 @@
 package com.senpure.javafx.jfoenix;
 
+import com.jfoenix.controls.JFXDecorator;
+
 /**
  * Jfoenix
  *
@@ -9,6 +11,15 @@ package com.senpure.javafx.jfoenix;
 public class Jfoenix {
 
     private static JfoenixProperties jfoenixProperties;
+    private static  JFXDecorator decorator;
+
+    public static JFXDecorator getDecorator() {
+        return decorator;
+    }
+
+    public static void setDecorator(JFXDecorator decorator) {
+        Jfoenix.decorator = decorator;
+    }
 
     public static JfoenixProperties getJfoenixProperties() {
         return jfoenixProperties;

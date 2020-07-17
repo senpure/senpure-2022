@@ -137,22 +137,24 @@ public class JavafxView {
     }
 
     private static String nameRule(String name) {
-        if (StringUtil.isUpperLetter(name.charAt(1))) {
-            int len = name.length() - 1;
-            int index = 0;
-            for (int i = 1; i < len; i++) {
-                if (!StringUtil.isUpperLetter(name.charAt(i + 1))) {
-                    index = i - 1;
-                    break;
+        if (name.length() > 1) {
+            if (StringUtil.isUpperLetter(name.charAt(1))) {
+                int len = name.length() - 1;
+                int index = 0;
+                for (int i = 1; i < len; i++) {
+                    if (!StringUtil.isUpperLetter(name.charAt(i + 1))) {
+                        index = i - 1;
+                        break;
+                    }
                 }
-            }
-            if (index > 0) {
-                for (int i = 0; i <= index; i++) {
-                    name = StringUtil.toLowerLetter(name, i);
+                if (index > 0) {
+                    for (int i = 0; i <= index; i++) {
+                        name = StringUtil.toLowerLetter(name, i);
+                    }
                 }
-            }
-            return name;
+                return name;
 
+            }
         }
         return StringUtil.toLowerLetter(name, 0);
     }

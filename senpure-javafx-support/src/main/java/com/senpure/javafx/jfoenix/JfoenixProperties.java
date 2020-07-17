@@ -1,7 +1,5 @@
 package com.senpure.javafx.jfoenix;
 
-import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -35,7 +33,7 @@ public class JfoenixProperties {
          */
         private boolean stageIcon = true;
 
-        private String svgPathContent = "M512 682c-128.024-99.309-255.626-199.040-384-298l384-298 384 298c-128.375 98.958-255.974 198.693-384 298zM512 792l314-246 70 54-384 298-384-298 70-54z";
+        private String svgPathContent;
 
 
         public boolean isEnable() {

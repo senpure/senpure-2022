@@ -14,17 +14,16 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.SVGPath;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.FileUrlResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.util.StringUtils;
 
-import java.io.*;
-import java.net.URL;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 /**
  * JfoenixAutoConfiguration
@@ -50,8 +49,7 @@ public class JfoenixAutoConfiguration {
                 @Override
                 public Scene get(Parent parent) {
                     JFXDecorator jfxDecorator = new JFXDecorator(Javafx.getPrimaryStage(), parent);
-
-
+                    Jfoenix.setDecorator(jfxDecorator);
                     Scene scene = new Scene(jfxDecorator);
                     final ObservableList<String> stylesheets = scene.getStylesheets();
                     stylesheets.addAll(JFoenixResources.load("css/jfoenix-fonts.css").toExternalForm(),

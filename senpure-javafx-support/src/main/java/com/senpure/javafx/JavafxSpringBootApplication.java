@@ -115,6 +115,10 @@ public class JavafxSpringBootApplication extends Application {
             double opacity = stage.getOpacity();
             stage.setOpacity(0);
             Javafx.showView(primaryView);
+            if (!stage.isAlwaysOnTop()) {
+                stage.setAlwaysOnTop(true);
+                stage.setAlwaysOnTop(false);
+            }
             double width = stage.getWidth();
             double X = stage.getX();
             Animation transition = new Transition() {
@@ -130,7 +134,9 @@ public class JavafxSpringBootApplication extends Application {
                     stage.setX(X + width - x);
                     stage.setOpacity(opacity * frac);
                 }
+
             };
+
             transition.play();
         } else {
             Javafx.showView(primaryView);
