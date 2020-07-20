@@ -56,10 +56,10 @@ public class SplashStage {
         parentStage.setIconified(true);
         parentStage.show();
         stage.show();
-        if (!stage.isAlwaysOnTop()) {
-            stage.setAlwaysOnTop(true);
-            stage.setAlwaysOnTop(false);
-        }
+//        if (!stage.isAlwaysOnTop()) {
+//            stage.setAlwaysOnTop(true);
+//            stage.setAlwaysOnTop(false);
+//        }
 
     }
 
