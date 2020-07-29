@@ -19,13 +19,15 @@ import com.senpure.base.verify.ResourcesVerifyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.servlet.filter.OrderedFilter;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.mvc.condition.PatternsRequestCondition;
 
 import javax.annotation.Resource;
-import javax.servlet.*;
-import javax.servlet.annotation.WebFilter;
+import javax.servlet.FilterChain;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
@@ -33,12 +35,12 @@ import java.io.IOException;
 import java.util.*;
 
 
-@WebFilter(urlPatterns = "/*", filterName = "verifyFilter")
+@Component
 public class VerifyFilter extends OncePerRequestFilter implements OrderedFilter {
-    private Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private String loginURI = "/authorize/loginView";
-    private String loginAction = "/authorize/login";
+    private final String loginURI = "/authorize/loginView";
+    private final String loginAction = "/authorize/login";
     @Resource
     private URIPermissionService uriPermissionService;
     @Resource
@@ -52,12 +54,13 @@ public class VerifyFilter extends OncePerRequestFilter implements OrderedFilter 
     private LoginController loginController;
     @Resource
     protected LocaleResolver localeResolver;
-    private List<PatternsRequestCondition> patternsRequestConditions = new ArrayList<>();
+    private final List<PatternsRequestCondition> patternsRequestConditions = new ArrayList<>();
 
+    private boolean ready;
 
     @Override
-    protected void initFilterBean() throws ServletException {
-        initPatterns();
+    protected void initFilterBean() {
+        // initPatterns();
     }
 
     public void initPatterns() {
@@ -82,11 +85,23 @@ public class VerifyFilter extends OncePerRequestFilter implements OrderedFilter 
             logger.info("verify patterns {}", patternsRequestCondition);
         }
 
+        ready = true;
     }
 
 
-    public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
+    private void toLogin(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        ResultMap result = ResultMap.result(Result.ACCOUNT_NOT_LOGIN_OR_SESSION_TIMEOUT);
+        RequestDispatcher dispatcher = request.getRequestDispatcher(loginURI);
+        ResultHelper.wrapMessage(result, localeResolver.resolveLocale(request));
+        afterLogin(request, result, false);
+        dispatcher.forward(new HttpMethodRequestWrapper(request, "GET"), response);
+    }
 
+    public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
+        if (!ready) {
+            toLogin(request, response);
+            return;
+        }
         LoginedAccount account = Http.getSubject(request, LoginedAccount.class);
         if (account != null) {
             Account lastAccount = authorizeService.findAccount(account.getId());
@@ -104,7 +119,7 @@ public class VerifyFilter extends OncePerRequestFilter implements OrderedFilter 
             }
         }
         //PatternsRequestCondition match = null;
-        List<String> matches = null;
+        List<String> matches = Collections.emptyList();
         logger.trace("匹配{}", request.getRequestURI());
         for (PatternsRequestCondition patterns : patternsRequestConditions) {
             matches = patterns.getMatchingPatterns(request.getRequestURI());
@@ -131,13 +146,7 @@ public class VerifyFilter extends OncePerRequestFilter implements OrderedFilter 
                     logger.debug("{} > {}", request.getRequestURI(), "没有登陆或者登陆超时");
                     account = loginController.autoLogin(request);
                     if (account == null) {
-                        ResultMap result = ResultMap.result(Result.ACCOUNT_NOT_LOGIN_OR_SESSION_TIMEOUT);
-                        RequestDispatcher dispatcher = request.getRequestDispatcher(loginURI);
-                        ResultHelper.wrapMessage(result, localeResolver.resolveLocale(request));
-
-                        afterLogin(request, result, false);
-
-                        dispatcher.forward(new HttpMethodRequestWrapper(request, "GET"), response);
+                        toLogin(request, response);
                         return;
                     } else {
                         logger.debug("auto 登陆成功");
@@ -170,9 +179,9 @@ public class VerifyFilter extends OncePerRequestFilter implements OrderedFilter 
                             String[] offsets = permission.getOffset().split(",");
                             String[] verifyNames = permission.getVerifyName().split(",");
                             for (int i = 0; i < offsets.length; i++) {
-                                String resourceId = null;
+                                String resourceId;
                                 String uri = request.getRequestURI();
-                                int offset = Integer.valueOf(offsets[i]);
+                                int offset = Integer.parseInt(offsets[i]);
                                 int first = StringUtil.indexOf(bestMatch, "{", offset);
                                 if (first < 0) {
                                     continue;
@@ -249,10 +258,7 @@ public class VerifyFilter extends OncePerRequestFilter implements OrderedFilter 
                 return true;
             }
         }
-        if (account.getAccount().equalsIgnoreCase(PermissionConstant.NAME)) {
-            return true;
-        }
-        return false;
+        return account.getAccount().equalsIgnoreCase(PermissionConstant.NAME);
     }
 
     private void afterLogin(HttpServletRequest request, ResultMap result, boolean checkLogin) {
