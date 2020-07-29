@@ -22,6 +22,7 @@
         <module>senpure-permission</module>
         <module>senpure-dependencies</module>
         <module>senpure-javafx-support</module>
+        <module>senpure-cli</module>
 
     </modules>
 
