@@ -218,7 +218,14 @@ public class UsageFormatter extends DefaultUsageFormatter {
         }
     }
 
+    public static String s(int count) {
+        StringBuilder result = new StringBuilder();
 
+        for (int i = 0; i < count; i++) {
+            result.append(".");
+        }
+        return result.toString();
+    }
 
     private static boolean isChinese(char c) {
         if (c >= 0x4E00 && c <= 0x9FA5) {
