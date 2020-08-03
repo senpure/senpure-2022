@@ -3,9 +3,7 @@ package com.senpure.config.read;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by 罗中正 on 2018/4/19 0019.
- */
+
 public class ReadHelper {
 
     private static final String[] BASE_FIELDS;
