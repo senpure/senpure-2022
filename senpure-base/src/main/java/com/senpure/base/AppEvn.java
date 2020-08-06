@@ -1,12 +1,11 @@
 package com.senpure.base;
 
 import com.senpure.base.util.Assert;
-import com.senpure.base.util.Rsa;
 import com.senpure.base.util.StringUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.fusesource.jansi.AnsiConsole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.ansi.AnsiOutput;
 
 import java.io.File;
@@ -41,11 +40,56 @@ public class AppEvn {
     }
 
     /**
+     * 获取jar的路径
+     *
+     * @param clazz
+     * @return 如果clazz 不在jar中返回null
+     */
+    public static String getJarPath(Class<?> clazz) {
+        URL url = clazz.getResource(clazz.getSimpleName() + ".class");
+        if (url == null) {
+            return null;
+        }
+        try {
+            URI uri = url.toURI();
+            String classPath = uri.getPath();
+            if (classPath == null) {
+                String path = getJarPath(uri);
+                path = new URI(path).getPath();
+                if (isWindowsOS()) {
+                    int index = path.indexOf("/");
+                    if (index == 0) {
+                        path = path.substring(1);
+                    }
+                }
+                return path;
+            }
+            return null;
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+    private static String getJarPath(URI uri) {
+        String location = uri.toString();
+        int index = location.indexOf(".jar!");
+        if (index == -1) {
+            index = StringUtil.indexOf(location, ".", 1, true);
+        }
+        location = location.substring(0, index + 4);
+        location = location.replace("jar:file:", "");
+        return location;
+    }
+
+
+    /**
      * 获取class\jar的根路径如<br>
-     * E:\projects\com.senpure.base\target\classes\com\senpure\AppEvn.class ->
-     * E:\projects\com.senpure.base\target\classes<br>
-     * E:\projects\com.senpure.base\target\<b><i>jar.jar</i></b>\com\senpure\AppEvn.class ->
-     * E:\projects\com.senpure.base\target
+     * E:\projects\a\target\classes\com\senpure\AppEvn.class ->
+     * E:\projects\a\target\classes<br>
+     * E:\projects\a\target\<b><i>jar.jar</i></b>\com\senpure\AppEvn.class ->
+     * E:\projects\a\target
      *
      * @return
      */
@@ -316,11 +360,8 @@ public class AppEvn {
 
     public static void main(String[] args) {
 
-        System.out.println(Rsa.class.getSimpleName());
-        markClassRootPath(SpringApplication.class);
-        System.out.println(getClassRootPath());
 
-        System.out.println("pid:" + System.getProperty("PID"));
+        System.out.println(getJarPath(StringUtils.class));
 
     }
 }
