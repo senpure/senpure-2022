@@ -15,7 +15,7 @@ import java.util.*;
  * @time 2020-07-24 12:15:07
  */
 public class CompletionUtil {
-    private static final ThreadLocal<Boolean> objectFlag = ThreadLocal.withInitial(() -> false);
+    //private static final ThreadLocal<Boolean> objectFlag = ThreadLocal.withInitial(() -> false);
 
     @Nonnull
     public static List<String> completion(JCommander commander, String command) {
@@ -45,24 +45,24 @@ public class CompletionUtil {
             switch (cmdArray.length) {
                 case 0:
                     completions.addAll(completionCommand(process, ""));
-                    completions.addAll(completionOptions(process));
+                    completions.addAll(_completionOptions(process));
                     return completions;
                 case 1:
                     completions.addAll(completionCommand(process, cmdArray[0]));
                     if (completions.isEmpty()) {
-                        completions.addAll(completionOptions(process));
+                        completions.addAll(_completionOptions(process));
                     }
                     return completions;
                 default:
                     process = cutCommandName(process, cmdArray[0]);
                     if (process != null) {
-                        return completionOptions(process);
+                        return _completionOptions(process);
                     }
                     return completions;
             }
 
         } else {
-            return completionOptions(process);
+            return _completionOptions(process);
         }
 
     }
@@ -82,27 +82,18 @@ public class CompletionUtil {
         return null;
     }
 
+
+
     /**
      * 默认补全实现，只支持成对出现的格式
      *
      * @param process
      * @return
      */
-
     @Nonnull
     public static List<String> completionOptions(CompletionProcess process) {
         JCommander commander = process.getCommander();
-        List<Object> objects = commander.getObjects();
-        if (!objects.isEmpty()) {
-            Object obj = objects.get(0);
-            if (obj instanceof Command && !objectFlag.get()) {
-                objectFlag.set(true);
-                Command command = (Command) obj;
-                List<String> completions = command.complete(process);
-                objectFlag.remove();
-                return completions;
-            }
-        }
+
         String[] cmdArray = process.getCmdArray();
         String option = "";
         if (cmdArray.length > 0) {
@@ -122,6 +113,12 @@ public class CompletionUtil {
         for (int i = 0; i < cmdArray.length; i += 2) {
             options.add(cmdArray[i]);
         }
+
+        return completionOptions(commander, option, options);
+    }
+
+    @Nonnull
+    private static List<String> completionOptions(JCommander commander, String option, Set<String> options) {
         List<String> likes = new ArrayList<>();
         for (ParameterDescription pd : commander.getFields().values()) {
             WrappedParameter parameter = pd.getParameter();
@@ -142,6 +139,21 @@ public class CompletionUtil {
             likes.addAll(parameterLikes);
         }
         return likes;
+    }
+
+    @Nonnull
+    private static List<String> _completionOptions(CompletionProcess process) {
+        JCommander commander = process.getCommander();
+        List<Object> objects = commander.getObjects();
+        if (!objects.isEmpty()) {
+            Object obj = objects.get(0);
+            if (obj instanceof Command) {
+                Command command = (Command) obj;
+                return command.complete(process);
+            }
+        }
+
+        return completionOptions(process);
     }
 
     private static List<String> completionCommand(CompletionProcess process, String prefix) {
@@ -165,7 +177,7 @@ public class CompletionUtil {
         } else if (process.isEndSpace()) {
             process = cutCommandName(process, eq);
             if (process != null) {
-                return completionOptions(process);
+                return _completionOptions(process);
             }
         }
         return likes;

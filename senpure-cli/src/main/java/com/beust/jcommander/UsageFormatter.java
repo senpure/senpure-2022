@@ -222,7 +222,7 @@ public class UsageFormatter extends DefaultUsageFormatter {
         StringBuilder result = new StringBuilder();
 
         for (int i = 0; i < count; i++) {
-            result.append(".");
+            result.append(" ");
         }
         return result.toString();
     }
