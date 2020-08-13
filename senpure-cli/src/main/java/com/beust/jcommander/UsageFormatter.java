@@ -159,6 +159,7 @@ public class UsageFormatter extends DefaultUsageFormatter {
             max--;
         }
         String[] words = description.split("\n");
+        // System.out.println(Arrays.toString(words));
         for (int i = 0; i < words.length; i++) {
             String word = words[i];
             if (i == 0 && currentLineIndent > 0) {
@@ -166,8 +167,16 @@ public class UsageFormatter extends DefaultUsageFormatter {
             }
             if (word.length() > max) {
                 appendMultiLine(out, word, max, indent, true);
+
             } else {
-                out.append(word);
+                if (i == 0) {
+                    out.append(word);
+                } else {
+                    out.append(s(indent)).append(word);
+                }
+                if (i < words.length-1) {
+                    out.append("\n");
+                }
             }
 
 
@@ -242,7 +251,7 @@ public class UsageFormatter extends DefaultUsageFormatter {
 
     public static void main(String[] args) {
 
-        String str = "成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成成";
+        String str = "AAAAA\nBBBBB\nCCCCC";
 
         UsageFormatter usageFormatter = new UsageFormatter(new JCommander());
 

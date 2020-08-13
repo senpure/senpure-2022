@@ -27,7 +27,7 @@ public class CommandTest {
 
         HelpCommand helpCommand = new HelpCommand(rootCommander);
         rootCommander.addCommand(helpCommand);
-        return new RootCommand(rootCommander, () -> System.out::println);
+        return new RootCommand(rootCommander);
     }
 
 

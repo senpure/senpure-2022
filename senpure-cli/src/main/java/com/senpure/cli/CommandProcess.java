@@ -1,5 +1,8 @@
 package com.senpure.cli;
 
+import javax.annotation.Nonnull;
+import java.util.List;
+
 /**
  * CommandProcess
  *
@@ -8,5 +11,18 @@ package com.senpure.cli;
  */
 public interface CommandProcess {
 
-    void feed( String feed);
+    default void feed(String feed) {
+        System.out.println(feed);
+    }
+
+    default void completionOptions(@Nonnull List<String> options) {
+
+        for (String option : options) {
+            System.out.println(option);
+        }
+    }
+
+    default void completion(String command) {
+        System.out.println(command);
+    }
 }

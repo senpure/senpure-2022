@@ -16,11 +16,20 @@ import java.util.*;
  */
 public class CompletionUtil {
     //private static final ThreadLocal<Boolean> objectFlag = ThreadLocal.withInitial(() -> false);
+    public static final String DEFAULT_COMPLETION_CHAR = "\t";
 
     @Nonnull
     public static List<String> completion(JCommander commander, String command) {
-        if (command.endsWith("\t")) {
-            command = command.substring(0, command.length() - 1);
+        return completion(commander, command, DEFAULT_COMPLETION_CHAR);
+    }
+
+    @Nonnull
+    public static List<String> completion(JCommander commander, String command, String completionChar) {
+        if (command.endsWith(completionChar)) {
+            do {
+                command = command.substring(0, command.length() - completionChar.length());
+            }
+            while (command.endsWith(completionChar));
         }
         boolean endSpace = command.endsWith(" ");
         StringTokenizer st = new StringTokenizer(command);
@@ -81,7 +90,6 @@ public class CompletionUtil {
         }
         return null;
     }
-
 
 
     /**

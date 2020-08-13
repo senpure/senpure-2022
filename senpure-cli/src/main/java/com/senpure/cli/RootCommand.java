@@ -2,6 +2,7 @@ package com.senpure.cli;
 
 import com.beust.jcommander.JCommander;
 
+import java.util.List;
 import java.util.StringTokenizer;
 
 /**
@@ -17,8 +18,10 @@ public class RootCommand extends AbstractCommand {
 
     private final CommandProcessFactory commandProcessFactory;
 
+    private String completionChar = CompletionUtil.DEFAULT_COMPLETION_CHAR;
+
     public RootCommand(JCommander rootCommander) {
-        this(rootCommander,DefaultCommandProcess::new);
+        this(rootCommander, DefaultCommandProcess::new);
     }
 
     public RootCommand(JCommander rootCommander, CommandProcessFactory commandProcessFactory) {
@@ -36,15 +39,37 @@ public class RootCommand extends AbstractCommand {
         for (int i = 0; st.hasMoreTokens(); i++) {
             cmdArray[i] = st.nextToken();
         }
-        if (command.endsWith("\t")) {
-            CompletionUtil.completion(rootCommander, command);
+        CommandProcess commandProcess = commandProcessFactory.get();
+        if (command.endsWith(completionChar)) {
+            do {
+                command = command.substring(0, command.length() - completionChar.length());
+
+            }
+            while (command.endsWith(completionChar));
+            List<String> options = CompletionUtil.completion(rootCommander, command, completionChar);
+            if (options.size() == 1) {
+
+                if (!command.endsWith(" ")) {
+                    String end = cmdArray[cmdArray.length - 1];
+                    int index = command.lastIndexOf(end);
+                    if (index > -1) {
+                        command = command.substring(0, index);
+                    }
+                }
+                command += options.get(0);
+                commandProcess.completion(command);
+            } else {
+                commandProcess.completionOptions(options);
+            }
+
         } else {
-            CommandProcess commandProcess = commandProcessFactory.get();
+
             try {
                 rootCommander.parse(cmdArray);
                 process(commandProcess);
             } catch (Exception e) {
-                commandProcess.feed(e.getMessage());
+                String message = e.toString();
+                commandProcess.feed(message);
             }
 
         }
@@ -77,5 +102,13 @@ public class RootCommand extends AbstractCommand {
 
     public JCommander getRootCommander() {
         return rootCommander;
+    }
+
+    public String getCompletionChar() {
+        return completionChar;
+    }
+
+    public void setCompletionChar(String completionChar) {
+        this.completionChar = completionChar;
     }
 }
