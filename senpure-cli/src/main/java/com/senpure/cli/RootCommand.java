@@ -3,7 +3,6 @@ package com.senpure.cli;
 import com.beust.jcommander.JCommander;
 
 import java.util.List;
-import java.util.StringTokenizer;
 
 /**
  * RootCommand
@@ -12,21 +11,27 @@ import java.util.StringTokenizer;
  * @time 2020-07-28 10:59:28
  */
 public class RootCommand extends AbstractCommand {
-
+    public static final String DEFAULT_COMPLETION_CHAR = "\t";
     private final JCommander rootCommander;
 
+    private final CommandProcess commandProcess;
 
-    private final CommandProcessFactory commandProcessFactory;
+    private final CommandSplitter commandSplitter;
 
-    private String completionChar = CompletionUtil.DEFAULT_COMPLETION_CHAR;
+    private String completionChar = DEFAULT_COMPLETION_CHAR;
+    /**
+     * 当补全只有一个选项时是否修饰为一个完整的命令
+     */
+    private boolean fullCompletion = true;
 
     public RootCommand(JCommander rootCommander) {
-        this(rootCommander, DefaultCommandProcess::new);
+        this(rootCommander, new DefaultCommandProcess(), new DefaultCommandSplitter());
     }
 
-    public RootCommand(JCommander rootCommander, CommandProcessFactory commandProcessFactory) {
+    public RootCommand(JCommander rootCommander, CommandProcess commandProcess, CommandSplitter commandSplitter) {
         this.rootCommander = rootCommander;
-        this.commandProcessFactory = commandProcessFactory;
+        this.commandProcess = commandProcess;
+        this.commandSplitter = commandSplitter;
 
     }
 
@@ -34,36 +39,18 @@ public class RootCommand extends AbstractCommand {
         if (command == null) {
             return;
         }
-        StringTokenizer st = new StringTokenizer(command);
-        String[] cmdArray = new String[st.countTokens()];
-        for (int i = 0; st.hasMoreTokens(); i++) {
-            cmdArray[i] = st.nextToken();
-        }
-        CommandProcess commandProcess = commandProcessFactory.get();
+
         if (command.endsWith(completionChar)) {
             do {
                 command = command.substring(0, command.length() - completionChar.length());
 
             }
             while (command.endsWith(completionChar));
-            List<String> options = CompletionUtil.completion(rootCommander, command, completionChar);
-            if (options.size() == 1) {
-
-                if (!command.endsWith(" ")) {
-                    String end = cmdArray[cmdArray.length - 1];
-                    int index = command.lastIndexOf(end);
-                    if (index > -1) {
-                        command = command.substring(0, index);
-                    }
-                }
-                command += options.get(0);
-                commandProcess.completion(command);
-            } else {
-                commandProcess.completionOptions(options);
-            }
+            String[] cmdArray = commandSplitter.split(command);
+            completion(command, cmdArray);
 
         } else {
-
+            String[] cmdArray = commandSplitter.split(command);
             try {
                 rootCommander.parse(cmdArray);
                 process(commandProcess);
@@ -74,7 +61,28 @@ public class RootCommand extends AbstractCommand {
 
         }
 
+    }
 
+    public void completion(String command) {
+        String[] cmdArray = commandSplitter.split(command);
+        completion(command, cmdArray);
+    }
+
+    private void completion(String command, String[] cmdArray) {
+        List<String> options = CompletionUtil.completion(rootCommander, command, cmdArray);
+        if (fullCompletion && options.size() == 1) {
+            if (!command.endsWith(" ")) {
+                String end = cmdArray[cmdArray.length - 1];
+                int index = command.lastIndexOf(end);
+                if (index > -1) {
+                    command = command.substring(0, index);
+                }
+            }
+            command += options.get(0);
+            commandProcess.completion(command);
+        } else {
+            commandProcess.completionOptions(options);
+        }
     }
 
     public void process(CommandProcess process) {
@@ -94,10 +102,17 @@ public class RootCommand extends AbstractCommand {
 
     private void process(JCommander commander, CommandProcess process) {
         Object obj = commander.getObjects().get(0);
+        if (obj == null) {
+            return;
+        }
         if (obj instanceof Command) {
             Command cmd = (Command) obj;
             cmd.process(process);
         }
+    }
+
+    public void setFullCompletion(boolean fullCompletion) {
+        this.fullCompletion = fullCompletion;
     }
 
     public JCommander getRootCommander() {
@@ -111,4 +126,6 @@ public class RootCommand extends AbstractCommand {
     public void setCompletionChar(String completionChar) {
         this.completionChar = completionChar;
     }
+
+
 }

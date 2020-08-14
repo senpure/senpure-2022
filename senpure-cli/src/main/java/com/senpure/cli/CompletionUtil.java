@@ -16,27 +16,15 @@ import java.util.*;
  */
 public class CompletionUtil {
     //private static final ThreadLocal<Boolean> objectFlag = ThreadLocal.withInitial(() -> false);
-    public static final String DEFAULT_COMPLETION_CHAR = "\t";
+
+
+
+
+
 
     @Nonnull
-    public static List<String> completion(JCommander commander, String command) {
-        return completion(commander, command, DEFAULT_COMPLETION_CHAR);
-    }
-
-    @Nonnull
-    public static List<String> completion(JCommander commander, String command, String completionChar) {
-        if (command.endsWith(completionChar)) {
-            do {
-                command = command.substring(0, command.length() - completionChar.length());
-            }
-            while (command.endsWith(completionChar));
-        }
+    public static List<String> completion(JCommander commander, String command, String[] cmdArray) {
         boolean endSpace = command.endsWith(" ");
-        StringTokenizer st = new StringTokenizer(command);
-        String[] cmdArray = new String[st.countTokens()];
-        for (int i = 0; st.hasMoreTokens(); i++) {
-            cmdArray[i] = st.nextToken();
-        }
         CompletionProcess process = new CompletionProcess();
         process.setCommander(commander);
         process.setCmdArray(cmdArray);

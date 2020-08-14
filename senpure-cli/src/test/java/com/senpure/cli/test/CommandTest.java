@@ -1,12 +1,9 @@
 package com.senpure.cli.test;
 
 import com.beust.jcommander.JCommander;
-import com.senpure.cli.CompletionUtil;
 import com.senpure.cli.HelpCommand;
 import com.senpure.cli.RootCommand;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 /**
  * CommandTest
@@ -65,26 +62,24 @@ public class CommandTest {
     public void completionTest() {
         RootCommand rootCommand = rootCommand();
         System.out.println("基础命令补全:\t");
-        List<String> completions = CompletionUtil.completion(rootCommand.getRootCommander(), "\t");
-        System.out.println(completions);
+
+        rootCommand.process("\t");
+
 
         System.out.println("基础命令补全2:go\t");
-        completions = CompletionUtil.completion(rootCommand.getRootCommander(), "go\t");
-        System.out.println(completions);
+        rootCommand.process("go\t");
+
 
         System.out.println("单个命令补全:gold \t");
-        completions = CompletionUtil.completion(rootCommand.getRootCommander(), "gold \t");
-        System.out.println(completions);
+        rootCommand.process("gold \t");
 
 
         System.out.println("单个命令补全2:gold gol\t");
-        completions = CompletionUtil.completion(rootCommand.getRootCommander(), "gold gol\t");
-        System.out.println(completions);
+        rootCommand.process("gold gol\t");
 
 
         System.out.println("单个命令补全3:mission -m 10000 -\t");
-        completions = CompletionUtil.completion(rootCommand.getRootCommander(), "mission -m 10000 -\t");
-        System.out.println(completions);
+        rootCommand.process("mission -m 10000 -\t");
     }
 
     @Test
