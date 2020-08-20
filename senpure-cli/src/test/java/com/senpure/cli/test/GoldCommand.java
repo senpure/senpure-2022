@@ -19,12 +19,8 @@ public class GoldCommand extends HelpableCommand {
     private int playerId;
 
     @Override
-    public void process(CommandProcess process) {
+    public void process0(CommandProcess process) {
 
-        if (isHelp()) {
-            process.feed(usage());
-            return;
-        }
         process.feed("[" + playerId + "] gold [" + gold + "] success");
 
     }

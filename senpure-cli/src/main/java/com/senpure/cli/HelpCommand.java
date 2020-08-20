@@ -23,11 +23,7 @@ public class HelpCommand extends HelpableCommand {
     }
 
     @Override
-    public void process(CommandProcess process) {
-        if (isHelp()) {
-            process.feed(usage());
-            return;
-        }
+    public void process0(CommandProcess process) {
         StringBuilder out = new StringBuilder();
         if (detail) {
             UsageFormatter formatter = new UsageFormatter(rootCommander);
@@ -56,9 +52,4 @@ public class HelpCommand extends HelpableCommand {
         this.detail = detail;
     }
 
-    public static void main(String[] args) {
-        HelpCommand helpCommand = new HelpCommand(null);
-
-
-    }
 }

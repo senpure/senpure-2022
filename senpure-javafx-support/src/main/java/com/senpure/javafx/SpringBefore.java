@@ -24,7 +24,7 @@ import java.util.List;
  * @author senpure
  * @time 2020-06-19 16:30:35
  */
-public class SplashStage {
+public class SpringBefore {
     private static final String DEFAULT_IMAGE = "/splash/javafx.png";
     private static final String SPLASH_IMAGE = "/splash";
     private Stage stage;
@@ -34,10 +34,8 @@ public class SplashStage {
 
     private boolean close;
 
-    public void show() {
-        final ImageView imageView = new ImageView(getClass().getResource(getImagePath()).toExternalForm());
-
-
+    public void showSplash() {
+        final ImageView imageView = new ImageView(getClass().getResource(getSplashImagePath()).toExternalForm());
         ProgressIndicator indicator = new ProgressIndicator();
         indicator.setPrefSize(22, 22);
         indicator.setLayoutX(imageView.getImage().getWidth() - 22);
@@ -63,12 +61,12 @@ public class SplashStage {
 
     }
 
-    public void close(boolean animation) {
+    public void closeSplash(boolean animation) {
 
-        close(null, animation);
+        closeSplash(null, animation);
     }
 
-    public void close(@Nullable Runnable runnable, boolean animation) {
+    public void closeSplash(@Nullable Runnable runnable, boolean animation) {
         if (close) {
             return;
         }
@@ -95,17 +93,17 @@ public class SplashStage {
             };
 
             transition.setOnFinished(event -> {
-                _close(runnable);
+                closeSplash0(runnable);
             });
 
             transition.play();
         } else {
-            _close(runnable);
+            closeSplash0(runnable);
         }
 
     }
 
-    private void _close(@Nullable Runnable runnable) {
+    private void closeSplash0(@Nullable Runnable runnable) {
         parentStage.hide();
         stage.hide();
         parentStage.close();
@@ -115,12 +113,12 @@ public class SplashStage {
         }
     }
 
-    public boolean visible() {
+    public boolean isSplash() {
         return true;
     }
 
 
-    public String getImagePath() {
+    public String getSplashImagePath() {
         List<String> suffixList = Arrays.asList(".png", ".jpg");
         for (String suffix : suffixList) {
             String imagePath = SPLASH_IMAGE + suffix;
@@ -131,6 +129,11 @@ public class SplashStage {
             }
         }
         return DEFAULT_IMAGE;
+    }
+
+    public boolean isInstallAnsiConsole() {
+
+        return true;
     }
 
 

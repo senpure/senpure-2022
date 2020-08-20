@@ -42,21 +42,23 @@ public class JavafxSpringBootApplication extends Application {
     private final List<Image> defaultIcons = new ArrayList<>();
     private final CompletableFuture<Runnable> startFuture = new CompletableFuture<>();
 
-    private static SplashStage splashStage;
+    private static SpringBefore springBefore;
 
 
     public static void launch(Class<? extends Application> primarySource, Class<? extends JavafxView> primaryView, String[] args) {
-        launch(primarySource, primaryView, new SplashStage(), args);
+        launch(primarySource, primaryView, new SpringBefore(), args);
     }
 
 
-    public static void launch(Class<? extends Application> primarySource, Class<? extends JavafxView> primaryView, SplashStage splashStage, String[] args) {
+    public static void launch(Class<? extends Application> primarySource, Class<? extends JavafxView> primaryView, SpringBefore springBefore, String[] args) {
         AppEvn.markClassRootPath(primarySource);
-        AppEvn.installAnsiConsole(primarySource);
+        if (springBefore.isInstallAnsiConsole()) {
+            AppEvn.installAnsiConsole(primarySource);
+        }
         JavafxSpringBootApplication.args = args;
         JavafxSpringBootApplication.primaryView = primaryView;
         JavafxSpringBootApplication.primarySource = primarySource;
-        JavafxSpringBootApplication.splashStage = splashStage;
+        JavafxSpringBootApplication.springBefore = springBefore;
         launch(primarySource, args);
     }
 
@@ -96,8 +98,8 @@ public class JavafxSpringBootApplication extends Application {
         beforeShowPrimaryStage(Javafx.getPrimaryStage());
         loadIcons();
         Javafx.getPrimaryStage().getIcons().addAll(icons);
-        if (splashStage != null && splashStage.visible()) {
-            splashStage.close(() -> {
+        if (springBefore != null && springBefore.isSplash()) {
+            springBefore.closeSplash(() -> {
                 show(primaryView);
             }, Javafx.getJavafxProperties().isSplashCloseAnimationEnable());
 
@@ -153,8 +155,8 @@ public class JavafxSpringBootApplication extends Application {
             Javafx.setSystemTray(SystemTray.getSystemTray());
         }
 
-        if (splashStage != null && splashStage.visible()) {
-            splashStage.show();
+        if (springBefore != null && springBefore.isSplash()) {
+            springBefore.showSplash();
         }
 
         startFuture.complete(this::showPrimaryStage);

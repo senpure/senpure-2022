@@ -98,7 +98,9 @@ public class NoteUtil {
                 }
 
             }
-            process.destroy();
+            if (process != null) {
+                process.destroy();
+            }
         }
         return infos;
     }

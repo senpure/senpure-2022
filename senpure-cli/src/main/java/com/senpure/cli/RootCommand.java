@@ -23,6 +23,7 @@ public class RootCommand extends AbstractCommand {
      * 当补全只有一个选项时是否修饰为一个完整的命令
      */
     private boolean fullCompletion = true;
+    private String command;
 
     public RootCommand(JCommander rootCommander) {
         this(rootCommander, new DefaultCommandProcess(), new DefaultCommandSplitter());
@@ -36,9 +37,10 @@ public class RootCommand extends AbstractCommand {
     }
 
     public void process(String command) {
-        if (command == null) {
+        if (command == null||command.trim().isEmpty()) {
             return;
         }
+        this.command = command;
 
         if (command.endsWith(completionChar)) {
             do {
@@ -86,16 +88,13 @@ public class RootCommand extends AbstractCommand {
     }
 
     public void process(CommandProcess process) {
-
         String command = rootCommander.getParsedCommand();
-
         if (command != null) {
             JCommander jCommander = rootCommander.getCommands().get(command);
             process(jCommander, process);
-
         } else {
-
-            process(commander, process);
+            process.feed("无效命令[" + this.command + "]");
+            // process(commander, process);
         }
     }
 

@@ -20,11 +20,8 @@ public class MissionCommand extends HelpableCommand {
 
 
     @Override
-    public void process(CommandProcess process) {
-        if (isHelp()) {
-            process.feed(usage());
-            return;
-        }
+    public void process0(CommandProcess process) {
+
         process.feed("[" + playerId + "] mission [" + missionId + "] success");
     }
     public int getPlayerId() {

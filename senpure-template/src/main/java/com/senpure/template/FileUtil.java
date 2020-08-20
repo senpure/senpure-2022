@@ -6,8 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 
 public class FileUtil {
@@ -16,11 +16,7 @@ public class FileUtil {
 
     public static String checkPath(String path) {
         if (!Charset.forName("gbk").newEncoder().canEncode(path)) {
-            try {
-                path = new String(path.getBytes("ISO-8859-1"), "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                logger.error("error", e);
-            }
+            path = new String(path.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
         }
         return path;
     }
@@ -49,7 +45,8 @@ public class FileUtil {
         String upperPath = path.toUpperCase();
         if (path.startsWith("/") || upperPath.startsWith("C:") || upperPath.startsWith("D:") || upperPath.startsWith("E:")
                 || upperPath.startsWith("F:") || upperPath.startsWith("G:") || upperPath.startsWith("H:")
-                || upperPath.startsWith("H:") || upperPath.startsWith("I:") || upperPath.startsWith("G:")
+                || upperPath.startsWith("I:") || upperPath.startsWith("J:") || upperPath.startsWith("K:")
+                || upperPath.startsWith("L:") || upperPath.startsWith("M:") || upperPath.startsWith("N:")
         ) {
             file = new File(path);
         } else if (path.startsWith("../")) {

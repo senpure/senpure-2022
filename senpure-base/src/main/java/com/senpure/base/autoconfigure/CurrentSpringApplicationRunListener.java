@@ -46,8 +46,14 @@ public class CurrentSpringApplicationRunListener extends AbstractRootApplication
     @Override
     public void rootEnvironmentPrepared(ConfigurableEnvironment environment) {
         String value = environment.getProperty("spring.output.ansi.enabled", String.class);
+        logger.trace("spring.output.ansi.enabled={}",value);
         if (value == null || !value.equalsIgnoreCase(AnsiOutput.Enabled.NEVER.name())) {
-            AppEvn.installAnsiConsole(AppEvn.getStartClass());
+            Boolean install=environment.getProperty("senpure.ansi-console.install", Boolean.class);
+            logger.trace("senpure.ansi-console.install={}",install);
+            if (install == null || install) {
+                AppEvn.installAnsiConsole(AppEvn.getStartClass());
+            }
+
         }
 
     }

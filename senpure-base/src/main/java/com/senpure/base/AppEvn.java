@@ -327,13 +327,17 @@ public class AppEvn {
 
     public static void installAnsiConsole(Class<?> clazz) {
         if (installedAnsi) {
+            logger.trace("已经执行过installAnsiConsole");
             return;
         }
         try {
             Class.forName("org.fusesource.jansi.AnsiConsole");
             AnsiOutput.setEnabled(AnsiOutput.Enabled.ALWAYS);
             if (AppEvn.classInJar(clazz, false)) {
+                logger.trace("执行AnsiConsole.systemInstall()");
                 AnsiConsole.systemInstall();
+            } else {
+                logger.trace("不执行AnsiConsole.systemInstall()");
             }
         } catch (ClassNotFoundException e) {
             logger.info("不适用控制台彩色日志");
