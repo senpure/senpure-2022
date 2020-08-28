@@ -4,9 +4,10 @@ import com.senpure.base.AppEvn;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.ansi.AnsiOutput;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.env.ConfigurableEnvironment;
 
-
+@Order(1)
 public class CurrentSpringApplicationRunListener extends AbstractRootApplicationRunListener {
 
     public CurrentSpringApplicationRunListener(SpringApplication springApplication, String[] args) {

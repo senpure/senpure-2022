@@ -321,7 +321,7 @@ public class AppEvn {
             String jvmName = ManagementFactory.getRuntimeMXBean().getName();
             return jvmName.split("@")[0];
         } catch (Throwable ex) {
-            return null;
+            return "0000";
         }
     }
 

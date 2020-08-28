@@ -126,5 +126,7 @@ public class RootCommand extends AbstractCommand {
         this.completionChar = completionChar;
     }
 
-
+    public CommandProcess getCommandProcess() {
+        return commandProcess;
+    }
 }

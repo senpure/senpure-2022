@@ -1,0 +1,8 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+ com.senpure.reload.autoconfigure.AttachAgentAutoConfiguration
+
+
+
+
+
+

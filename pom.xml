@@ -24,6 +24,7 @@
         <module>senpure-javafx-support</module>
         <module>senpure-cli</module>
         <module>senpure-config</module>
+        <module>senpure-reload</module>
 
     </modules>
 
