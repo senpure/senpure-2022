@@ -74,7 +74,7 @@ public class AppEvn {
 
     private static String getJarPath(URI uri) {
         String location = uri.toString();
-        int index = location.indexOf(".jar!");
+        int index = location.lastIndexOf(".jar!");
         if (index == -1) {
             index = StringUtil.indexOf(location, ".", 1, true);
         }

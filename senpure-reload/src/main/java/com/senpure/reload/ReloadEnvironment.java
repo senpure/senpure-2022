@@ -1,15 +1,17 @@
 package com.senpure.reload;
 
+import java.lang.instrument.Instrumentation;
+
 /**
  * AttachAgentEnvironment
  *
  * @author senpure
  * @time 2020-08-28 15:53:12
  */
-public class AttachAgentEnvironment {
+public class ReloadEnvironment {
     private boolean closeByteCodeVerify = true;
 
-    private  boolean hasVirtualMachine;
+    private Instrumentation instrumentation;
 
     public boolean isCloseByteCodeVerify() {
         return closeByteCodeVerify;
@@ -19,11 +21,12 @@ public class AttachAgentEnvironment {
         this.closeByteCodeVerify = closeByteCodeVerify;
     }
 
-    public boolean isHasVirtualMachine() {
-        return hasVirtualMachine;
+
+    public Instrumentation getInstrumentation() {
+        return instrumentation;
     }
 
-    public void setHasVirtualMachine(boolean hasVirtualMachine) {
-        this.hasVirtualMachine = hasVirtualMachine;
+    public void setInstrumentation(Instrumentation instrumentation) {
+        this.instrumentation = instrumentation;
     }
 }
