@@ -22,7 +22,7 @@ public interface CommandProcess {
         }
     }
 
-    default void completion(String command) {
+    default void completion(String command,boolean fromMultiple) {
         System.out.println(command);
     }
 }

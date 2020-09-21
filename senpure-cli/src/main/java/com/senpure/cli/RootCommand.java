@@ -37,32 +37,29 @@ public class RootCommand extends AbstractCommand {
     }
 
     public void process(String command) {
-        if (command == null||command.trim().isEmpty()) {
+        if (command == null || command.trim().isEmpty()) {
             return;
         }
         this.command = command;
+        try {
+            if (command.endsWith(completionChar)) {
+                do {
+                    command = command.substring(0, command.length() - completionChar.length());
+                }
+                while (command.endsWith(completionChar));
+                String[] cmdArray = commandSplitter.split(command);
+                completion(command, cmdArray);
 
-        if (command.endsWith(completionChar)) {
-            do {
-                command = command.substring(0, command.length() - completionChar.length());
-
-            }
-            while (command.endsWith(completionChar));
-            String[] cmdArray = commandSplitter.split(command);
-            completion(command, cmdArray);
-
-        } else {
-            String[] cmdArray = commandSplitter.split(command);
-            try {
+            } else {
+                String[] cmdArray = commandSplitter.split(command);
                 rootCommander.parse(cmdArray);
                 process(commandProcess);
-            } catch (Exception e) {
-                String message = e.toString();
-                commandProcess.feed(message);
             }
 
+        } catch (Exception e) {
+            String message = e.toString();
+            commandProcess.feed(message);
         }
-
     }
 
     public void completion(String command) {
@@ -72,16 +69,48 @@ public class RootCommand extends AbstractCommand {
 
     private void completion(String command, String[] cmdArray) {
         List<String> options = CompletionUtil.completion(rootCommander, command, cmdArray);
-        if (fullCompletion && options.size() == 1) {
-            if (!command.endsWith(" ")) {
-                String end = cmdArray[cmdArray.length - 1];
-                int index = command.lastIndexOf(end);
-                if (index > -1) {
-                    command = command.substring(0, index);
+        int size = options.size();
+        if (fullCompletion) {
+            if (size == 0) {
+                commandProcess.completionOptions(options);
+            } else {
+                int endSize = command.length();
+                if (!command.endsWith(" ") && cmdArray.length > 0) {
+                    String end = cmdArray[cmdArray.length - 1];
+                    endSize = end.length();
+                    int index = command.lastIndexOf(end);
+                    if (index > -1) {
+                        command = command.substring(0, index);
+                    }
+                }
+                StringBuilder sb = new StringBuilder();
+                int minLen = 9999;
+                for (String option : options) {
+                    minLen = Math.min(minLen, option.length());
+                }
+                String first = options.get(0);
+                for (int i = 0; i < minLen; i++) {
+                    boolean flag = true;
+                    char c = first.charAt(i);
+                    for (int j = 1; j < size; j++) {
+                        char inChar = options.get(j).charAt(i);
+                        if (inChar != c) {
+                            flag = false;
+                            break;
+                        }
+                    }
+                    if (flag) {
+                        sb.append(c);
+                    }
+                }
+                if (sb.length() > endSize) {
+                    command += sb.toString();
+                    commandProcess.completion(command, size > 1);
+                } else {
+                    commandProcess.completionOptions(options);
                 }
             }
-            command += options.get(0);
-            commandProcess.completion(command);
+
         } else {
             commandProcess.completionOptions(options);
         }
