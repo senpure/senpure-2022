@@ -49,6 +49,7 @@ public class ReloadableType {
 	// the map in the accessor hasnt been repaired yet)
 	private static Logger log = Logger.getLogger(ReloadableType.class.getName());
 
+	public  String prefix ="";
 	/** The registry maintaining this reloadable type */
 	public TypeRegistry typeRegistry;
 

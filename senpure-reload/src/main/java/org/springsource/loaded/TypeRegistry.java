@@ -1935,8 +1935,8 @@ public class TypeRegistry {
                 String old = externalForm;
                 externalForm = URLDecoder.decode(externalForm, "utf-8");
                 if (GlobalConfiguration.isRuntimeLogging && log.isLoggable(Level.INFO)) {
-                    if (old.equals(externalForm)) {
-                        log.info("old " +old +" decoder > "+ externalForm);
+                    if (!old.equals(externalForm)) {
+                        log.info("==== old " +old +" decoder > "+ externalForm);
                     }
                 }
             } catch (UnsupportedEncodingException e) {

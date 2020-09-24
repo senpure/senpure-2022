@@ -16,6 +16,7 @@
 
 package org.springsource.loaded.agent;
 
+import com.senpure.reload.util.JarMayInJar;
 import org.apache.commons.io.IOUtils;
 import org.springsource.loaded.*;
 
@@ -45,6 +46,8 @@ public class ReloadableFileChangeListener implements FileChangeListener {
     Map<File, Set<JarEntry>> watchedJarContents = new HashMap<File, Set<JarEntry>>();
     Map<File, Set<ClassInfo>> watchedJarClasses = new HashMap<File, Set<ClassInfo>>();
 
+    private Map<String, Long> lastJarFileChange = new HashMap<>();
+
     static class JarEntry {
 
         final ReloadableType rtype;
@@ -66,6 +69,7 @@ public class ReloadableFileChangeListener implements FileChangeListener {
         String className;
         String slashname;
         ReloadableType rtype;
+        String prefix = "";
 
         @Override
         public String toString() {
@@ -73,8 +77,12 @@ public class ReloadableFileChangeListener implements FileChangeListener {
                     "crc=" + crc +
                     ", className='" + className + '\'' +
                     ", slashname='" + slashname + '\'' +
+                    ", rtype=" + rtype +
+                    ", prefix='" + prefix + '\'' +
                     '}';
         }
+
+
     }
 
     public ReloadableFileChangeListener(TypeRegistry typeRegistry) {
@@ -82,52 +90,42 @@ public class ReloadableFileChangeListener implements FileChangeListener {
     }
 
     public void fileChanged(File file) {
-        if (GlobalConfiguration.isRuntimeLogging && log.isLoggable(Level.INFO)) {
-            log.info(" processing change for " + file);
-        }
-
+        log.info("====fileChanged " + file.getName());
         if (file.getName().endsWith(".jar")) {
+            JarMayInJar jarMayInJar = new JarMayInJar(file);
+            Set<ClassInfo> classInfos = watchedJarClasses.get(file);
             if (GlobalConfiguration.isRuntimeLogging && log.isLoggable(Level.INFO)) {
                 log.info(" processing change for JAR " + file);
             }
-            Set<ClassInfo> classInfos = watchedJarClasses.get(file);
-            log.info(file.getName() + "\n" + classInfos.toString());
+
             try {
                 for (ClassInfo classInfo : classInfos) {
-                    ReloadableType rtype=classInfo.rtype;
-                  //  log.info(classInfo.slashname);
-                    URL url = rtype.getTypeRegistry().getClassLoader().getResource(classInfo.slashname);
-                   // log.info("url is " + url);
-                    if (url != null) {
-                        byte[] bytes = null;
-                        try {
-                            bytes = IOUtils.toByteArray(url);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        if (bytes != null) {
-
-                            CRC32 crc32 = new CRC32();
-                            crc32.update(bytes);
-
-                            long crc = crc32.getValue();
-                            if (classInfo.crc != crc) {
-                                if (GlobalConfiguration.isRuntimeLogging && log.isLoggable(Level.INFO)) {
-                                    log.info(" detected update to jar entry. jar=" + file.getName() + " class="
-                                            + classInfo.className + "  OLD crc32=" + classInfo.crc
-                                            + " NEW crc32=" + crc);
-                                }
-                                rtype.loadNewVersion(Utils.encode(file.lastModified()), bytes);
-                                classInfo.crc = crc;
+                    log.info(classInfo.toString());
+                    ReloadableType rtype = classInfo.rtype;
+                    //  log.info(classInfo.slashname);
+                    long crc = jarMayInJar.getCrc(rtype.prefix, classInfo.slashname);
+                        if (classInfo.crc != crc) {
+                            if (GlobalConfiguration.isRuntimeLogging && log.isLoggable(Level.INFO)) {
+                                log.info(" detected update to jar entry. jar=" + file.getName() + " class="
+                                        + classInfo.className + "  OLD crc32=" + classInfo.crc
+                                        + " NEW crc32=" + crc);
                             }
+                            byte[] bytes = jarMayInJar.getBytes(rtype.prefix, classInfo.slashname);
+                            rtype.loadNewVersion(Utils.encode(file.lastModified()), bytes);
+                            classInfo.crc = crc;
+                        } else {
+                            log.info(classInfo.className + " crs is same " + crc);
                         }
-                    }
+
                 }
             } catch (Exception e) {
                 e.printStackTrace();
                 log.info("error");
             }
         } else {
+            if (GlobalConfiguration.isRuntimeLogging && log.isLoggable(Level.INFO)) {
+                log.info(" processing change for " + file);
+            }
             ReloadableType rtype = correspondingReloadableTypes.get(file);
             typeRegistry.loadNewVersion(rtype, file);
         }
@@ -170,6 +168,7 @@ public class ReloadableFileChangeListener implements FileChangeListener {
 
 
     public void register(ReloadableType rtype, File file) {
+        log.info("====register " + file.getName());
         if (file.getName().endsWith(".jar")) {
             String slashname = rtype.getSlashedName() + ".class";
             URL url = rtype.getTypeRegistry().getClassLoader().getResource(slashname);
@@ -189,6 +188,8 @@ public class ReloadableFileChangeListener implements FileChangeListener {
                 classInfo.slashname = slashname;
                 classInfo.className = rtype.getName();
                 classInfo.rtype = rtype;
+                classInfo.prefix = rtype.prefix;
+                log.info("====register " + file.getName() + " " + classInfo);
                 Set<ClassInfo> classInfos = watchedJarClasses.computeIfAbsent(file, file1 -> new HashSet<>());
                 classInfos.add(classInfo);
             }
