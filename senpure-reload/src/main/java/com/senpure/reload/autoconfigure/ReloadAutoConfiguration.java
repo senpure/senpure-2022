@@ -14,7 +14,6 @@ import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
-import java.net.URL;
 import java.util.*;
 
 
@@ -49,11 +48,6 @@ public class ReloadAutoConfiguration {
 
     @Bean
     public String springloaded(ReloadEnvironment environment, ReloadProperties properties) {
-
-        logger.info("classloader {}", getClass().getClassLoader());
-        URL url = SpringLoadedAgent.class.getResource("SpringLoadedAgent.class");
-        logger.info("{}", url.toString());
-
         if (!environment.isCloseByteCodeVerify()) {
             logger.error("没有关闭java字节码验证");
             logger.error("开启方式增加jvm启动参数 -noverify");
@@ -63,9 +57,6 @@ public class ReloadAutoConfiguration {
             logger.error("获取Instrumentation失败");
             throw new RuntimeException("获取Instrumentation失败");
         }
-
-        // redefineClass();
-        // RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
 
         Set<String> jars = new HashSet<>();
         Class<?> clazz = AppEvn.getStartClass();
@@ -85,7 +76,25 @@ public class ReloadAutoConfiguration {
                         }
                     }
                     if (finds.size() > 0) {
-                        jars.addAll(finds);
+                        //最多找两次
+                        index = mainJar.indexOf("-", index + 1);
+                        if (index > 0) {
+                            prefix = mainJar.substring(0, index);
+                            List<String> finds2 = new ArrayList<>();
+                            for (String find : finds) {
+                                if (find.startsWith(prefix)) {
+                                    finds2.add(find);
+                                }
+                            }
+                            if (finds2.size() > 0) {
+                                jars.addAll(finds2);
+                            } else {
+                                jars.addAll(finds);
+                            }
+                        } else {
+                            jars.addAll(finds);
+                        }
+
                     }
                 }
             }
