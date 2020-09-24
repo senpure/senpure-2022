@@ -24,11 +24,11 @@ public class ReloadProperties {
     /**
      * springloaded 参数
      */
-    private boolean verbose = true;
+    private boolean verbose = false;
     /**
      * springloaded 参数
      */
-    private boolean logging = true;
+    private boolean logging = false;
 
     public boolean isDefaultJars() {
         return defaultJars;
