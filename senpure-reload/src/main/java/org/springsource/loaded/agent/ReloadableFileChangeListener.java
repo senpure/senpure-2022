@@ -90,7 +90,7 @@ public class ReloadableFileChangeListener implements FileChangeListener {
     }
 
     public void fileChanged(File file) {
-        log.info("====fileChanged " + file.getName());
+       // log.info("====fileChanged " + file.getName());
         if (file.getName().endsWith(".jar")) {
             JarMayInJar jarMayInJar = new JarMayInJar(file);
             Set<ClassInfo> classInfos = watchedJarClasses.get(file);
@@ -168,7 +168,7 @@ public class ReloadableFileChangeListener implements FileChangeListener {
 
 
     public void register(ReloadableType rtype, File file) {
-        log.info("====register " + file.getName());
+       // log.info("====register " + file.getName());
         if (file.getName().endsWith(".jar")) {
             String slashname = rtype.getSlashedName() + ".class";
             URL url = rtype.getTypeRegistry().getClassLoader().getResource(slashname);
@@ -189,8 +189,11 @@ public class ReloadableFileChangeListener implements FileChangeListener {
                 classInfo.className = rtype.getName();
                 classInfo.rtype = rtype;
                 classInfo.prefix = rtype.prefix;
-                log.info("====register " + file.getName() + " " + classInfo);
-                Set<ClassInfo> classInfos = watchedJarClasses.computeIfAbsent(file, file1 -> new HashSet<>());
+                if (GlobalConfiguration.isRuntimeLogging && log.isLoggable(Level.INFO)) {
+                    log.info("====register " + file.getName() + " " + classInfo);
+
+                }
+                 Set<ClassInfo> classInfos = watchedJarClasses.computeIfAbsent(file, file1 -> new HashSet<>());
                 classInfos.add(classInfo);
             }
         } else {

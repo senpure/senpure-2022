@@ -24,7 +24,6 @@ import com.fasterxml.classmate.members.ResolvedField;
 import com.fasterxml.classmate.members.ResolvedMethod;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;

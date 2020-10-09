@@ -202,9 +202,12 @@ public class SpringLoadedPreProcessor implements Constants {
                 // TODO decide one way or the other on slashed/dotted from preprocessor to infrastructure
                 String dottedClassName = slashedClassName.replace('/', '.');
                 String watchPath = getWatchPathFromProtectionDomain(protectionDomain, slashedClassName);
-                log.info("====watchPath " + watchPath);
-                log.info("====protectionDomain " + protectionDomain + "  \nslashedClassName " + slashedClassName);
-                if (watchPath == null) {
+
+                if (GlobalConfiguration.isRuntimeLogging && log.isLoggable(Level.INFO)) {
+                    log.info("====watchPath " + watchPath);
+                    //log.info("====protectionDomain " + protectionDomain + "  \nslashedClassName " + slashedClassName);
+                }
+                   if (watchPath == null) {
                     // For a CGLIB generated type, we may still need to make the type reloadable.  For example:
                     // type: com/vmware/rabbit/ApplicationContext$$EnhancerByCGLIB$$512eb60c
                     // codesource determined to be: file:/Users/aclement/springsource/tc-server-developer-2.1.1.RELEASE/spring-insight-instance/wtpwebapps/hello-rabbit-client/WEB-INF/lib/cglib-nodep-2.2.jar <no signer certificates>
@@ -338,7 +341,10 @@ public class SpringLoadedPreProcessor implements Constants {
                                 if (startIndex > 0) {
                                     int endIndex = urlStr.lastIndexOf("!/");
                                     urlStr = urlStr.substring(startIndex + 2, endIndex);
-                                    log.info("====registry2 " + urlStr);
+                                    if (GlobalConfiguration.isRuntimeLogging && log.isLoggable(Level.INFO)) {
+                                        log.info("====registry in jar " + urlStr);
+                                    }
+
                                 }
                                 rtype.prefix =urlStr;
                             }
