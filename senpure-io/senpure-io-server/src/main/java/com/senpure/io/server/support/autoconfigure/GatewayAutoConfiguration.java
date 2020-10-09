@@ -5,7 +5,6 @@ import com.senpure.io.server.ServerProperties;
 import com.senpure.io.server.support.GatewayServerStarter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -39,7 +38,7 @@ import java.util.Map;
 @AutoConfigureAfter({CompositeDiscoveryClientAutoConfiguration.class, RestTemplateAutoConfiguration.class, LoadBalancerAutoConfiguration.class})
 public class GatewayAutoConfiguration {
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     @Value("${server.port:0}")
     private int httpPort;
 
@@ -59,7 +58,7 @@ public class GatewayAutoConfiguration {
 
     // @Autowired
     // private RestTemplateBuilder restTemplateBuilder;
-    @Autowired
+    @Resource
     private LoadBalancerClient loadBalancerClient;
 
     private RestTemplate restTemplate;
@@ -211,11 +210,11 @@ public class GatewayAutoConfiguration {
         try {
             InetAddress candidateAddress = null;
             // 遍历所有的网络接口
-            for (Enumeration ifaces = NetworkInterface.getNetworkInterfaces(); ifaces.hasMoreElements(); ) {
-                NetworkInterface iface = (NetworkInterface) ifaces.nextElement();
+            for (Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces(); ifaces.hasMoreElements(); ) {
+                NetworkInterface iface = ifaces.nextElement();
                 // 在所有的接口下再遍历IP
-                for (Enumeration inetAddrs = iface.getInetAddresses(); inetAddrs.hasMoreElements(); ) {
-                    InetAddress inetAddr = (InetAddress) inetAddrs.nextElement();
+                for (Enumeration<InetAddress> inetAddrs = iface.getInetAddresses(); inetAddrs.hasMoreElements(); ) {
+                    InetAddress inetAddr =inetAddrs.nextElement();
                     if (!inetAddr.isLoopbackAddress()) {// 排除loopback类型地址
                         if (inetAddr.isSiteLocalAddress()) {
                             // 如果是site-local地址，就是它了
@@ -231,8 +230,7 @@ public class GatewayAutoConfiguration {
                 return candidateAddress;
             }
             // 如果没有发现 non-loopback地址.只能用最次选的方案
-            InetAddress jdkSuppliedAddress = InetAddress.getLocalHost();
-            return jdkSuppliedAddress;
+            return InetAddress.getLocalHost();
         } catch (Exception e) {
             e.printStackTrace();
         }
