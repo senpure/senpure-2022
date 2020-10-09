@@ -114,7 +114,9 @@ public class ReloadableFileChangeListener implements FileChangeListener {
                             rtype.loadNewVersion(Utils.encode(file.lastModified()), bytes);
                             classInfo.crc = crc;
                         } else {
-                            log.info(classInfo.className + " crs is same " + crc);
+                            if (GlobalConfiguration.isRuntimeLogging && log.isLoggable(Level.INFO)) {
+                                log.info(classInfo.className + " crs is same " + crc);
+                            }
                         }
 
                 }
