@@ -13,15 +13,15 @@ import java.util.Map;
 
 public class ConsumerMessageHandlerUtil {
     private static Logger logger = LoggerFactory.getLogger(ConsumerMessageHandlerUtil.class);
-    private static Map<Integer, ConsumerMessageHandler> handlerMap = new HashMap<>();
+    private static Map<Integer, ConsumerMessageHandler<?>> handlerMap = new HashMap<>();
 
-    public static ConsumerMessageHandler getHandler(int messageId) {
+    public static ConsumerMessageHandler<?> getHandler(int messageId) {
         return handlerMap.get(messageId);
     }
 
-    public static void regMessageHandler(ConsumerMessageHandler handler) {
+    public static void regMessageHandler(ConsumerMessageHandler<?> handler) {
        // Assert.isNull(handlerMap.get(handler.handlerId()), handler.handlerId() + " -> " + handler.getEmptyMessage().getClass().getName() + "  处理程序已经存在");
-        ConsumerMessageHandler old = handlerMap.get(handler.handleMessageId());
+        ConsumerMessageHandler<?> old = handlerMap.get(handler.handleMessageId());
         if (old != null) {
             Assert.error(handler.handleMessageId() + " -> " + handler.getEmptyMessage()
                     .getClass().getName() + "  处理程序已经存在"
@@ -31,7 +31,7 @@ public class ConsumerMessageHandlerUtil {
     }
 
     public static Message getEmptyMessage(int messageId) {
-        ConsumerMessageHandler handler = handlerMap.get(messageId);
+        ConsumerMessageHandler<?> handler = handlerMap.get(messageId);
         if (handler == null) {
             return null;
         }
