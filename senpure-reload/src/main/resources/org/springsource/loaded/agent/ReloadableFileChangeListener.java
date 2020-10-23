@@ -90,12 +90,16 @@ public class ReloadableFileChangeListener implements FileChangeListener {
     }
 
     public void fileChanged(File file) {
-       // log.info("====fileChanged " + file.getName());
+        // log.info("====fileChanged " + file.getName());
         if (file.getName().endsWith(".jar")) {
             JarMayInJar jarMayInJar = new JarMayInJar(file);
             Set<ClassInfo> classInfos = watchedJarClasses.get(file);
             if (GlobalConfiguration.isRuntimeLogging && log.isLoggable(Level.INFO)) {
                 log.info(" processing change for JAR " + file);
+                for (ClassInfo classInfo : classInfos) {
+                    log.info(classInfo.toString());
+                }
+                log.info("-----------------------------------");
             }
 
             try {
@@ -104,20 +108,20 @@ public class ReloadableFileChangeListener implements FileChangeListener {
                     ReloadableType rtype = classInfo.rtype;
                     //  log.info(classInfo.slashname);
                     long crc = jarMayInJar.getCrc(rtype.prefix, classInfo.slashname);
-                        if (classInfo.crc != crc) {
-                            if (GlobalConfiguration.isRuntimeLogging && log.isLoggable(Level.INFO)) {
-                                log.info(" detected update to jar entry. jar=" + file.getName() + " class="
-                                        + classInfo.className + "  OLD crc32=" + classInfo.crc
-                                        + " NEW crc32=" + crc);
-                            }
-                            byte[] bytes = jarMayInJar.getBytes(rtype.prefix, classInfo.slashname);
-                            rtype.loadNewVersion(Utils.encode(file.lastModified()), bytes);
-                            classInfo.crc = crc;
-                        } else {
-                            if (GlobalConfiguration.isRuntimeLogging && log.isLoggable(Level.INFO)) {
-                                log.info(classInfo.className + " crs is same " + crc);
-                            }
+                    if (classInfo.crc != crc) {
+                        if (GlobalConfiguration.isRuntimeLogging && log.isLoggable(Level.INFO)) {
+                            log.info(" detected update to jar entry. jar=" + file.getName() + " class="
+                                    + classInfo.className + "  OLD crc32=" + classInfo.crc
+                                    + " NEW crc32=" + crc);
                         }
+                        byte[] bytes = jarMayInJar.getBytes(rtype.prefix, classInfo.slashname);
+                        rtype.loadNewVersion(Utils.encode(file.lastModified()), bytes);
+                        classInfo.crc = crc;
+                    } else {
+                        if (GlobalConfiguration.isRuntimeLogging && log.isLoggable(Level.INFO)) {
+                            log.info(classInfo.className + " crs is same " + crc);
+                        }
+                    }
 
                 }
             } catch (Exception e) {
@@ -170,7 +174,7 @@ public class ReloadableFileChangeListener implements FileChangeListener {
 
 
     public void register(ReloadableType rtype, File file) {
-       // log.info("====register " + file.getName());
+        // log.info("====register " + file.getName());
         if (file.getName().endsWith(".jar")) {
             String slashname = rtype.getSlashedName() + ".class";
             URL url = rtype.getTypeRegistry().getClassLoader().getResource(slashname);
@@ -195,7 +199,7 @@ public class ReloadableFileChangeListener implements FileChangeListener {
                     log.info("====register " + file.getName() + " " + classInfo);
 
                 }
-                 Set<ClassInfo> classInfos = watchedJarClasses.computeIfAbsent(file, file1 -> new HashSet<>());
+                Set<ClassInfo> classInfos = watchedJarClasses.computeIfAbsent(file, file1 -> new HashSet<>());
                 classInfos.add(classInfo);
             }
         } else {

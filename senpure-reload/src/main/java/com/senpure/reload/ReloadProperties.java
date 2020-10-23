@@ -13,6 +13,7 @@ import java.util.List;
  */
 @ConfigurationProperties(prefix = "senpure.reload.springloaded")
 public class ReloadProperties {
+    private boolean enable = true;
     /**
      * 开启默认的jar监听
      */
@@ -60,5 +61,13 @@ public class ReloadProperties {
 
     public void setLogging(boolean logging) {
         this.logging = logging;
+    }
+
+    public boolean isEnable() {
+        return enable;
+    }
+
+    public void setEnable(boolean enable) {
+        this.enable = enable;
     }
 }

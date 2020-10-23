@@ -1,5 +1,5 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
- com.senpure.reload.autoconfigure.ReloadAutoConfiguration
+org.springframework.boot.SpringApplicationRunListener=\
+  com.senpure.reload.autoconfigure.ReloadApplicationRunListener
 
 
 

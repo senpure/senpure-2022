@@ -25,7 +25,7 @@ public class NoteUtil {
 
         try {
             Runtime run = Runtime.getRuntime();
-            run.exec(findNotepadPath() + " " + file.getAbsolutePath());
+            run.exec(findNotepadPath() + " \"" + file.getAbsolutePath()+"\"");
             Thread.sleep(200);
             Robot robot = new Robot();
             robot.keyPress(KeyEvent.VK_CONTROL);

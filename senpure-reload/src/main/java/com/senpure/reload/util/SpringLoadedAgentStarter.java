@@ -22,7 +22,7 @@ import java.util.*;
  */
 public class SpringLoadedAgentStarter {
 
-    private static Logger logger = LoggerFactory.getLogger(SpringLoadedAgentStarter.class);
+    private static final Logger logger = LoggerFactory.getLogger(SpringLoadedAgentStarter.class);
 
 
     public static ReloadEnvironment defaultReloadEnvironment() {
