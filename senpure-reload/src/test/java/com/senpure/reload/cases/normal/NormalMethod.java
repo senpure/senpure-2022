@@ -89,7 +89,7 @@ public class NormalMethod extends AbstractReloadTestSupport {
 
         ByteBuddy byteBuddy = new ByteBuddy();
 
-        System.out.println("say method 2");
+        System.out.println("say method 3");
         List<Integer> list = new ArrayList<>();
 
         for (int i = 0; i < 1; i++) {

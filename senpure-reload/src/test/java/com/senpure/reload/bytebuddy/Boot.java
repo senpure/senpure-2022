@@ -1,6 +1,7 @@
 package com.senpure.reload.bytebuddy;
 
 import com.senpure.base.AppEvn;
+import com.sun.org.apache.bcel.internal.generic.InstructionConst;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.agent.ByteBuddyAgent;
 import net.bytebuddy.asm.AsmVisitorWrapper;
@@ -62,6 +63,8 @@ public class Boot {
         @Override
         public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
 
+            System.out.println("visitMethod "+ "access = " + access + ", name = " + name + ", descriptor = " + descriptor + ", signature = " + signature + ", exceptions = " + Arrays.deepToString(exceptions));
+
             return new MyMethodVisitor(super.visitMethod(access, name, descriptor, signature, exceptions));
         }
 
@@ -78,7 +81,14 @@ public class Boot {
         @Override
         public void visitLocalVariable(String name, String descriptor, String signature, Label start, Label end, int index) {
             System.out.println("visitLocalVariable " + "name = " + name + ", descriptor = " + descriptor + ", signature = " + signature + ", start = " + start + ", end = " + end + ", index = " + index);
+
+
             super.visitLocalVariable(name, descriptor, signature, start, end, index);
+            if (index == 1) {
+
+
+
+            }
         }
 
         @Override
@@ -89,7 +99,9 @@ public class Boot {
 
         @Override
         public void visitInsn(int opcode) {
-            System.out.println("visitInsn "+ "opcode = " + opcode);
+          ;
+
+            System.out.println("visitInsn "+ "opcode = " +  InstructionConst.getInstruction(opcode).toString(true));
             super.visitInsn(opcode);
         }
     }
