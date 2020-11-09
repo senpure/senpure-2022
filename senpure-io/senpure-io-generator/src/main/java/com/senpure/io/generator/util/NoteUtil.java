@@ -18,8 +18,9 @@ import java.util.List;
  */
 public class NoteUtil {
 
-    private static String REGEDIT_NOTEPAD_PLUS_PLUS = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Notepad++";
-
+    private static final String[] REGEDIT_NOTEPAD_PLUS_PLUS = new String[]{"HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Notepad++"
+            , "HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Notepad++"
+    };
 
     public static void openNote(File file, int line) {
 
@@ -38,26 +39,29 @@ public class NoteUtil {
             }
 
             // process.destroy();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (AWTException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
+        } catch (IOException | AWTException | InterruptedException e) {
             e.printStackTrace();
         }
     }
 
 
     private static String findNotepadPath() {
-        List<String> infos = queryRegedit(REGEDIT_NOTEPAD_PLUS_PLUS);
         String path = null;
-        for (String info : infos) {
-            info = info.trim();
-            if (info.startsWith("DisplayIcon")) {
-                info = info.replace("DisplayIcon", "");
-                info = info.replace("REG_SZ", "");
+        for (String regeditNotepadPlusPlus : REGEDIT_NOTEPAD_PLUS_PLUS) {
+            List<String> infos = queryRegedit(regeditNotepadPlusPlus);
+            boolean find = false;
+            for (String info : infos) {
                 info = info.trim();
-                path = info;
+                if (info.startsWith("DisplayIcon")) {
+                    info = info.replace("DisplayIcon", "");
+                    info = info.replace("REG_SZ", "");
+                    info = info.trim();
+                    path = info;
+                    find = true;
+                    break;
+                }
+            }
+            if (find) {
                 break;
             }
         }
@@ -105,8 +109,5 @@ public class NoteUtil {
         return infos;
     }
 
-    public static void main(String[] args) throws Exception {
 
-
-    }
 }
