@@ -1,8 +1,14 @@
 package com.senpure.io.server.support.autoconfigure;
 
 import com.senpure.base.util.Assert;
+import com.senpure.base.util.IDGenerator;
+import com.senpure.executor.DefaultTaskLoopGroup;
+import com.senpure.executor.TaskLoopGroup;
 import com.senpure.io.server.ServerProperties;
+import com.senpure.io.server.gateway.GatewayMessageExecutor;
 import com.senpure.io.server.support.GatewayServerStarter;
+import io.netty.util.concurrent.DefaultThreadFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,6 +47,7 @@ public class GatewayAutoConfiguration {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     @Value("${server.port:0}")
     private int httpPort;
+    private final RestTemplate restTemplate;
 
     public GatewayAutoConfiguration(RestTemplateBuilder restTemplateBuilder, List<RestTemplateCustomizer> restTemplateCustomizers) {
         restTemplate = restTemplateBuilder.build();
@@ -61,16 +68,57 @@ public class GatewayAutoConfiguration {
     @Resource
     private LoadBalancerClient loadBalancerClient;
 
-    private RestTemplate restTemplate;
 
+    @Bean
+    public GatewayMessageExecutor messageExecutor() {
+        check();
+        ServerProperties.Gateway gateway = properties.getGateway();
+        TaskLoopGroup service = new DefaultTaskLoopGroup(gateway.getExecutorThreadPoolSize(),
+                new DefaultThreadFactory(properties.getName() + "-executor"));
+        GatewayMessageExecutor messageExecutor = new GatewayMessageExecutor(service, new IDGenerator(gateway.getSnowflakeDataCenterId(), gateway.getSnowflakeWorkId()));
+        messageExecutor.setCsLoginMessageId(gateway.getCsLoginMessageId());
+        messageExecutor.setScLoginMessageId(gateway.getScLoginMessageId());
+        messageExecutor.setGateway(properties.getGateway());
+        messageExecutor.init();
+        return messageExecutor;
+    }
+
+    private void check() {
+        if (StringUtils.isEmpty(properties.getName())) {
+            properties.setName("gateway");
+        }
+
+        ServerProperties.Gateway gateway = properties.getGateway();
+        if (!gateway.isSetReadableName()) {
+            gateway.setReadableName(properties.getName());
+        }
+        //io *2 logic *1 综合1.5
+        double size = Runtime.getRuntime().availableProcessors() * 1.5;
+        int ioSize = (int) (size * 0.6);
+        ioSize = Math.max(ioSize, 1);
+        int logicSize = (int) (size * 0.4);
+        logicSize = Math.max(logicSize, 1);
+        if (gateway.getExecutorThreadPoolSize() < 1) {
+            gateway.setExecutorThreadPoolSize(logicSize);
+        }
+        if (gateway.getIoCsWorkThreadPoolSize() < 1) {
+            int workSize = ioSize << 1;
+            workSize = Math.max(workSize, 1);
+            gateway.setIoCsWorkThreadPoolSize(workSize);
+        }
+        if (gateway.getIoScWorkThreadPoolSize() < 1) {
+            int workSize = ioSize << 1;
+            workSize = Math.max(workSize, 1);
+            gateway.setIoScWorkThreadPoolSize(workSize);
+        }
+        logger.info(gateway.toString());
+    }
 
     @Bean
 
-    public GatewayServerStarter gatewayServer() {
+    public GatewayServerStarter gatewayServer(GatewayMessageExecutor messageExecutor) {
 
-        if (properties.getGateway().isSnowflakeUseCode()) {
-
-        } else {
+        if (!properties.getGateway().isSnowflakeUseCode()) {
             ServiceInstance serviceInstance = loadBalancerClient.choose(properties.getGateway().getSnowflakeDispatcherName());
             if (serviceInstance == null) {
                 // logger.error("{} 雪花调度服务没有启动", properties.getGateway().getSnowflakeDispatcherName());
@@ -85,23 +133,31 @@ public class GatewayAutoConfiguration {
 //            } else {
 //                serverKey = AppEvn.getClassRootPath();
 //            }
-            serverKey =properties.getName()+" "+ getLocalHostLANAddress().getHostAddress() + ":" + (httpPort>0?httpPort:properties.getGateway().getCsPort());
+            InetAddress inetAddress = getLocalHostLANAddress();
+            if (inetAddress == null) {
+                Assert.error("本机地址为空");
+
+            }
+            serverKey = properties.getName() + " " +inetAddress.getHostAddress() + ":" + (httpPort > 0 ? httpPort : properties.getGateway().getCsPort());
             params.put("serverKey", serverKey);
             //  ObjectNode nodes = restTemplate.getForObject(url, ObjectNode.class, params);
             // logger.debug("雪花调度返回 {}", JSON.toJSONString(nodes));
             Result result = restTemplate.getForObject(url, Result.class, params);
 
             logger.debug("雪花调度返回 {}", result);
+            if (result == null) {
+                Assert.error(properties.getGateway().getSnowflakeDispatcherName() + "雪花调度服务出错 : result is null");
+
+            }
             if (result.getCode() != 1) {
                 Assert.error(properties.getGateway().getSnowflakeDispatcherName() + "雪花调度服务出错 :" + result.message + (result.getValidators() == null ? "" : result.getValidators().toString()));
             }
             properties.getGateway().setSnowflakeDataCenterId(result.getServerCenterAndWork().getCenterId());
             properties.getGateway().setSnowflakeWorkId(result.getServerCenterAndWork().getWorkId());
         }
-
         GatewayServerStarter gatewayServer = new GatewayServerStarter();
         gatewayServer.setProperties(properties);
-        gatewayServer.start();
+        gatewayServer.start(messageExecutor);
         return gatewayServer;
     }
 
@@ -214,7 +270,7 @@ public class GatewayAutoConfiguration {
                 NetworkInterface iface = ifaces.nextElement();
                 // 在所有的接口下再遍历IP
                 for (Enumeration<InetAddress> inetAddrs = iface.getInetAddresses(); inetAddrs.hasMoreElements(); ) {
-                    InetAddress inetAddr =inetAddrs.nextElement();
+                    InetAddress inetAddr = inetAddrs.nextElement();
                     if (!inetAddr.isLoopbackAddress()) {// 排除loopback类型地址
                         if (inetAddr.isSiteLocalAddress()) {
                             // 如果是site-local地址，就是它了

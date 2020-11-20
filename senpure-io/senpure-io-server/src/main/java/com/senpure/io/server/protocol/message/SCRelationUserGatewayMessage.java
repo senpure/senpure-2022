@@ -5,11 +5,11 @@ import io.netty.buffer.ByteBuf;
 
 /**
  * @author senpure
- * @time 2020-6-5 14:22:50
+ * @time 2020-11-20 17:37:42
  */
 public class SCRelationUserGatewayMessage extends CompressMessage {
 
-    public static final int MESSAGE_ID = 106;
+    public static final int MESSAGE_ID = 108;
     //channel token
     private long token;
     //userId
@@ -141,12 +141,12 @@ public class SCRelationUserGatewayMessage extends CompressMessage {
 
     @Override
     public int getMessageId() {
-        return 106;
+        return 108;
     }
 
     @Override
     public String toString() {
-        return "SCRelationUserGatewayMessage[106]{"
+        return "SCRelationUserGatewayMessage[108]{"
                 + "token=" + token
                 + ",userId=" + userId
                 + ",relationToken=" + relationToken
@@ -158,7 +158,7 @@ public class SCRelationUserGatewayMessage extends CompressMessage {
         //最长字段长度 13
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("SCRelationUserGatewayMessage").append("[106]").append("{");
+        sb.append("SCRelationUserGatewayMessage").append("[108]").append("{");
         //channel token
         sb.append("\n");
         sb.append(indent).append("token         = ").append(token);

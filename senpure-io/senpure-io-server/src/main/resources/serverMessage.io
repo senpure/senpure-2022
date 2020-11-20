@@ -29,25 +29,36 @@ message SC RegServerHandleMessage 102 {
     HandleMessage [] messages           = 4; //可以处理的消息
 }
 
+//消费者认证
+message CS ConsumerVerify 103 {
+    String serverName = 1;                //服务名
+    String serverKey  = 2;                //服务实例唯一标识
+    String ip         = 3;                //ip
+    String token      = 4;                //
+}
+
+message SC ConsumerVerify 104 {
+}
+
 //数字id与字符串的关联
-message SC IdName 104 {
+message SC IdName 106 {
     IdName [] idNames = 1;
 }
 
 //关联用户与网关
-message CS RelationUserGateway 105 {
+message CS RelationUserGateway 107 {
     long token         = 1;               // channel token
     long userId        = 2;               //userId
     long relationToken = 3;               //relation token
 }
 
-message SC RelationUserGateway 106 {
+message SC RelationUserGateway 108 {
     long token         = 1;               // channel token
     long userId        = 2;               //userId
     long relationToken = 3;               //relation token
 }
 
-message CS BreakUserGateway 107 {
+message CS BreakUserGateway 109 {
     long   token         = 1;             //channel token
     long   userId        = 2;             //用户Id
     long   relationToken = 3;             //relation token
@@ -55,29 +66,36 @@ message CS BreakUserGateway 107 {
 }
 
 //断开用户与网关
-message SC BreakUserGateway 108 {
+message SC BreakUserGateway 110 {
 }
 
-message CS AskHandle 109 {
-    long   askToken      = 1;             //  askToken
-    int    fromMessageId = 2;
-    String askValue      = 3;             //值
+message CS AskHandle 111 {
+    long  askToken      = 1;              //  askToken
+    int   fromMessageId = 2;
+    bytes data          = 3;
 }
 
-message SC AskHandle 110 {
+message SC AskHandle 112 {
     boolean handle        = 1;            //是否可以处理
     long    askToken      = 2;            // token
     int     fromMessageId = 3;
     String  askValue      = 4;            //值
 }
 
-message SC KickOff 112 {
+message SC KickOff 114 {
     long token;                           // token
     long userId;                          //userId
 }
 
-message SC Statistic 114 {
+message SC Statistic 116 {
     Statistic statistic = 1;
+}
+
+message SC MessageForward 118 {
+    String serverName = 1;
+    String serverKey  = 2;
+    int    id         = 3;
+    bytes  data       = 4;
 }
 
 #以下是客户端会用到的

@@ -1,39 +1,30 @@
 package com.senpure.io.server.protocol.message;
 
-import com.senpure.io.server.protocol.bean.HandleMessage;
 import com.senpure.io.protocol.CompressMessage;
 import io.netty.buffer.ByteBuf;
 
-import java.util.List;
-import java.util.ArrayList;
-
 /**
- * 服务器注册消息处理器到网关
+ * 消费者认证
  * 
  * @author senpure
  * @time 2020-11-20 17:37:42
  */
-public class SCRegServerHandleMessageMessage extends CompressMessage {
+public class CSConsumerVerifyMessage extends CompressMessage {
 
-    public static final int MESSAGE_ID = 102;
+    public static final int MESSAGE_ID = 103;
     //服务名
     private String serverName;
     //服务实例唯一标识
     private String serverKey;
-    //服务名
-    private String readableServerName;
-    //可以处理的消息
-    private List<HandleMessage> messages = new ArrayList<>(16);
+    //ip
+    private String ip;
+    private String token;
 
-    public void copy(SCRegServerHandleMessageMessage source) {
+    public void copy(CSConsumerVerifyMessage source) {
         this.serverName = source.getServerName();
         this.serverKey = source.getServerKey();
-        this.readableServerName = source.getReadableServerName();
-        this.messages.clear();
-        for (HandleMessage handleMessage : source.getMessages()) {
-            HandleMessage tempHandleMessage = new HandleMessage();
-            tempHandleMessage.copy(handleMessage);
-        }
+        this.ip = source.getIp();
+        this.token = source.getToken();
     }
 
     /**
@@ -50,13 +41,12 @@ public class SCRegServerHandleMessageMessage extends CompressMessage {
         if (serverKey != null) {
             writeString(buf, 19, serverKey);
         }
-        //服务名
-        if (readableServerName != null) {
-            writeString(buf, 27, readableServerName);
+        //ip
+        if (ip != null) {
+            writeString(buf, 27, ip);
         }
-        //可以处理的消息
-        for (HandleMessage value : messages) {
-             writeBean(buf, 35, value);
+        if (token != null) {
+            writeString(buf, 35, token);
         }
     }
 
@@ -78,15 +68,12 @@ public class SCRegServerHandleMessageMessage extends CompressMessage {
                 case 19:// 2 << 3 | 3
                     serverKey = readString(buf);
                     break;
-                //服务名
+                //ip
                 case 27:// 3 << 3 | 3
-                    readableServerName = readString(buf);
+                    ip = readString(buf);
                     break;
-                //可以处理的消息
                 case 35:// 4 << 3 | 3
-                    HandleMessage tempMessagesBean = new HandleMessage();
-                    readBean(buf,tempMessagesBean);
-                    messages.add(tempMessagesBean);
+                    token = readString(buf);
                     break;
                 default://skip
                     skip(buf, tag);
@@ -114,14 +101,14 @@ public class SCRegServerHandleMessageMessage extends CompressMessage {
              //tag size 19
              size += computeStringSize(1, serverKey);
         }
-        //服务名
-        if (readableServerName != null) {
+        //ip
+        if (ip != null) {
              //tag size 27
-             size += computeStringSize(1, readableServerName);
+             size += computeStringSize(1, ip);
         }
-        //可以处理的消息
-        for (HandleMessage value : messages) {
-            size += computeBeanSize(1, value);
+        if (token != null) {
+             //tag size 35
+             size += computeStringSize(1, token);
         }
         serializedSize = size ;
         return size ;
@@ -139,7 +126,7 @@ public class SCRegServerHandleMessageMessage extends CompressMessage {
     /**
      * set 服务名
      */
-    public SCRegServerHandleMessageMessage setServerName(String serverName) {
+    public CSConsumerVerifyMessage setServerName(String serverName) {
         this.serverName = serverName;
         return this;
     }
@@ -156,85 +143,69 @@ public class SCRegServerHandleMessageMessage extends CompressMessage {
     /**
      * set 服务实例唯一标识
      */
-    public SCRegServerHandleMessageMessage setServerKey(String serverKey) {
+    public CSConsumerVerifyMessage setServerKey(String serverKey) {
         this.serverKey = serverKey;
         return this;
     }
 
     /**
-     * get 服务名
+     * get ip
      *
      * @return
      */
-    public String getReadableServerName() {
-        return readableServerName;
+    public String getIp() {
+        return ip;
     }
 
     /**
-     * set 服务名
+     * set ip
      */
-    public SCRegServerHandleMessageMessage setReadableServerName(String readableServerName) {
-        this.readableServerName = readableServerName;
+    public CSConsumerVerifyMessage setIp(String ip) {
+        this.ip = ip;
         return this;
     }
 
-     /**
-      * get 可以处理的消息
-      *
-      * @return
-      */
-    public List<HandleMessage> getMessages() {
-        return messages;
+    public String getToken() {
+        return token;
     }
 
-     /**
-      * set 可以处理的消息
-      */
-    public SCRegServerHandleMessageMessage setMessages(List<HandleMessage> messages) {
-        if (messages == null) {
-            this.messages = new ArrayList<>(16);
-            return this;
-        }
-        this.messages = messages;
+    public CSConsumerVerifyMessage setToken(String token) {
+        this.token = token;
         return this;
     }
 
     @Override
     public int getMessageId() {
-        return 102;
+        return 103;
     }
 
     @Override
     public String toString() {
-        return "SCRegServerHandleMessageMessage[102]{"
+        return "CSConsumerVerifyMessage[103]{"
                 + "serverName=" + serverName
                 + ",serverKey=" + serverKey
-                + ",readableServerName=" + readableServerName
-                + ",messages=" + messages
+                + ",ip=" + ip
+                + ",token=" + token
                 + "}";
     }
 
     @Override
     public String toString(String indent) {
-        //18 + 3 = 21 个空格
-        String nextIndent = "                     ";
-        //最长字段长度 18
+        //最长字段长度 10
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("SCRegServerHandleMessageMessage").append("[102]").append("{");
+        sb.append("CSConsumerVerifyMessage").append("[103]").append("{");
         //服务名
         sb.append("\n");
-        sb.append(indent).append("serverName         = ").append(serverName);
+        sb.append(indent).append("serverName = ").append(serverName);
         //服务实例唯一标识
         sb.append("\n");
-        sb.append(indent).append("serverKey          = ").append(serverKey);
-        //服务名
+        sb.append(indent).append("serverKey  = ").append(serverKey);
+        //ip
         sb.append("\n");
-        sb.append(indent).append("readableServerName = ").append(readableServerName);
-        //可以处理的消息
+        sb.append(indent).append("ip         = ").append(ip);
         sb.append("\n");
-        sb.append(indent).append("messages           = ");
-        appendBeans(sb,messages,indent,nextIndent);
+        sb.append(indent).append("token      = ").append(token);
         sb.append("\n");
         sb.append(indent).append("}");
         return sb.toString();

@@ -6,11 +6,11 @@ import io.netty.buffer.ByteBuf;
 
 /**
  * @author senpure
- * @time 2020-6-5 14:22:50
+ * @time 2020-11-20 17:37:42
  */
 public class SCStatisticMessage extends CompressMessage {
 
-    public static final int MESSAGE_ID = 114;
+    public static final int MESSAGE_ID = 116;
     private Statistic statistic;
 
     public void copy(SCStatisticMessage source) {
@@ -83,12 +83,12 @@ public class SCStatisticMessage extends CompressMessage {
 
     @Override
     public int getMessageId() {
-        return 114;
+        return 116;
     }
 
     @Override
     public String toString() {
-        return "SCStatisticMessage[114]{"
+        return "SCStatisticMessage[116]{"
                 + "statistic=" + statistic
                 + "}";
     }
@@ -100,7 +100,7 @@ public class SCStatisticMessage extends CompressMessage {
         //最长字段长度 9
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("SCStatisticMessage").append("[114]").append("{");
+        sb.append("SCStatisticMessage").append("[116]").append("{");
         sb.append("\n");
         sb.append(indent).append("statistic = ");
         if (statistic != null){

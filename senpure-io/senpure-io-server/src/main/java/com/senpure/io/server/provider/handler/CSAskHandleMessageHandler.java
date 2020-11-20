@@ -1,11 +1,16 @@
 package com.senpure.io.server.provider.handler;
 
 
+import com.senpure.io.protocol.Message;
 import com.senpure.io.server.provider.Provider2GatewayMessage;
 import com.senpure.io.server.provider.ProviderMessageHandlerUtil;
 import com.senpure.io.server.protocol.message.CSAskHandleMessage;
 import com.senpure.io.server.protocol.message.SCAskHandleMessage;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
+
+import java.util.Arrays;
 
 /**
  * 询问服务器是否可以处理该值得请求处理器
@@ -17,21 +22,31 @@ public class CSAskHandleMessageHandler extends AbstractInnerMessageHandler<CSAsk
 
     @Override
     public void execute(Channel channel, long token, long userId, CSAskHandleMessage message) {
-        ProviderMessageHandler producerMessageHandler = ProviderMessageHandlerUtil.getHandler(message.getFromMessageId());
-        ProviderAskMessageHandler askMessageHandler;
-
-        boolean handle = false;
+        ProviderMessageHandler<?> producerMessageHandler = ProviderMessageHandlerUtil.getHandler(message.getFromMessageId());
+        ProviderAskMessageHandler<?> askMessageHandler;
+        ProviderAskMessageHandler.Answer answer = null;
         if (producerMessageHandler instanceof ProviderAskMessageHandler) {
-            askMessageHandler = (ProviderAskMessageHandler) producerMessageHandler;
-            handle = askMessageHandler.ask(message.getAskValue());
+            askMessageHandler = (ProviderAskMessageHandler<?>) producerMessageHandler;
+
+            Message emptyMessage = askMessageHandler.getEmptyMessage();
+            ByteBuf buf = Unpooled.buffer(message.getData().length);
+            emptyMessage.read(buf, buf.writerIndex());
+            answer = askMessageHandler.ask(emptyMessage);
         } else {
             logger.warn("{} 没有实现 ProducerAskMessageHandler", producerMessageHandler.getClass().getName());
         }
         SCAskHandleMessage scAskHandleMessage = new SCAskHandleMessage();
         scAskHandleMessage.setFromMessageId(message.getFromMessageId());
-        scAskHandleMessage.setHandle(handle);
+
         scAskHandleMessage.setAskToken(message.getAskToken());
-        scAskHandleMessage.setAskValue(message.getAskValue());
+        if (answer == null) {
+            scAskHandleMessage.setAskValue(Arrays.toString(message.getData()));
+        } else {
+            scAskHandleMessage.setHandle(answer.isHandle());
+            scAskHandleMessage.setAskValue(answer.getValue());
+        }
+
+
         Provider2GatewayMessage toGateway = new Provider2GatewayMessage();
         toGateway.setToken(token);
         toGateway.setUserIds(new Long[0]);

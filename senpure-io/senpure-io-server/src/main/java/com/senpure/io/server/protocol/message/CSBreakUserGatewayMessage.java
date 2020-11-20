@@ -5,11 +5,11 @@ import io.netty.buffer.ByteBuf;
 
 /**
  * @author senpure
- * @time 2020-6-5 14:22:50
+ * @time 2020-11-20 17:37:42
  */
 public class CSBreakUserGatewayMessage extends CompressMessage {
 
-    public static final int MESSAGE_ID = 107;
+    public static final int MESSAGE_ID = 109;
     //channel token
     private long token;
     //用户Id
@@ -174,12 +174,12 @@ public class CSBreakUserGatewayMessage extends CompressMessage {
 
     @Override
     public int getMessageId() {
-        return 107;
+        return 109;
     }
 
     @Override
     public String toString() {
-        return "CSBreakUserGatewayMessage[107]{"
+        return "CSBreakUserGatewayMessage[109]{"
                 + "token=" + token
                 + ",userId=" + userId
                 + ",relationToken=" + relationToken
@@ -192,7 +192,7 @@ public class CSBreakUserGatewayMessage extends CompressMessage {
         //最长字段长度 13
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("CSBreakUserGatewayMessage").append("[107]").append("{");
+        sb.append("CSBreakUserGatewayMessage").append("[109]").append("{");
         //channel token
         sb.append("\n");
         sb.append(indent).append("token         = ").append(token);

@@ -16,7 +16,7 @@ public class WaitAskTask {
      */
     private long askToken;
 
-    private String value;
+    private byte[] value;
 
     private long startTime;
     private long answerTime;
@@ -95,11 +95,12 @@ public class WaitAskTask {
         this.askToken = askToken;
     }
 
-    public String getValue() {
+
+    public byte[] getValue() {
         return value;
     }
 
-    public void setValue(String value) {
+    public void setValue(byte[] value) {
         this.value = value;
     }
 

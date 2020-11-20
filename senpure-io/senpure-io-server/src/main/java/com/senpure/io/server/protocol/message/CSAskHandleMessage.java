@@ -5,21 +5,24 @@ import io.netty.buffer.ByteBuf;
 
 /**
  * @author senpure
- * @time 2020-6-5 14:22:50
+ * @time 2020-11-20 17:37:42
  */
 public class CSAskHandleMessage extends CompressMessage {
 
-    public static final int MESSAGE_ID = 109;
+    public static final int MESSAGE_ID = 111;
     //askToken
     private long askToken;
     private int fromMessageId;
-    //值
-    private String askValue;
+    private byte [] data;
 
     public void copy(CSAskHandleMessage source) {
         this.askToken = source.getAskToken();
         this.fromMessageId = source.getFromMessageId();
-        this.askValue = source.getAskValue();
+        if (source.getData() != null) {
+            this.data = copyBytes(source.getData());
+        } else {
+            this.data = null;
+        }
     }
 
     /**
@@ -31,9 +34,8 @@ public class CSAskHandleMessage extends CompressMessage {
         //askToken
         writeVar64(buf, 8, askToken);
         writeVar32(buf, 16, fromMessageId);
-        //值
-        if (askValue != null) {
-            writeString(buf, 27, askValue);
+        if (data != null) {
+            writeBytes(buf, 27, data);
         }
     }
 
@@ -54,9 +56,8 @@ public class CSAskHandleMessage extends CompressMessage {
                 case 16:// 2 << 3 | 0
                     fromMessageId = readVar32(buf);
                     break;
-                //值
                 case 27:// 3 << 3 | 3
-                    askValue = readString(buf);
+                    data = readBytes(buf);
                     break;
                 default://skip
                     skip(buf, tag);
@@ -79,10 +80,9 @@ public class CSAskHandleMessage extends CompressMessage {
         size += computeVar64Size(1, askToken);
         //tag size 16
         size += computeVar32Size(1, fromMessageId);
-        //值
-        if (askValue != null) {
+        if (data != null) {
              //tag size 27
-             size += computeStringSize(1, askValue);
+             size += computeBytesSize(1, data);
         }
         serializedSize = size ;
         return size ;
@@ -114,26 +114,26 @@ public class CSAskHandleMessage extends CompressMessage {
         return this;
     }
 
-    public String getAskValue() {
-        return askValue;
+    public byte [] getData() {
+        return data;
     }
 
-    public CSAskHandleMessage setAskValue(String askValue) {
-        this.askValue = askValue;
+    public CSAskHandleMessage setData(byte [] data) {
+        this.data = data;
         return this;
     }
 
     @Override
     public int getMessageId() {
-        return 109;
+        return 111;
     }
 
     @Override
     public String toString() {
-        return "CSAskHandleMessage[109]{"
+        return "CSAskHandleMessage[111]{"
                 + "askToken=" + askToken
                 + ",fromMessageId=" + fromMessageId
-                + ",askValue=" + askValue
+                + ",data=" + bytesToString(data)
                 + "}";
     }
 
@@ -142,15 +142,14 @@ public class CSAskHandleMessage extends CompressMessage {
         //最长字段长度 13
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("CSAskHandleMessage").append("[109]").append("{");
+        sb.append("CSAskHandleMessage").append("[111]").append("{");
         //askToken
         sb.append("\n");
         sb.append(indent).append("askToken      = ").append(askToken);
         sb.append("\n");
         sb.append(indent).append("fromMessageId = ").append(fromMessageId);
-        //值
         sb.append("\n");
-        sb.append(indent).append("askValue      = ").append(askValue);
+        sb.append(indent).append("data          = ").append(bytesToString(data));
         sb.append("\n");
         sb.append(indent).append("}");
         return sb.toString();

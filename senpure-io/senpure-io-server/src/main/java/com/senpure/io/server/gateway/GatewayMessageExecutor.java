@@ -8,8 +8,9 @@ import com.senpure.io.protocol.Message;
 import com.senpure.io.server.ChannelAttributeUtil;
 import com.senpure.io.server.Constant;
 import com.senpure.io.server.ServerProperties;
+import com.senpure.io.server.gateway.consumer.handler.ConsumerMessageHandler;
 import com.senpure.io.server.gateway.provider.Provider;
-import com.senpure.io.server.protocol.bean.HandleMessage;
+import com.senpure.io.server.gateway.provider.handler.ProviderMessageHandler;
 import com.senpure.io.server.protocol.message.*;
 import com.senpure.io.server.support.MessageIdReader;
 import io.netty.buffer.ByteBuf;
@@ -19,10 +20,7 @@ import io.netty.util.concurrent.DefaultThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -37,15 +35,12 @@ public class GatewayMessageExecutor {
     private int csLoginMessageId = 0;
 
     private ServerProperties.Gateway gateway;
-
     private int scLoginMessageId = 0;
 
-    private final int csHeartMessageId = CSHeartMessage.MESSAGE_ID;
+    public final ConcurrentMap<Long, Channel> prepLoginChannels = new ConcurrentHashMap<>(2048);
 
-    private final ConcurrentMap<Long, Channel> prepLoginChannels = new ConcurrentHashMap<>(2048);
-
-    private final ConcurrentMap<Long, Channel> userClientChannel = new ConcurrentHashMap<>(32768);
-    private final ConcurrentMap<Long, Channel> tokenChannel = new ConcurrentHashMap<>(32768);
+    public final ConcurrentMap<Long, Channel> userClientChannel = new ConcurrentHashMap<>(32768);
+    public final ConcurrentMap<Long, Channel> tokenChannel = new ConcurrentHashMap<>(32768);
     public final ConcurrentMap<String, ProviderManager> producerManagerMap = new ConcurrentHashMap<>(128);
 
     public ConcurrentMap<Integer, ProviderManager> messageHandleMap = new ConcurrentHashMap<>(2048);
@@ -53,11 +48,11 @@ public class GatewayMessageExecutor {
 
 
     protected IDGenerator idGenerator;
-    protected final ConcurrentHashMap<Long, WaitRelationTask> waitRelationMap = new ConcurrentHashMap<>(16);
-    protected final ConcurrentHashMap<Long, WaitAskTask> waitAskMap = new ConcurrentHashMap<>(16);
+    public final ConcurrentHashMap<Long, WaitRelationTask> waitRelationMap = new ConcurrentHashMap<>(16);
+    public final ConcurrentHashMap<Long, WaitAskTask> waitAskMap = new ConcurrentHashMap<>(16);
 
-    private final Map<Integer, SGInnerHandler> sgHandlerMap = new HashMap<>();
-
+    private final Map<Integer, ProviderMessageHandler> p2gHandlerMap = new HashMap<>();
+    private final Map<Integer, ConsumerMessageHandler> c2gHandlerMap = new HashMap<>();
     private boolean init = false;
 
     public GatewayMessageExecutor() {
@@ -71,6 +66,25 @@ public class GatewayMessageExecutor {
         // init();
         // startCheck();
 
+    }
+
+
+    public void regProviderMessageHandler(ProviderMessageHandler handler) {
+        ProviderMessageHandler old = p2gHandlerMap.get(handler.handleMessageId());
+        if (old != null) {
+            Assert.error(handler.handleMessageId() + " -> " + MessageIdReader.read(handler.handleMessageId()) + "  处理程序已经存在"
+                    + " 存在 " + old.getClass().getName() + " 注册 " + handler.getClass().getName());
+        }
+        p2gHandlerMap.put(handler.handleMessageId(), handler);
+    }
+
+    public void regConsumerMessageHandler(ConsumerMessageHandler handler) {
+        ConsumerMessageHandler old = c2gHandlerMap.get(handler.handleMessageId());
+        if (old != null) {
+            Assert.error(handler.handleMessageId() + " -> " + MessageIdReader.read(handler.handleMessageId()) + "  处理程序已经存在"
+                    + " 存在 " + old.getClass().getName() + " 注册 " + handler.getClass().getName());
+        }
+        c2gHandlerMap.put(handler.handleMessageId(), handler);
     }
 
     /**
@@ -115,34 +129,33 @@ public class GatewayMessageExecutor {
     //将客户端消息转发给具体的服务器
     public void execute(final Channel channel, final Client2GatewayMessage message) {
         long token = ChannelAttributeUtil.getToken(channel);
+        message.setToken(token);
+        Long userId = ChannelAttributeUtil.getUserId(channel);
+        if (userId != null) {
+            message.setUserId(userId);
+        }
         service.get(token).execute(() -> {
-            Long userId = ChannelAttributeUtil.getUserId(channel);
-            if (message.getMessageId() == csLoginMessageId) {
-                prepLoginChannels.put(ChannelAttributeUtil.getToken(channel), channel);
-            } else if (message.getMessageId() == csHeartMessageId) {
-                SCHeartMessage heartMessage = new SCHeartMessage();
-                sendMessage2Client(message.getRequestId(), heartMessage, ChannelAttributeUtil.getToken(channel));
-                return;
-            }
-
-            if (userId != null) {
-                message.setUserId(userId);
-            }
-            //登录
-            message.setToken(token);
-            //转发到具体的子服务器
-            HandleMessageManager handleMessageManager = handleMessageManagerMap.get(message.getMessageId());
-            if (handleMessageManager == null) {
-                logger.warn("没有找到消息的接收服务器{}", message.getMessageId());
-                SCInnerErrorMessage errorMessage = new SCInnerErrorMessage();
-
-                errorMessage.setCode(Constant.ERROR_NOT_FOUND_SERVER);
-                errorMessage.getArgs().add(String.valueOf(message.getMessageId()));
-                errorMessage.setMessage("没有服务器处理" + MessageIdReader.read(message.getMessageId()));
-                sendMessage2Client(message.getRequestId(), errorMessage, message.getToken());
-                return;
-            }
             try {
+                ConsumerMessageHandler handler = c2gHandlerMap.get(message.getMessageId());
+                if (handler != null) {
+                    handler.execute(channel, message);
+                    if (handler.stopForward()) {
+                        return;
+                    }
+                }
+                //转发到具体的子服务器
+                HandleMessageManager handleMessageManager = handleMessageManagerMap.get(message.getMessageId());
+                if (handleMessageManager == null) {
+                    logger.warn("没有找到消息的接收服务器{}", message.getMessageId());
+                    SCInnerErrorMessage errorMessage = new SCInnerErrorMessage();
+
+                    errorMessage.setCode(Constant.ERROR_NOT_FOUND_SERVER);
+                    errorMessage.getArgs().add(String.valueOf(message.getMessageId()));
+                    errorMessage.setMessage("没有服务器处理" + MessageIdReader.read(message.getMessageId()));
+                    sendMessage2Consumer(message.getRequestId(), message.getToken(), errorMessage);
+                    return;
+                }
+
                 handleMessageManager.execute(message);
             } catch (Exception e) {
                 logger.error("转发消息出错 " + message.getMessageId(), e);
@@ -151,12 +164,12 @@ public class GatewayMessageExecutor {
                 errorMessage.setCode(Constant.ERROR_SERVER_ERROR);
                 errorMessage.getArgs().add(String.valueOf(message.getMessageId()));
                 errorMessage.setMessage(MessageIdReader.read(message.getMessageId()) + "," + e.getMessage());
-                sendMessage2Client(message.getRequestId(), errorMessage, message.getToken());
+                sendMessage2Consumer(message.getRequestId(), message.getToken(), errorMessage);
             }
         });
     }
 
-    protected void sendMessage2Client(int requestId, Message message, Long token) {
+    public void sendMessage2Consumer(int requestId, Long token, Message message) {
         Channel clientChannel = tokenChannel.get(token);
         if (clientChannel == null) {
             logger.warn("没有找到channel token {}", token);
@@ -170,10 +183,36 @@ public class GatewayMessageExecutor {
             m.setToken(token);
             m.setData(data);
             m.setMessageId(message.getMessageId());
-            clientChannel.writeAndFlush(m);
+            if (clientChannel.isWritable()) {
+                clientChannel.writeAndFlush(m);
+            }
+
         }
     }
 
+    public void sendMessage2Consumer(Long token, int messageId, byte[] data) {
+        Channel clientChannel = tokenChannel.get(token);
+        if (clientChannel == null) {
+            logger.warn("没有找到channel token {}", token);
+        } else {
+            Server2GatewayMessage m = new Server2GatewayMessage();
+            m.setRequestId(0);
+            m.setToken(token);
+            m.setData(data);
+            m.setMessageId(messageId);
+            if (clientChannel.isWritable()) {
+                clientChannel.writeAndFlush(m);
+            }
+
+        }
+    }
+
+
+    public void sendMessage2Producer(Channel channel, Message message) {
+        Client2GatewayMessage toMessage = createMessage(message);
+        channel.writeAndFlush(toMessage);
+
+    }
     public void init() {
         if (init) {
             logger.warn("messageExecutor 已经初始化");
@@ -182,15 +221,6 @@ public class GatewayMessageExecutor {
         Assert.notNull(gateway, "gateway 配置文件不能为空");
         init = true;
         Assert.isTrue(csLoginMessageId > 0 && scLoginMessageId > 0, "登录消息未设置");
-        sgHandlerMap.put(SCRegServerHandleMessageMessage.MESSAGE_ID, this::regServerInstance);
-        sgHandlerMap.put(SCRelationUserGatewayMessage.MESSAGE_ID, this::relationMessage);
-        sgHandlerMap.put(SCAskHandleMessage.MESSAGE_ID, this::askMessage);
-        sgHandlerMap.put(SCIdNameMessage.MESSAGE_ID, (channel, server2GatewayMessage) -> idNameMessage(server2GatewayMessage));
-        sgHandlerMap.put(SCHeartMessage.MESSAGE_ID, (channel, server2GatewayMessage) -> true);
-        sgHandlerMap.put(scLoginMessageId, (channel, server2GatewayMessage) -> loginMessage(server2GatewayMessage));
-        sgHandlerMap.put(SCBreakUserGatewayMessage.MESSAGE_ID, this::breakRelationMessage);
-        sgHandlerMap.put(SCKickOffMessage.MESSAGE_ID, (channel, server2GatewayMessage) -> kickOffMessage(server2GatewayMessage));
-        sgHandlerMap.put(SCStatisticMessage.MESSAGE_ID, this::statisticMessage);
         startCheck();
     }
 
@@ -199,34 +229,43 @@ public class GatewayMessageExecutor {
         long token = message.getToken();
         service.get(token).execute(() -> {
             try {
-                SGInnerHandler handler = sgHandlerMap.get(message.getMessageId());
+                ProviderMessageHandler handler = p2gHandlerMap.get(message.getMessageId());
                 if (handler != null) {
-                    boolean over = handler.execute(channel, message);
-                    if (over) {
+                    handler.execute(channel, message);
+                    if (handler.stopResponse()) {
                         return;
                     }
                 }
                 if (message.getUserIds().length == 0) {
-                    Channel clientChannel = tokenChannel.get(token);
-                    if (clientChannel == null) {
+                    Channel consumerChannel = tokenChannel.get(token);
+                    if (consumerChannel == null) {
                         logger.warn("没有找到channel token:{}", token);
                     } else {
-                        clientChannel.writeAndFlush(message);
+                        if (consumerChannel.isWritable()) {
+                            consumerChannel.writeAndFlush(message);
+                        }
+
                     }
                 } else {
                     for (Long userId : message.getUserIds()) {
                         //全消息
                         if (userId == 0L) {
                             for (Map.Entry<Long, Channel> entry : userClientChannel.entrySet()) {
-                                entry.getValue().writeAndFlush(message);
+                                Channel consumerChannel = entry.getValue();
+                                if (consumerChannel.isWritable()) {
+                                    consumerChannel.writeAndFlush(message);
+                                }
                             }
                             break;
                         } else {
-                            Channel clientChannel = userClientChannel.get(userId);
-                            if (clientChannel == null) {
+                            Channel consumerChannel = userClientChannel.get(userId);
+                            if (consumerChannel == null) {
                                 logger.warn("没有找到用户 :{}", userId);
                             } else {
-                                clientChannel.writeAndFlush(message);
+                                if (consumerChannel.isWritable()) {
+                                    consumerChannel.writeAndFlush(message);
+                                }
+
                             }
                         }
                     }
@@ -257,7 +296,7 @@ public class GatewayMessageExecutor {
      * @param token
      * @param userId
      */
-    private void consumerUserChange(Channel channel, Long token, Long userId) {
+    public void consumerUserChange(Channel channel, Long token, Long userId) {
         for (Map.Entry<String, ProviderManager> entry : producerManagerMap.entrySet()) {
             ProviderManager providerManager = entry.getValue();
             providerManager.consumerUserChange(channel, token, userId, csLoginMessageId);
@@ -287,101 +326,6 @@ public class GatewayMessageExecutor {
     }
 
 
-    //todo 一个服务只允许一个ask id
-    private synchronized boolean regServerInstance(Channel channel, Server2GatewayMessage server2GatewayMessage) {
-        StringBuilder sb = new StringBuilder();
-        try {
-            SCRegServerHandleMessageMessage message = new SCRegServerHandleMessageMessage();
-
-            ByteBuf buf = Unpooled.buffer(server2GatewayMessage.getData().length);
-            buf.writeBytes(server2GatewayMessage.getData());
-            // logger.info("writerIndex {} readerIndex {} ", buf.writerIndex(), buf.readerIndex());
-            message.read(buf, buf.writerIndex());
-            List<HandleMessage> handleMessages = message.getMessages();
-            String serverKey = message.getServerKey();
-            ChannelAttributeUtil.setRemoteServerName(channel, message.getServerName());
-            ChannelAttributeUtil.setRemoteServerKey(channel, serverKey);
-            logger.info("服务注册:{}:{} [{}]", message.getServerName(), message.getServerKey(), message.getReadableServerName());
-            for (HandleMessage handleMessage : handleMessages) {
-                logger.info("{}", handleMessage);
-            }
-            ProviderManager providerManager = producerManagerMap.get(message.getServerName());
-            if (providerManager == null) {
-                providerManager = new ProviderManager(this);
-                producerManagerMap.put(message.getServerName(), providerManager);
-                for (HandleMessage handleMessage : handleMessages) {
-                    providerManager.markHandleId(handleMessage.getHandleMessageId());
-                    messageHandleMap.putIfAbsent(handleMessage.getHandleMessageId(), providerManager);
-                }
-                providerManager.setServerName(message.getServerName());
-            }
-            //如果同一个服务处理消息id不一致，旧得实例停止接收新的连接
-            for (HandleMessage handleMessage : handleMessages) {
-                if (!providerManager.handleId(handleMessage.getHandleMessageId())) {
-                    if (sb.length() > 0) {
-                        sb.append("\n");
-                    }
-                    sb.append(message.getServerName()).append(" 处理了新的消息").append(handleMessage.getHandleMessageId()).append("[")
-                            .append(handleMessage.getMessageName()).append("] ,旧的服务器停止接收新的请求分发");
-                    logger.info("{} 处理了新的消息{}[{}] ，旧的服务器停止接收新的请求分发", message.getServerName(),
-                            handleMessage.getHandleMessageId(), handleMessage.getMessageName());
-                    providerManager.prepStopOldInstance();
-                    for (HandleMessage hm : handleMessages) {
-                        providerManager.markHandleId(hm.getHandleMessageId());
-                    }
-                    break;
-                }
-            }
-            for (Integer id : providerManager.getHandleIds()) {
-                boolean discard = true;
-                for (HandleMessage handleMessage : handleMessages) {
-                    if (handleMessage.getHandleMessageId() == id) {
-                        discard = false;
-                        break;
-                    }
-                }
-                if (discard) {
-                    if (sb.length() > 0) {
-                        sb.append("\n");
-                    }
-                    sb.append(message.getServerName()).append(" 丢弃了消息 ").append(MessageIdReader.read(id))
-                            .append(" ，旧的服务器停止接收新的请求分发");
-                    logger.info("{} 丢弃了消息 {} ，旧的服务器停止接收新的请求分发", message.getServerName(), MessageIdReader.read(id));
-                    providerManager.prepStopOldInstance();
-                    for (HandleMessage hm : handleMessages) {
-                        providerManager.markHandleId(hm.getHandleMessageId());
-                    }
-                    break;
-                }
-            }
-            Provider provider = providerManager.getProducer(serverKey);
-            provider.addChannel(channel);
-            providerManager.checkChannelServer(serverKey, provider);
-            for (HandleMessage handleMessage : handleMessages) {
-                HandleMessageManager handleMessageManager = handleMessageManagerMap.get(handleMessage.getHandleMessageId());
-                if (handleMessageManager == null) {
-                    handleMessageManager = new HandleMessageManager(handleMessage.getHandleMessageId(), handleMessage.isDirect(), this);
-                    handleMessageManagerMap.put(handleMessage.getHandleMessageId(), handleMessageManager);
-                }
-                handleMessageManager.addProducerManager(handleMessage.getHandleMessageId(), providerManager);
-            }
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            CSRegServerHandleMessageMessage returnMessage = new CSRegServerHandleMessageMessage();
-            returnMessage.setSuccess(false);
-            returnMessage.setMessage(e.getMessage());
-            sendMessage2Producer(channel, returnMessage);
-            return true;
-        }
-        CSRegServerHandleMessageMessage returnMessage = new CSRegServerHandleMessageMessage();
-        returnMessage.setSuccess(true);
-        if (sb.length() > 0) {
-            returnMessage.setMessage(sb.toString());
-        }
-        sendMessage2Producer(channel, returnMessage);
-        return true;
-    }
-
     public Client2GatewayMessage createMessage(Message message) {
         Client2GatewayMessage toMessage = new Client2GatewayMessage();
         toMessage.setMessageId(message.getMessageId());
@@ -393,11 +337,6 @@ public class GatewayMessageExecutor {
         return toMessage;
     }
 
-    public void sendMessage2Producer(Channel channel, Message message) {
-        Client2GatewayMessage toMessage = createMessage(message);
-        channel.writeAndFlush(toMessage);
-
-    }
 
     public void sendMessage(Provider provider, Message message) {
         Client2GatewayMessage toMessage = createMessage(message);
@@ -405,84 +344,8 @@ public class GatewayMessageExecutor {
     }
 
 
-    private boolean idNameMessage(Server2GatewayMessage server2GatewayMessage) {
-        SCIdNameMessage message = new SCIdNameMessage();
-        readMessage(message, server2GatewayMessage);
-        MessageIdReader.relation(message.getIdNames());
-        return true;
-    }
 
 
-    /**
-     * 处具体服务器返回的关联用户信息
-     *
-     * @param channel
-     * @param server2GatewayMessage
-     */
-    private boolean relationMessage(Channel channel, Server2GatewayMessage server2GatewayMessage) {
-        SCRelationUserGatewayMessage message = new SCRelationUserGatewayMessage();
-        readMessage(message, server2GatewayMessage);
-        WaitRelationTask waitRelationTask = waitRelationMap.get(message.getRelationToken());
-        if (waitRelationTask != null) {
-            if (message.getRelationToken() == waitRelationTask.getRelationToken()) {
-                waitRelationTask.setRelationTime(System.currentTimeMillis());
-                waitRelationTask.setRelation(true);
-            }
-        } else {
-            CSBreakUserGatewayMessage breakUserGatewayMessage = new CSBreakUserGatewayMessage();
-            breakUserGatewayMessage.setToken(message.getToken());
-            breakUserGatewayMessage.setUserId(message.getUserId());
-            breakUserGatewayMessage.setRelationToken(message.getRelationToken());
-            sendMessage2Producer(channel, breakUserGatewayMessage);
-        }
-        return true;
-    }
-
-    private boolean statisticMessage(Channel channel, Server2GatewayMessage server2GatewayMessage) {
-        SCStatisticMessage message = new SCStatisticMessage();
-        readMessage(message, server2GatewayMessage);
-        String producerKey = ChannelAttributeUtil.getRemoteServerKey(channel);
-        String producerName = ChannelAttributeUtil.getRemoteServerName(channel);
-        ProviderManager providerManager = producerManagerMap.get(producerName);
-        if (providerManager != null) {
-            Provider provider = providerManager.getProducer(producerKey);
-            if (provider != null) {
-                provider.updateScore(message.getStatistic().getScore());
-            } else {
-                logger.warn("{} producer is null", producerKey);
-            }
-        } else {
-
-            logger.warn("{} producerManager is null", producerName);
-        }
-
-        return true;
-    }
-
-    private boolean breakRelationMessage(Channel channel, Server2GatewayMessage server2GatewayMessage) {
-        SCBreakUserGatewayMessage message = new SCBreakUserGatewayMessage();
-        readMessage(message, server2GatewayMessage);
-        long tempUserId = server2GatewayMessage.getMessageId();
-        Channel userChannel = null;
-        if (tempUserId > 0) {
-            userChannel = userClientChannel.get(tempUserId);
-        }
-        if (userChannel == null) {
-            userChannel = tokenChannel.get(server2GatewayMessage.getToken());
-        }
-        if (userChannel != null) {
-            Long userId = ChannelAttributeUtil.getUserId(userChannel);
-            userId = userId == null ? 0 : userId;
-            Long token = ChannelAttributeUtil.getToken(userChannel);
-            String serverName = ChannelAttributeUtil.getRemoteServerName(channel);
-            ProviderManager serverManager = producerManagerMap.get(serverName);
-            if (serverManager != null) {
-                serverManager.consumerLeaveProducer(userChannel, token, userId);
-                // serverManager.breakUserGateway(userChannel, token, userId, Constant.BREAK_TYPE_ERROR);
-            }
-        }
-        return true;
-    }
 
     private void checkWaitRelationTask() {
         List<Long> tokens = new ArrayList<>();
@@ -501,85 +364,6 @@ public class GatewayMessageExecutor {
         for (Long token : tokens) {
             waitRelationMap.remove(token);
         }
-    }
-
-    private boolean loginMessage(Server2GatewayMessage message) {
-        long userId = message.getUserIds()[0];
-        Channel clientChannel = prepLoginChannels.remove(message.getToken());
-
-        if (clientChannel != null) {
-            Long token = ChannelAttributeUtil.getToken(clientChannel);
-            Long oldUserId = ChannelAttributeUtil.getUserId(clientChannel);
-            if (oldUserId != null) {
-                if (oldUserId == userId) {
-                    logger.info("{}重复登陆 {} 不做额外的处理", clientChannel, userId);
-                } else {
-                    logger.info("{}切换账号{}  -》  {} ", clientChannel, oldUserId, userId);
-                    consumerUserChange(clientChannel, token, oldUserId);
-                }
-            }
-            ChannelAttributeUtil.setUserId(clientChannel, userId);
-            userClientChannel.put(userId, clientChannel);
-            for (Map.Entry<String, ProviderManager> entry : producerManagerMap.entrySet()) {
-                ProviderManager providerManager = entry.getValue();
-                providerManager.afterUserAuthorize(token, userId);
-
-            }
-        } else {
-            logger.warn("登录成功 userId:{} channel缺失 token{}", userId, message.getToken());
-        }
-        return false;
-    }
-
-    private boolean kickOffMessage(Server2GatewayMessage server2GatewayMessage) {
-        SCKickOffMessage message = new SCKickOffMessage();
-        readMessage(message, server2GatewayMessage);
-        long tempUserId = message.getUserId();
-        Channel userChannel = null;
-        if (tempUserId > 0) {
-            userChannel = userClientChannel.get(tempUserId);
-        }
-        if (userChannel == null) {
-            userChannel = tokenChannel.get(message.getToken());
-        }
-        if (userChannel != null) {
-            logger.info("{} token:{} uerId:{} 踢下线", userChannel, ChannelAttributeUtil.getToken(userChannel), ChannelAttributeUtil.getUserId(userChannel));
-            userChannel.close();
-        } else {
-            logger.info("{} 踢下线失败，找不到channel", message.toString());
-        }
-        return true;
-    }
-
-    private boolean askMessage(Channel channel, Server2GatewayMessage server2GatewayMessage) {
-        SCAskHandleMessage message = new SCAskHandleMessage();
-        readMessage(message, server2GatewayMessage);
-        WaitAskTask waitAskTask = waitAskMap.get(message.getAskToken());
-        if (waitAskTask != null) {
-            if (message.isHandle()) {
-                String serverName = ChannelAttributeUtil.getRemoteServerName(channel);
-                String serverKey = ChannelAttributeUtil.getRemoteServerKey(channel);
-                logger.debug("{} {} 可以处理 {} 值位 {} 的请求", serverName, serverKey,
-                        MessageIdReader.read(waitAskTask.getFromMessageId()), waitAskTask.getValue());
-                ProviderManager providerManager = producerManagerMap.get(serverName);
-                for (Provider useProvider : providerManager.getUseProviders()) {
-                    if (useProvider.getServerKey().equalsIgnoreCase(serverKey)) {
-                        waitAskTask.answer(providerManager, useProvider, true);
-                        return true;
-                    }
-                }
-                waitAskTask.answer(null, null, false);
-            } else {
-                if (logger.isDebugEnabled()) {
-                    String serverName = ChannelAttributeUtil.getRemoteServerName(channel);
-                    String serverKey = ChannelAttributeUtil.getRemoteServerKey(channel);
-                    logger.debug("{} {} 无法处理 {} 值位 {} 的请求", serverName, serverKey,
-                            MessageIdReader.read(waitAskTask.getFromMessageId()), waitAskTask.getValue());
-                }
-                waitAskTask.answer(null, null, false);
-            }
-        }
-        return true;
     }
 
     private void checkWaitAskTask() {
@@ -602,8 +386,8 @@ public class GatewayMessageExecutor {
                     errorMessage.setCode(Constant.ERROR_NOT_HANDLE_VALUE_REQUEST);
                     errorMessage.getArgs().add(String.valueOf(waitAskTask.getFromMessageId()));
                     errorMessage.setMessage(MessageIdReader.read(waitAskTask.getFromMessageId()));
-                    errorMessage.getArgs().add(String.valueOf(waitAskTask.getValue()));
-                    sendMessage2Client(waitAskTask.getRequestId(), errorMessage, waitAskTask.getMessage().getToken());
+                    errorMessage.getArgs().add(Arrays.toString(waitAskTask.getValue()));
+                    sendMessage2Consumer(waitAskTask.getRequestId(), waitAskTask.getMessage().getToken(), errorMessage);
                 }
             }
         }
@@ -646,11 +430,6 @@ public class GatewayMessageExecutor {
 
     public void setGateway(ServerProperties.Gateway gateway) {
         this.gateway = gateway;
-    }
-
-    private interface SGInnerHandler {
-        boolean execute(Channel channel, Server2GatewayMessage server2GatewayMessage);
-
     }
 
 

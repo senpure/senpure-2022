@@ -4,16 +4,14 @@ import com.senpure.io.protocol.CompressMessage;
 import io.netty.buffer.ByteBuf;
 
 /**
- * 断开用户与网关
- * 
  * @author senpure
  * @time 2020-11-20 17:37:42
  */
-public class SCBreakUserGatewayMessage extends CompressMessage {
+public class SCConsumerVerifyMessage extends CompressMessage {
 
-    public static final int MESSAGE_ID = 110;
+    public static final int MESSAGE_ID = 104;
 
-    public void copy(SCBreakUserGatewayMessage source) {
+    public void copy(SCConsumerVerifyMessage source) {
     }
 
     /**
@@ -57,12 +55,12 @@ public class SCBreakUserGatewayMessage extends CompressMessage {
 
     @Override
     public int getMessageId() {
-        return 110;
+        return 104;
     }
 
     @Override
     public String toString() {
-        return "SCBreakUserGatewayMessage[110]{"
+        return "SCConsumerVerifyMessage[104]{"
                 + "}";
     }
 
@@ -70,7 +68,7 @@ public class SCBreakUserGatewayMessage extends CompressMessage {
     public String toString(String indent) {
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("SCBreakUserGatewayMessage").append("[110]").append("{");
+        sb.append("SCConsumerVerifyMessage").append("[104]").append("{");
         sb.append("\n");
         sb.append(indent).append("}");
         return sb.toString();

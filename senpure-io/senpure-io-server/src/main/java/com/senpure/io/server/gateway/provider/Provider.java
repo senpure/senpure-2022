@@ -24,6 +24,7 @@ public class Provider {
     private final Set<Integer> handleIds = new HashSet<>();
     private final Statistic statistic = new Statistic();
     private String serverKey;
+
     private final AtomicInteger consumerCount = new AtomicInteger();
 
 
@@ -120,6 +121,7 @@ public class Provider {
     public Statistic getStatistic() {
         return statistic;
     }
+
 
     public  static class Statistic {
         //producer 汇报的分数

@@ -5,11 +5,11 @@ import io.netty.buffer.ByteBuf;
 
 /**
  * @author senpure
- * @time 2020-6-5 14:22:50
+ * @time 2020-11-20 17:37:42
  */
 public class SCKickOffMessage extends CompressMessage {
 
-    public static final int MESSAGE_ID = 112;
+    public static final int MESSAGE_ID = 114;
     //token
     private long token;
     //userId
@@ -112,12 +112,12 @@ public class SCKickOffMessage extends CompressMessage {
 
     @Override
     public int getMessageId() {
-        return 112;
+        return 114;
     }
 
     @Override
     public String toString() {
-        return "SCKickOffMessage[112]{"
+        return "SCKickOffMessage[114]{"
                 + "token=" + token
                 + ",userId=" + userId
                 + "}";
@@ -128,7 +128,7 @@ public class SCKickOffMessage extends CompressMessage {
         //最长字段长度 6
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("SCKickOffMessage").append("[112]").append("{");
+        sb.append("SCKickOffMessage").append("[114]").append("{");
         //token
         sb.append("\n");
         sb.append(indent).append("token  = ").append(token);

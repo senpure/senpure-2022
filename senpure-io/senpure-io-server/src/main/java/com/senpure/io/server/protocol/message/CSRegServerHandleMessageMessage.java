@@ -7,7 +7,7 @@ import io.netty.buffer.ByteBuf;
  * 网关注册处理消息返回
  * 
  * @author senpure
- * @time 2020-6-5 14:22:50
+ * @time 2020-11-20 17:37:42
  */
 public class CSRegServerHandleMessageMessage extends CompressMessage {
 

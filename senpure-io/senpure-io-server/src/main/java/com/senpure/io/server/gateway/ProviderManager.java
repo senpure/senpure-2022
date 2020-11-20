@@ -28,7 +28,7 @@ public class ProviderManager {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final GatewayMessageExecutor messageExecutor;
 
-    private  ProviderNextStrategy nextStrategy = new ProviderDefaultNextStrategy();
+    private ProviderNextStrategy nextStrategy = new ProviderDefaultNextStrategy();
 
     public ProviderManager(GatewayMessageExecutor messageExecutor) {
         this.messageExecutor = messageExecutor;
@@ -67,7 +67,7 @@ public class ProviderManager {
                 errorMessage.setCode(Constant.ERROR_NOT_FOUND_SERVER);
                 errorMessage.getArgs().add(String.valueOf(client2GatewayMessage.getMessageId()));
                 errorMessage.setMessage("没有服务器处理" + MessageIdReader.read(client2GatewayMessage.getMessageId()));
-                messageExecutor.sendMessage2Client(client2GatewayMessage.getRequestId(), errorMessage, client2GatewayMessage.getToken());
+                messageExecutor.sendMessage2Consumer(client2GatewayMessage.getRequestId(), client2GatewayMessage.getToken(), errorMessage);
             } else {
                 relationAndWaitSendMessage(provider, client2GatewayMessage);
             }
@@ -78,6 +78,29 @@ public class ProviderManager {
         }
     }
 
+
+    public void sendMessage2Consumer(@Nullable String serverKey, int messageId, byte[] data) {
+        if (serverKey != null) {
+            for (Map.Entry<Long, ProducerRelation> entry : tokenProducerMap.entrySet()) {
+                Long userToken = entry.getKey();
+                ProducerRelation producerRelation = entry.getValue();
+                Provider provider = producerRelation.provider;
+                if (provider.getServerKey().equals(serverKey)) {
+                    messageExecutor.sendMessage2Consumer(userToken, messageId, data);
+                    break;
+                }
+            }
+        } else {
+            for (Map.Entry<Long, ProducerRelation> entry : tokenProducerMap.entrySet()) {
+                Long userToken = entry.getKey();
+                messageExecutor.sendMessage2Consumer(userToken, messageId, data);
+
+
+            }
+        }
+
+    }
+
     /**
      * @param provider
      * @param relationToken
@@ -85,7 +108,7 @@ public class ProviderManager {
      */
     private void waitRelationTask(Provider provider,
                                   Long relationToken,
-                                 @Nullable Client2GatewayMessage client2GatewayMessage) {
+                                  @Nullable Client2GatewayMessage client2GatewayMessage) {
         WaitRelationTask waitRelationTask = new WaitRelationTask();
         waitRelationTask.setRelationToken(relationToken);
         waitRelationTask.setMessage(client2GatewayMessage);

@@ -11,11 +11,11 @@ import java.util.ArrayList;
  * 数字id与字符串的关联
  * 
  * @author senpure
- * @time 2020-6-5 14:22:50
+ * @time 2020-11-20 17:37:42
  */
 public class SCIdNameMessage extends CompressMessage {
 
-    public static final int MESSAGE_ID = 104;
+    public static final int MESSAGE_ID = 106;
     private List<IdName> idNames = new ArrayList<>(16);
 
     public void copy(SCIdNameMessage source) {
@@ -90,12 +90,12 @@ public class SCIdNameMessage extends CompressMessage {
 
     @Override
     public int getMessageId() {
-        return 104;
+        return 106;
     }
 
     @Override
     public String toString() {
-        return "SCIdNameMessage[104]{"
+        return "SCIdNameMessage[106]{"
                 + "idNames=" + idNames
                 + "}";
     }
@@ -107,7 +107,7 @@ public class SCIdNameMessage extends CompressMessage {
         //最长字段长度 7
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("SCIdNameMessage").append("[104]").append("{");
+        sb.append("SCIdNameMessage").append("[106]").append("{");
         sb.append("\n");
         sb.append(indent).append("idNames = ");
         appendBeans(sb,idNames,indent,nextIndent);

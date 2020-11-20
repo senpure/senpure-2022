@@ -7,11 +7,11 @@ import io.netty.buffer.ByteBuf;
  * 关联用户与网关
  * 
  * @author senpure
- * @time 2020-6-5 14:22:50
+ * @time 2020-11-20 17:37:42
  */
 public class CSRelationUserGatewayMessage extends CompressMessage {
 
-    public static final int MESSAGE_ID = 105;
+    public static final int MESSAGE_ID = 107;
     //channel token
     private long token;
     //userId
@@ -143,12 +143,12 @@ public class CSRelationUserGatewayMessage extends CompressMessage {
 
     @Override
     public int getMessageId() {
-        return 105;
+        return 107;
     }
 
     @Override
     public String toString() {
-        return "CSRelationUserGatewayMessage[105]{"
+        return "CSRelationUserGatewayMessage[107]{"
                 + "token=" + token
                 + ",userId=" + userId
                 + ",relationToken=" + relationToken
@@ -160,7 +160,7 @@ public class CSRelationUserGatewayMessage extends CompressMessage {
         //最长字段长度 13
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("CSRelationUserGatewayMessage").append("[105]").append("{");
+        sb.append("CSRelationUserGatewayMessage").append("[107]").append("{");
         //channel token
         sb.append("\n");
         sb.append(indent).append("token         = ").append(token);

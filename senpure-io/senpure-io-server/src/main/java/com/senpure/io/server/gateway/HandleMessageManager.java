@@ -19,7 +19,7 @@ import java.util.List;
 public class HandleMessageManager {
 
 
-    private  final  Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     private boolean direct;
     private final List<ProviderManager> providerManagers = new ArrayList<>();
     private ProviderManager providerManager;
@@ -47,7 +47,7 @@ public class HandleMessageManager {
         if (add) {
             //不同的服务处理相同的id,容易编码疏忽,取消这种模式
             if (providerManagers.size() >= 1 && direct) {
-                Assert.error("不同的服务处理了相同的非ask消息id,该模式容易编码疏忽,产出bug,强制不允许  id:"+ MessageIdReader.read(messageId));
+                Assert.error("不同的服务处理了相同的非ask消息id,该模式容易编码疏忽,产出bug,强制不允许  id:" + MessageIdReader.read(messageId));
             }
             providerManagers.add(providerManager);
         }
@@ -60,41 +60,37 @@ public class HandleMessageManager {
         if (direct) {
             providerManager.sendMessage(message);
         } else {
-            ByteBuf buf = Unpooled.buffer(message.getData().length);
-            buf.writeBytes(message.getData());
-            String value;
-            try {
-               CompressBean.readTag(buf, buf.writerIndex());
-                value =CompressBean.readString(buf);
-            } catch (Exception e) {
-                logger.error("读取询问值出错询问值只能是string 类型 messageId " + message.getMessageId(), e);
-                // Assert.error("读取询问值出错 询问值只能是string 类型 messageId  " + getValue.getMessageId());
-                SCInnerErrorMessage errorMessage = new SCInnerErrorMessage();
-                errorMessage.setCode(Constant.ERROR_SERVER_ERROR);
-                errorMessage.getArgs().add(String.valueOf(message.getMessageId()));
-                errorMessage.setMessage("询问值只能是String类型" + MessageIdReader.read(message.getMessageId()));
-                messageExecutor.sendMessage2Client(message.getRequestId(),errorMessage, message.getToken());
-                return;
-            }
+//            ByteBuf buf = Unpooled.buffer(message.getData().length);
+//            buf.writeBytes(message.getData());
+//            String value;
+//            try {
+//               CompressBean.readTag(buf, buf.writerIndex());
+//                value =CompressBean.readString(buf);
+//            } catch (Exception e) {
+//                logger.error("读取询问值出错询问值只能是string 类型 messageId " + message.getMessageId(), e);
+//                // Assert.error("读取询问值出错 询问值只能是string 类型 messageId  " + getValue.getMessageId());
+//                SCInnerErrorMessage errorMessage = new SCInnerErrorMessage();
+//                errorMessage.setCode(Constant.ERROR_SERVER_ERROR);
+//                errorMessage.getArgs().add(String.valueOf(message.getMessageId()));
+//                errorMessage.setMessage("询问值只能是String类型" + MessageIdReader.read(message.getMessageId()));
+//                messageExecutor.sendMessage2Consumer(message.getRequestId(), message.getToken(),errorMessage);
+//                return;
+//            }
+
+          //  String value = "";
             CSAskHandleMessage askHandleMessage = new CSAskHandleMessage();
             askHandleMessage.setFromMessageId(message.getMessageId());
             askHandleMessage.setAskToken(messageExecutor.idGenerator.nextId());
-            askHandleMessage.setAskValue(value);
-            Client2GatewayMessage temp = new Client2GatewayMessage();
-            temp.setMessageId(CSAskHandleMessage.MESSAGE_ID);
-            temp.setToken(message.getToken());
-            temp.setUserId(message.getUserId());
-            buf = Unpooled.buffer();
-            buf.ensureWritable(askHandleMessage.getSerializedSize());
-            askHandleMessage.write(buf);
-            byte[] data = new byte[askHandleMessage.getSerializedSize()];
-            buf.readBytes(data);
-            temp.setData(data);
+            askHandleMessage.setData(message.getData());
+
+            Client2GatewayMessage temp = messageExecutor.createMessage(askHandleMessage);
+
+
             WaitAskTask waitAskTask = new WaitAskTask(messageExecutor.getGateway().getAskMaxDelay());
             waitAskTask.setAskToken(askHandleMessage.getAskToken());
             waitAskTask.setRequestId(message.getRequestId());
             waitAskTask.setFromMessageId(askHandleMessage.getFromMessageId());
-            waitAskTask.setValue(value);
+            waitAskTask.setValue(message.getData());
 
             int askTimes = 0;
             for (ProviderManager serverManager : providerManagers) {
@@ -120,7 +116,6 @@ public class HandleMessageManager {
     public void setDirect(boolean direct) {
         this.direct = direct;
     }
-
 
 
 }

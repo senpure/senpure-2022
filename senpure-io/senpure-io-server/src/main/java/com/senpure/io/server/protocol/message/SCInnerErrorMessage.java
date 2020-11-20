@@ -10,7 +10,7 @@ import java.util.ArrayList;
  * 服务器内部错误提示
  * 
  * @author senpure
- * @time 2020-6-5 14:22:50
+ * @time 2020-11-20 17:37:42
  */
 public class SCInnerErrorMessage extends CompressMessage {
 

@@ -6,6 +6,27 @@ import com.senpure.io.protocol.Message;
 public interface ProviderAskMessageHandler<T extends Message> extends ProviderMessageHandler<T> {
 
 
-    boolean ask(String value);
+    Answer ask(Message message);
 
+    class Answer {
+
+        private boolean handle;
+        private String value;
+
+        public boolean isHandle() {
+            return handle;
+        }
+
+        public void setHandle(boolean handle) {
+            this.handle = handle;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+    }
 }

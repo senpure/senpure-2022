@@ -30,53 +30,13 @@ public class GatewayServerStarter{
     private GatewayAndServerServer gatewayAndServerServer;
 
 
-    public void start() {
-        check();
-        messageExecutor();
+    public void start(GatewayMessageExecutor  messageExecutor) {
+        this.messageExecutor = messageExecutor;
         servers();
     }
 
-    private void check() {
-        if (StringUtils.isEmpty(properties.getName())) {
-            properties.setName("gateway");
-        }
 
-        ServerProperties.Gateway gateway = properties.getGateway();
-        if (!gateway.isSetReadableName()) {
-            gateway.setReadableName(properties.getName());
-        }
-        //io *2 logic *1 综合1.5
-        double size = Runtime.getRuntime().availableProcessors() * 1.5;
-        int ioSize = (int) (size * 0.6);
-        ioSize = Math.max(ioSize, 1);
-        int logicSize = (int) (size * 0.4);
-        logicSize = Math.max(logicSize, 1);
-        if (gateway.getExecutorThreadPoolSize() < 1) {
-            gateway.setExecutorThreadPoolSize(logicSize);
-        }
-        if (gateway.getIoCsWorkThreadPoolSize() < 1) {
-            int workSize = ioSize << 1;
-            workSize = Math.max(workSize, 1);
-            gateway.setIoCsWorkThreadPoolSize(workSize);
-        }
-        if (gateway.getIoScWorkThreadPoolSize() < 1) {
-            int workSize = ioSize << 1;
-            workSize = Math.max(workSize, 1);
-            gateway.setIoScWorkThreadPoolSize(workSize);
-        }
-        logger.info(gateway.toString());
-    }
 
-    private void messageExecutor() {
-        ServerProperties.Gateway gateway = properties.getGateway();
-        TaskLoopGroup service =new DefaultTaskLoopGroup(gateway.getExecutorThreadPoolSize(),
-                new DefaultThreadFactory(properties.getName() + "-executor"));
-        messageExecutor = new GatewayMessageExecutor(service, new IDGenerator(gateway.getSnowflakeDataCenterId(), gateway.getSnowflakeWorkId()));
-        messageExecutor.setCsLoginMessageId(gateway.getCsLoginMessageId());
-        messageExecutor.setScLoginMessageId(gateway.getScLoginMessageId());
-        messageExecutor.setGateway(properties.getGateway());
-        messageExecutor.init();
-    }
 
 
 
