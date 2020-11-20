@@ -208,7 +208,7 @@ public class GatewayManager {
     public void sendKickOffMessage(Long userId) {
         SCKickOffMessage message = new SCKickOffMessage();
         message.setUserId(userId);
-        sendMessage(userId, message);
+        sendMessage(userId, message, true);
     }
 
     /**
@@ -219,7 +219,7 @@ public class GatewayManager {
     public void sendKickOffMessageByToken(Long token) {
         SCKickOffMessage message = new SCKickOffMessage();
         message.setToken(token);
-        sendMessageByToken(token, message);
+        sendMessageByToken(token, message, true);
 
     }
 
@@ -305,6 +305,11 @@ public class GatewayManager {
     }
 
     public void sendMessageByToken(Long token, Message message) {
+
+        sendMessageByToken(token, message, false);
+    }
+
+    public void sendMessageByToken(Long token, Message message, boolean tryAllGateway) {
         Provider2GatewayMessage toGateway = new Provider2GatewayMessage();
         toGateway.setToken(token);
         toGateway.setUserIds(new Long[0]);
@@ -314,12 +319,21 @@ public class GatewayManager {
         if (gatewayRelation != null) {
             gatewayRelation.gatewayChannelManager.sendMessage(toGateway);
         } else {
-            logger.warn("token {} 不存在 GatewayRelation", token);
+            if (tryAllGateway) {
+                dispatchMessage(toGateway);
+            } else {
+                logger.warn("token {} 不存在 GatewayRelation", token);
+            }
+
         }
     }
 
 
     public void sendMessage(Long userId, Message message) {
+        sendMessage(userId, message, false);
+    }
+
+    public void sendMessage(Long userId, Message message, boolean tryAllGateway) {
         Provider2GatewayMessage toGateway = new Provider2GatewayMessage();
         toGateway.setUserIds(new Long[]{userId});
         toGateway.setMessage(message);
@@ -328,7 +342,12 @@ public class GatewayManager {
         if (gatewayRelation != null) {
             gatewayRelation.gatewayChannelManager.sendMessage(toGateway);
         } else {
-            logger.warn("userId {} 不存在 GatewayRelation", userId);
+            if (tryAllGateway) {
+                dispatchMessage(toGateway);
+            } else {
+                logger.warn("userId {} 不存在 GatewayRelation", userId);
+            }
+
         }
     }
 

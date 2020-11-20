@@ -170,8 +170,8 @@ public class GatewayMessageExecutor {
     }
 
     public void sendMessage2Consumer(int requestId, Long token, Message message) {
-        Channel clientChannel = tokenChannel.get(token);
-        if (clientChannel == null) {
+        Channel consumerChannel = tokenChannel.get(token);
+        if (consumerChannel == null) {
             logger.warn("没有找到channel token {}", token);
         } else {
             Server2GatewayMessage m = new Server2GatewayMessage();
@@ -183,16 +183,16 @@ public class GatewayMessageExecutor {
             m.setToken(token);
             m.setData(data);
             m.setMessageId(message.getMessageId());
-            if (clientChannel.isWritable()) {
-                clientChannel.writeAndFlush(m);
+            if (consumerChannel.isWritable()) {
+                consumerChannel.writeAndFlush(m);
             }
 
         }
     }
 
     public void sendMessage2Consumer(Long token, int messageId, byte[] data) {
-        Channel clientChannel = tokenChannel.get(token);
-        if (clientChannel == null) {
+        Channel consumerChannel  = tokenChannel.get(token);
+        if (consumerChannel  == null) {
             logger.warn("没有找到channel token {}", token);
         } else {
             Server2GatewayMessage m = new Server2GatewayMessage();
@@ -200,8 +200,8 @@ public class GatewayMessageExecutor {
             m.setToken(token);
             m.setData(data);
             m.setMessageId(messageId);
-            if (clientChannel.isWritable()) {
-                clientChannel.writeAndFlush(m);
+            if (consumerChannel .isWritable()) {
+                consumerChannel .writeAndFlush(m);
             }
 
         }
@@ -210,7 +210,10 @@ public class GatewayMessageExecutor {
 
     public void sendMessage2Producer(Channel channel, Message message) {
         Client2GatewayMessage toMessage = createMessage(message);
-        channel.writeAndFlush(toMessage);
+        if (channel.isWritable()) {
+            channel.writeAndFlush(toMessage);
+        }
+
 
     }
     public void init() {
