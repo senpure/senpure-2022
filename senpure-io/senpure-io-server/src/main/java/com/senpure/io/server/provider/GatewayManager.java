@@ -4,12 +4,16 @@ package com.senpure.io.server.provider;
 import com.senpure.io.protocol.Message;
 import com.senpure.io.server.protocol.message.SCBreakUserGatewayMessage;
 import com.senpure.io.server.protocol.message.SCKickOffMessage;
+import com.senpure.io.server.protocol.message.SCMessageForwardMessage;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.util.concurrent.FastThreadLocal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -145,6 +149,19 @@ public class GatewayManager {
         toGateway.setMessageId(message.getMessageId());
         dispatchMessage(toGateway);
     }
+
+    public void dispatchMessage(String serverName, String serverKey,Message originalMessage) {
+        SCMessageForwardMessage message = new SCMessageForwardMessage();
+        message.setServerName(serverName);
+        message.setServerKey(serverKey);
+
+         ByteBuf buf = Unpooled.buffer(message.getSerializedSize());
+        originalMessage.write(buf);
+
+      //  message.setData(buf.get)
+
+    }
+
 
     /**
      * @param token

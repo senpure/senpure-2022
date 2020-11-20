@@ -1,6 +1,3 @@
-package coolGame.gamehorserun.core.data;
-
-
 import coolGame.core.exec.ThreadManager;
 import coolGame.core.queue.ExecutorActionQueue;
 import coolGame.gamehorserun.ai.AiRole;
