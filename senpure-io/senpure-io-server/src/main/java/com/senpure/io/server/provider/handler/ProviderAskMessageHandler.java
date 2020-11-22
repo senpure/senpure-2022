@@ -6,7 +6,7 @@ import com.senpure.io.protocol.Message;
 public interface ProviderAskMessageHandler<T extends Message> extends ProviderMessageHandler<T> {
 
 
-    Answer ask(Message message);
+    Answer ask(T message);
 
     class Answer {
 

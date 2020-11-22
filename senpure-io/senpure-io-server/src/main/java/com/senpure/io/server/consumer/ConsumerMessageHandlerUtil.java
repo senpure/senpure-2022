@@ -15,8 +15,8 @@ public class ConsumerMessageHandlerUtil {
     private static Logger logger = LoggerFactory.getLogger(ConsumerMessageHandlerUtil.class);
     private static Map<Integer, ConsumerMessageHandler<?>> handlerMap = new HashMap<>();
 
-    public static ConsumerMessageHandler<?> getHandler(int messageId) {
-        return handlerMap.get(messageId);
+    public static <T extends Message> ConsumerMessageHandler<T> getHandler(int messageId) {
+        return (ConsumerMessageHandler<T>) handlerMap.get(messageId);
     }
 
     public static void regMessageHandler(ConsumerMessageHandler<?> handler) {

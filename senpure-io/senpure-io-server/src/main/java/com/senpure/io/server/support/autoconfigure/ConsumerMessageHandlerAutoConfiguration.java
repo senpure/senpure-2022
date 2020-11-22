@@ -1,10 +1,13 @@
 package com.senpure.io.server.support.autoconfigure;
 
 import com.senpure.io.server.consumer.handler.SCHeartMessageHandler;
+import com.senpure.io.server.consumer.handler.SCHeartMessageHandlerImpl;
 import com.senpure.io.server.consumer.handler.SCInnerErrorMessageHandler;
+import com.senpure.io.server.consumer.handler.SCInnerErrorMessageHandlerImpl;
 import com.senpure.io.server.protocol.message.SCHeartMessage;
 import com.senpure.io.server.protocol.message.SCInnerErrorMessage;
 import com.senpure.io.server.support.annotation.ConditionalOnMissingMessageHandler;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 
 /**
@@ -16,14 +19,14 @@ import org.springframework.context.annotation.Bean;
 public class ConsumerMessageHandlerAutoConfiguration {
 
     @Bean
-    @ConditionalOnMissingMessageHandler(SCInnerErrorMessage.MESSAGE_ID)
+    @ConditionalOnMissingBean(SCInnerErrorMessageHandler.class)
     public SCInnerErrorMessageHandler scInnerErrorMessageHandler() {
-        return new SCInnerErrorMessageHandler();
+        return new SCInnerErrorMessageHandlerImpl();
     }
 
     @Bean
-    @ConditionalOnMissingMessageHandler(SCHeartMessage.MESSAGE_ID)
+    @ConditionalOnMissingBean(SCHeartMessageHandler.class)
     public SCHeartMessageHandler scHeartMessageHandler() {
-        return new SCHeartMessageHandler();
+        return new SCHeartMessageHandlerImpl();
     }
 }

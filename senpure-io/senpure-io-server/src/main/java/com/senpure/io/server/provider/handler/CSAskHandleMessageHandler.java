@@ -20,16 +20,18 @@ import java.util.Arrays;
  */
 public class CSAskHandleMessageHandler extends AbstractInnerMessageHandler<CSAskHandleMessage> {
 
+    @SuppressWarnings("rawtypes")
     @Override
     public void execute(Channel channel, long token, long userId, CSAskHandleMessage message) {
-        ProviderMessageHandler<?> producerMessageHandler = ProviderMessageHandlerUtil.getHandler(message.getFromMessageId());
-        ProviderAskMessageHandler<?> askMessageHandler;
+        ProviderMessageHandler producerMessageHandler = ProviderMessageHandlerUtil.getHandler(message.getFromMessageId());
+        ProviderAskMessageHandler askMessageHandler;
         ProviderAskMessageHandler.Answer answer = null;
         if (producerMessageHandler instanceof ProviderAskMessageHandler) {
-            askMessageHandler = (ProviderAskMessageHandler<?>) producerMessageHandler;
+            askMessageHandler = (ProviderAskMessageHandler) producerMessageHandler;
 
             Message emptyMessage = askMessageHandler.getEmptyMessage();
-            ByteBuf buf = Unpooled.buffer(message.getData().length);
+           // ByteBuf buf = Unpooled.buffer(message.getData().length);
+            ByteBuf buf  =  Unpooled.copiedBuffer(message.getData());
             emptyMessage.read(buf, buf.writerIndex());
             answer = askMessageHandler.ask(emptyMessage);
         } else {

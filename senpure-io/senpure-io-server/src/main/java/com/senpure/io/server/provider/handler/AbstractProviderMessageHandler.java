@@ -49,9 +49,9 @@ public abstract class AbstractProviderMessageHandler<T extends Message> implemen
 //    }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         ProviderMessageHandlerUtil.regMessageHandler(this);
-
+        logger.info("gatewayManager {}",gatewayManager);
     }
 
 

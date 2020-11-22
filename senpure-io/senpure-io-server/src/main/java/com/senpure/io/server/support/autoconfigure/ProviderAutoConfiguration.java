@@ -12,6 +12,8 @@ import com.senpure.io.server.provider.handler.CSBreakUserGatewayMessageHandler;
 import com.senpure.io.server.provider.handler.ProviderMessageHandler;
 import com.senpure.io.server.support.ProducerServerStarter;
 import io.netty.util.concurrent.DefaultThreadFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -30,6 +32,7 @@ import javax.annotation.Resource;
 
 public class ProviderAutoConfiguration {
 
+    private Logger logger = LoggerFactory.getLogger(getClass());
     private TaskLoopGroup taskLoopGroup;
 
     private void check(ServerProperties serverProperties) {
@@ -69,6 +72,7 @@ public class ProviderAutoConfiguration {
 
     @Bean
     public GatewayManager gatewayManager() {
+        logger.info("bean gatewayManager");
         return new GatewayManager();
     }
 

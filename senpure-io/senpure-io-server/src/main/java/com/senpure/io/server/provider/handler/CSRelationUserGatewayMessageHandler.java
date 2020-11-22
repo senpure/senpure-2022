@@ -42,6 +42,7 @@ public class CSRelationUserGatewayMessageHandler extends AbstractInnerMessageHan
 
     }
 
+
     @Override
     public int handleMessageId() {
         return CSRelationUserGatewayMessage.MESSAGE_ID;

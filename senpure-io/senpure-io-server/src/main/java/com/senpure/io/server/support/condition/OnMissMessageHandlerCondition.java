@@ -20,6 +20,7 @@ import java.util.Map;
  * @time 2020-06-11 14:14:34
  */
 
+@Deprecated
 public class OnMissMessageHandlerCondition extends SpringBootCondition {
     @Override
     @SuppressWarnings("rawtypes")
@@ -33,6 +34,7 @@ public class OnMissMessageHandlerCondition extends SpringBootCondition {
            // Integer messageId = attributes.getNumber("messageId");
             Integer messageId = annotation.getInt("messageId");
             ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
+
             if (beanFactory != null) {
                 Map<String, MessageHandler> handlerMap = beanFactory.
                         getBeansOfType(MessageHandler.class,true,false);

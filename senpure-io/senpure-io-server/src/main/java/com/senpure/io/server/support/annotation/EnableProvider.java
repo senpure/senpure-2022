@@ -23,19 +23,19 @@ import java.lang.annotation.Target;
 @Documented
 @EnableConfigurationProperties({ServerProperties.class})
 @Import({ProviderAutoConfiguration.class,
-        BreakUserSelector.class,
+       // BreakUserSelector.class,
         ProviderMessageHandlerAutoConfiguration.class})
 public @interface EnableProvider {
-    /**
-     * 注册断开处理器
-     *
-     * @return
-     */
-    @AliasFor("value")
-    boolean breakUser() default true;
-
-    @AliasFor(value = "breakUser")
-    boolean value() default true;
+//    /**
+//     * 注册断开处理器
+//     *
+//     * @return
+//     */
+//    @AliasFor("value")
+//    boolean breakUser() default true;
+//
+//    @AliasFor(value = "breakUser")
+//    boolean value() default true;
 
 
 }

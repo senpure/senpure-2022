@@ -1,7 +1,6 @@
 package com.senpure.reload.bytebuddy;
 
 import com.senpure.base.AppEvn;
-import com.sun.org.apache.bcel.internal.generic.InstructionConst;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.agent.ByteBuddyAgent;
 import net.bytebuddy.asm.AsmVisitorWrapper;
@@ -101,7 +100,7 @@ public class Boot {
         public void visitInsn(int opcode) {
           ;
 
-            System.out.println("visitInsn "+ "opcode = " +  InstructionConst.getInstruction(opcode).toString(true));
+           // System.out.println("visitInsn "+ "opcode = " +  InstructionConst.getInstruction(opcode).toString(true));
             super.visitInsn(opcode);
         }
     }

@@ -392,15 +392,16 @@ public abstract class CompressBean implements Bean {
         return tagVar32Size + computeStringSize(value);
     }
 
-    public static int computeStringSize(int tagVar32Size, String value,Charset charset) {
-        return tagVar32Size + computeStringSize(value,charset);
+    public static int computeStringSize(int tagVar32Size, String value, Charset charset) {
+        return tagVar32Size + computeStringSize(value, charset);
     }
+
     public static int computeStringSize(String value) {
 
-       return computeStringSize(value,StandardCharsets.UTF_8);
+        return computeStringSize(value, StandardCharsets.UTF_8);
     }
 
-    public static int computeStringSize(String value,Charset charset) {
+    public static int computeStringSize(String value, Charset charset) {
         byte[] bytes = value.getBytes(charset);
         return _computeVar32Size(bytes.length) + bytes.length;
     }
@@ -412,10 +413,11 @@ public abstract class CompressBean implements Bean {
         }
         return size;
     }
-    public static int computeStringSize(int tagVar32Size, List<String> values,Charset charset) {
+
+    public static int computeStringSize(int tagVar32Size, List<String> values, Charset charset) {
         int size = 0;
         for (String value : values) {
-            size += computeStringSize(tagVar32Size, value,charset);
+            size += computeStringSize(tagVar32Size, value, charset);
         }
         return size;
     }
@@ -425,7 +427,7 @@ public abstract class CompressBean implements Bean {
     }
 
     public static int computeBytesSize(byte[] value) {
-        return value.length;
+        return _computeVar32Size(value.length) + value.length;
     }
 
     public static int computeBeanSize(int tagVar32Size, Bean value) {
@@ -610,7 +612,6 @@ public abstract class CompressBean implements Bean {
             return (value & -9223372036854775808L) == 0L ? 9 : 10;
         }
     }
-
 
 
     public static void append(StringBuilder sb, Bean value, String indent, String nextIndent) {
