@@ -1,6 +1,13 @@
 package com.senpure.io.generator.reader;
 
 import com.senpure.base.AppEvn;
+import com.senpure.io.antlr.IoLexer;
+import com.senpure.io.antlr.IoParser;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.Lexer;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,10 +24,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class IoReader {
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private static class Inner {
-        private static IoReader ioReader = new IoReader();
+        private static final IoReader ioReader = new IoReader();
 
     }
 
@@ -77,9 +84,28 @@ public class IoReader {
     }
 
     public static void main(String[] args) {
-        AppEvn.markClassRootPath();
-        AppEvn.installAnsiConsole();
-        IoReader.getInstance().read(new File(AppEvn.getClassRootPath(), "hello.io"));
+       // AppEvn.markClassRootPath();
+      //  AppEvn.installAnsiConsole();
+        //IoReader.getInstance().read(new File(AppEvn.getClassRootPath(), "hello.io"));
+
+        String str="bean IdName {\n" +
+                "    int    id          = 1;               //消息id\n" +
+                "    String messageName = 2;               //有意义的字符串\n" +
+                "}\n";
+        str=" int    id          = 1//8888";
+        CharStream input=  CharStreams.fromString(str);
+        Lexer lexer = new IoLexer(input);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+
+
+
+        IoParser parser = new IoParser(tokens);
+
+
+        System.out.println("--------");
+        System.out.println(parser.field().getText());
+        System.out.println("--------");
+
     }
 
 }

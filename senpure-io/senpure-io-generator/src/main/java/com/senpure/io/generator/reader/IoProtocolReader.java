@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -560,7 +561,7 @@ public class IoProtocolReader extends IoBaseListener {
             this.filePath = file.getPath();
             this.ioProtocolReaderMap = ioReader.getIoProtocolReaderMap();
             this.ioErrorListener = new IoErrorListener(filePath);
-            read(CharStreams.fromFileName(file.getAbsolutePath(), Charset.forName("utf-8")));
+            read(CharStreams.fromFileName(file.getAbsolutePath(), StandardCharsets.UTF_8));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -584,6 +585,9 @@ public class IoProtocolReader extends IoBaseListener {
 
     }
 
+    protected void read(CharStream input,boolean a) {
+
+    }
 
     protected boolean canWalk() {
         return !isSyntaxError();
