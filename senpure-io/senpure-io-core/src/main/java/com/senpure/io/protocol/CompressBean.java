@@ -16,10 +16,10 @@ import java.util.function.Function;
  */
 public abstract class CompressBean implements Bean {
 
-    public static final int WIRETYPE_VARINT = 0;
-    public static final int WIRETYPE_FIXED32 = 1;
-    public static final int WIRETYPE_FIXED64 = 2;
-    public static final int WIRETYPE_LENGTH_DELIMITED = 3;
+    public static final int WIRE_TYPE_VARINT = 0;
+    public static final int WIRE_TYPE_FIXED32 = 1;
+    public static final int WIRE_TYPE_FIXED64 = 2;
+    public static final int WIRE_TYPE_LENGTH_DELIMITED = 3;
 
     public static int encodeZigZag32(int value) {
         return value << 1 ^ value >> 31;

@@ -182,7 +182,7 @@ function ${bean.lua.namespace}.${bean.lua.name}:read(buf,endIndex)
     <#if field.hasExplain>
         -- ${field.explain}
     </#if>
-        -- ${field.index} << 3 | ${field.writeType}
+        -- ${field.index} << 3 | ${field.wireType}
         [${field.tag}] = function ()
     <#if field.list>
         <#if field.baseField>

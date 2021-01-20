@@ -22,7 +22,7 @@ public class Field {
 
     private String javaType;
     private int index=0;
-    private int writeType;
+    private int wireType;
     private int tag;
     private Location typeLocation=new Location();
     private Location nameLocation = new Location();
@@ -145,12 +145,12 @@ public class Field {
         this.javaType = javaType;
     }
 
-    public int getWriteType() {
-        return writeType;
+    public int getWireType() {
+        return wireType;
     }
 
-    public void setWriteType(int writeType) {
-        this.writeType = writeType;
+    public void setWireType(int wireType) {
+        this.wireType = wireType;
     }
 
     public boolean isBytes() {

@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -289,20 +288,20 @@ public class IoProtocolReader extends IoBaseListener {
             bean.setFieldMaxLen(fieldLen);
         }
         if (field.isBaseField()) {
-            field.setWriteType(ProtocolUtil.getWriteType(field.getFieldType()));
+            field.setWireType(ProtocolUtil.getWireType(field.getFieldType()));
             field.setJavaType(ProtocolUtil.getJavaType(field.getFieldType()));
             field.setListPacked(ProtocolUtil.isListPacked(field.getFieldType()));
             if (field.getFieldType().equals(ProtocolUtil.BYTES_FIELD_TYPE)) {
                 field.setBytes(true);
             }
             if (field.isList()&&field.isListPacked()) {
-                field.setWriteType(ProtocolUtil.WIRETYPE_LENGTH_DELIMITED);
+                field.setWireType(ProtocolUtil.WIRE_TYPE_LENGTH_DELIMITED);
             }
-            field.setTag(field.getIndex() << 3 | field.getWriteType());
+            field.setTag(field.getIndex() << 3 | field.getWireType());
         } else {
             field.setJavaType(field.getFieldType());
-            field.setWriteType(ProtocolUtil.WIRETYPE_LENGTH_DELIMITED);
-            field.setTag(field.getIndex() << 3 | ProtocolUtil.WIRETYPE_LENGTH_DELIMITED);
+            field.setWireType(ProtocolUtil.WIRE_TYPE_LENGTH_DELIMITED);
+            field.setTag(field.getIndex() << 3 | ProtocolUtil.WIRE_TYPE_LENGTH_DELIMITED);
         }
         logger.debug("{} {} {}", bean.getType(), bean.getName(), field);
     }

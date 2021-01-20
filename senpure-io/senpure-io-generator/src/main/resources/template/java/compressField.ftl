@@ -133,7 +133,7 @@
 <#if field.hasExplain>
                 //${field.explain}
 </#if>
-                case ${field.tag}:// ${field.index} << 3 | ${field.writeType}
+                case ${field.tag}:// ${field.index} << 3 | ${field.wireType}
     <#if field.list>
         <#if field.baseField>
             <#if field.listPacked>
