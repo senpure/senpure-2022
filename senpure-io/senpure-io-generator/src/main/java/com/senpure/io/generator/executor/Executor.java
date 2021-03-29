@@ -32,10 +32,10 @@ import java.util.Map;
  */
 public class Executor {
 
-    private Configuration cfg;
+    private final Configuration cfg;
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
-    private ExecutorContext context;
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final ExecutorContext context;
 
     public Executor(ExecutorContext context) {
         this.context = context;
@@ -74,6 +74,7 @@ public class Executor {
         return check;
     }
 
+    @SuppressWarnings({"unchecked","rawtypes"})
     public void generate() {
         if (!check()) {
             CheckUtil.closeCheck();

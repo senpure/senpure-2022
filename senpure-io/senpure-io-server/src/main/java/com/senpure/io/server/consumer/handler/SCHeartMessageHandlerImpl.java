@@ -17,12 +17,12 @@ public class SCHeartMessageHandlerImpl extends AbstractConsumerMessageHandler<SC
     }
 
     @Override
-    public SCHeartMessage getEmptyMessage() {
+    public SCHeartMessage newEmptyMessage() {
         return new SCHeartMessage();
     }
 
     @Override
-    public int handleMessageId() {
+    public int messageId() {
         return SCHeartMessage.MESSAGE_ID;
     }
 }

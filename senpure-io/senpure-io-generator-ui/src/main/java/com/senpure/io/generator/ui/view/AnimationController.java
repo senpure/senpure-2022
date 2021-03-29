@@ -1,6 +1,6 @@
 package com.senpure.io.generator.ui.view;
 
-import de.felixroske.jfxsupport.FXMLController;
+
 import javafx.animation.PathTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -23,7 +23,7 @@ import java.util.ResourceBundle;
  * @author senpure
  * @time 2019-07-11 17:30:11
  */
-@FXMLController
+
 public class AnimationController implements Initializable {
 
     private Logger logger = LoggerFactory.getLogger(getClass());

@@ -1,6 +1,6 @@
 package com.senpure.io.generator.executor;
 
-import com.senpure.io.generator.habit.*;
+import com.senpure.io.generator.habit.LanguageConfig;
 import com.senpure.io.generator.model.Bean;
 import com.senpure.io.generator.model.Enum;
 import com.senpure.io.generator.model.Event;

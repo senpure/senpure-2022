@@ -4,7 +4,16 @@ package com.senpure.io.server.direct;
 import com.senpure.base.util.Assert;
 import com.senpure.io.protocol.CompressBean;
 import com.senpure.io.protocol.Message;
+import com.senpure.io.server.ChannelAttributeUtil;
+import com.senpure.io.server.Constant;
+import com.senpure.io.server.MessageDecoder;
+import com.senpure.io.server.MessageDecoderContext;
+import com.senpure.io.server.protocol.message.SCInnerErrorMessage;
+import com.senpure.io.server.provider.ProviderReceiveMessage;
+import com.senpure.io.server.provider.ProviderSendMessage;
+import com.senpure.io.server.support.MessageIdReader;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import org.slf4j.Logger;
@@ -14,8 +23,14 @@ import java.util.List;
 
 
 public class DirectMessageDecoder extends ByteToMessageDecoder {
-    protected Logger logger = LoggerFactory.getLogger(getClass());
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
+
+    private final MessageDecoderContext decoderContext;
+
+    public DirectMessageDecoder(MessageDecoderContext decoderContext) {
+        this.decoderContext = decoderContext;
+    }
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
@@ -33,29 +48,52 @@ public class DirectMessageDecoder extends ByteToMessageDecoder {
             this.logger.trace("数据不够一个数据包 packageLength ={} ,readableBytes={}", packageLength, in.readableBytes());
             in.resetReaderIndex();
         } else {
-            int endIndex = readerIndex + packageLength;
+            int maxIndex = readerIndex + packageLength;
             int requestId = CompressBean.readVar32(in);
             int messageId = CompressBean.readVar32(in);
-            DirectMessage frame = new DirectMessage();
-            frame.setRequestId(requestId);
-            frame.setMessageId(messageId);
-            Message message = DirectMessageHandlerUtil.getEmptyMessage(messageId);
-            if (message == null) {
+
+            MessageDecoder<?> decoder = decoderContext.decoder(messageId);
+            if (decoder == null) {
                 int headSize = CompressBean.computeVar32Size(requestId) + CompressBean.computeVar32Size(messageId);
                 int messageLength = packageLength - headSize;
                 in.skipBytes(messageLength);
-                logger.warn("没有找到消息处理程序 messageId {}", messageId);
+                logger.warn("没有找到消息解码程序 messageId {}", messageId);
+
+                Channel channel = ctx.channel();
+                SCInnerErrorMessage errorMessage = new SCInnerErrorMessage();
+                errorMessage.setCode(Constant.ERROR_NOT_HANDLE_REQUEST);
+                errorMessage.getArgs().add(String.valueOf(messageId));
+                errorMessage.setMessage("服务器没有处理程序:" + MessageIdReader.read(messageId));
+
+                ProviderSendMessage frame = new ProviderSendMessage();
+                frame.setRequestId(requestId);
+                frame.setMessageId(messageId);
+                frame.setToken(ChannelAttributeUtil.getToken(channel));
+                frame.setMessage(errorMessage);
+                channel.writeAndFlush(frame);
+
             } else {
                 try {
-                    message.read(in, endIndex);
+                    Message message = decoder.decode(in,maxIndex);
+                    ProviderReceiveMessage frame = new ProviderReceiveMessage();
+                    frame.setRequestId(requestId);
+                    frame.setMessageId(messageId);
+                    Channel channel = ctx.channel();
+                    long token = ChannelAttributeUtil.getToken(channel);
+                    Long userId = ChannelAttributeUtil.getUserId(channel);
+                    if (userId != null) {
+                        frame.setUserId(userId);
+                    }
+                    frame.setToken(token);
                     frame.setMessage(message);
+                    out.add(frame);
                 } catch (Exception e) {
                     ctx.close();
-                    logger.debug("二进制转换为消息失败 messageId {}, message {}", messageId, message);
+                    logger.debug("二进制转换为消息失败 messageId {}", messageId);
                     logger.error("error", e);
                 }
             }
-            out.add(frame);
+
         }
     }
 

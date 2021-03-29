@@ -28,7 +28,7 @@ public class SCRelationUserGatewayMessage extends CompressMessage {
      */
     @Override
     public void write(ByteBuf buf) {
-        getSerializedSize();
+        serializedSize();
         //channel token
         writeVar64(buf, 8, token);
         //userId
@@ -41,9 +41,9 @@ public class SCRelationUserGatewayMessage extends CompressMessage {
      * 读取字节缓存
      */
     @Override
-    public void read(ByteBuf buf, int endIndex) {
+    public void read(ByteBuf buf, int maxIndex) {
         while (true) {
-            int tag = readTag(buf, endIndex);
+            int tag = readTag(buf, maxIndex);
             switch (tag) {
                 case 0://end
                     return;
@@ -69,7 +69,7 @@ public class SCRelationUserGatewayMessage extends CompressMessage {
     private int serializedSize = -1;
 
     @Override
-    public int getSerializedSize() {
+    public int serializedSize() {
         int size = serializedSize;
         if (size != -1) {
             return size;
@@ -140,7 +140,7 @@ public class SCRelationUserGatewayMessage extends CompressMessage {
     }
 
     @Override
-    public int getMessageId() {
+    public int messageId() {
         return 108;
     }
 

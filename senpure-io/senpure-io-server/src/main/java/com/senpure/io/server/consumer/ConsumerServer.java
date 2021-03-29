@@ -3,6 +3,7 @@ package com.senpure.io.server.consumer;
 import com.senpure.base.AppEvn;
 import com.senpure.base.util.Assert;
 import com.senpure.io.server.ChannelAttributeUtil;
+import com.senpure.io.server.MessageDecoderContext;
 import com.senpure.io.server.ServerProperties;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -25,6 +26,12 @@ import java.util.concurrent.TimeUnit;
 
 public class ConsumerServer {
     protected static Logger logger = LoggerFactory.getLogger(ConsumerServer.class);
+
+    private static EventLoopGroup group;
+    private static Bootstrap bootstrap;
+    private static final Object groupLock = new Object();
+
+    private static int serverRefCont = 0;
     private ServerProperties.Consumer properties;
 
     private ChannelFuture channelFuture;
@@ -37,19 +44,18 @@ public class ConsumerServer {
     private RemoteServerManager remoteServerManager;
     private boolean addLoggingHandler = true;
 
-    private List<ChannelHandler> extHandlers = new ArrayList<>();
+    private final List<ChannelHandler> extHandlers = new ArrayList<>();
 
-    private static EventLoopGroup group;
-    private static Bootstrap bootstrap;
-    private static final Object groupLock = new Object();
 
-    private static int serverRefCont = 0;
+    private MessageDecoderContext decoderContext;
+
 
 
     public final boolean start(String host, int port) {
         Assert.notNull(remoteServerManager);
         Assert.notNull(properties);
         Assert.notNull(messageExecutor);
+        Assert.notNull(decoderContext);
         // Configure SSL.
         if (group == null || group.isShuttingDown() || group.isShutdown()) {
             synchronized (groupLock) {
@@ -76,7 +82,7 @@ public class ConsumerServer {
                                     if (finalSslCtx != null) {
                                         p.addLast(finalSslCtx.newHandler(ch.alloc(), host, port));
                                     }
-                                    p.addLast(new ConsumerMessageDecoder());
+                                    p.addLast(new ConsumerMessageDecoder(decoderContext));
                                     p.addLast(new ConsumerMessageEncoder());
                                     if (addLoggingHandler) {
                                         p.addLast(new ConsumerLoggingHandler(LogLevel.DEBUG, properties.isInFormat(), properties.isOutFormat()));
@@ -198,6 +204,10 @@ public class ConsumerServer {
 
     public void addExtHandler(ChannelHandler extHandler) {
         extHandlers.add(extHandler);
+    }
+
+    public void setDecoderContext(MessageDecoderContext decoderContext) {
+        this.decoderContext = decoderContext;
     }
 
     public static void main(String[] args) {

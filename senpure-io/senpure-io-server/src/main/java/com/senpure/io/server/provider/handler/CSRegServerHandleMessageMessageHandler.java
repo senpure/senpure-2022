@@ -31,13 +31,18 @@ public class CSRegServerHandleMessageMessageHandler extends AbstractInnerMessage
 
     }
 
+    /**
+     * new 一个空对象
+     */
     @Override
-    public int handleMessageId() {
-        return CSRegServerHandleMessageMessage.MESSAGE_ID;
+    public CSRegServerHandleMessageMessage newEmptyMessage() {
+        return new CSRegServerHandleMessageMessage();
     }
 
     @Override
-    public CSRegServerHandleMessageMessage getEmptyMessage() {
-        return new CSRegServerHandleMessageMessage();
+    public int messageId() {
+        return CSRegServerHandleMessageMessage.MESSAGE_ID;
     }
+
+
 }

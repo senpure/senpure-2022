@@ -1,8 +1,8 @@
 package com.senpure.io.server.gateway.provider.handler;
 
 import com.senpure.io.server.ChannelAttributeUtil;
+import com.senpure.io.server.gateway.GatewayReceiveProviderMessage;
 import com.senpure.io.server.gateway.ProviderManager;
-import com.senpure.io.server.gateway.Server2GatewayMessage;
 import com.senpure.io.server.protocol.message.SCConsumerVerifyMessage;
 import io.netty.channel.Channel;
 
@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class SCConsumerVerifyMessageHandler extends AbstractProviderMessageHandler {
     @Override
-    public void execute(Channel channel, Server2GatewayMessage message) {
+    public void execute(Channel channel, GatewayReceiveProviderMessage message) {
         long userId = message.getUserIds()[0];
         Channel clientChannel = messageExecutor.prepLoginChannels.remove(message.getToken());
         if (clientChannel != null) {
@@ -26,7 +26,7 @@ public class SCConsumerVerifyMessageHandler extends AbstractProviderMessageHandl
             }
             ChannelAttributeUtil.setUserId(clientChannel, userId);
             messageExecutor.userClientChannel.put(userId, clientChannel);
-            for (Map.Entry<String, ProviderManager> entry : messageExecutor.producerManagerMap.entrySet()) {
+            for (Map.Entry<String, ProviderManager> entry : messageExecutor.providerManagerMap.entrySet()) {
                 ProviderManager providerManager = entry.getValue();
                 providerManager.afterUserAuthorize(token, userId);
 

@@ -20,7 +20,7 @@ public class Statistic extends CompressBean {
      */
     @Override
     public void write(ByteBuf buf) {
-        getSerializedSize();
+        serializedSize();
         //分数0-100
         writeVar32(buf, 8, score);
     }
@@ -29,9 +29,9 @@ public class Statistic extends CompressBean {
      * 读取字节缓存
      */
     @Override
-    public void read(ByteBuf buf, int endIndex) {
+    public void read(ByteBuf buf, int maxIndex) {
         while (true) {
-            int tag = readTag(buf, endIndex);
+            int tag = readTag(buf, maxIndex);
             switch (tag) {
                 case 0://end
                     return;
@@ -49,7 +49,7 @@ public class Statistic extends CompressBean {
     private int serializedSize = -1;
 
     @Override
-    public int getSerializedSize() {
+    public int serializedSize() {
         int size = serializedSize;
         if (size != -1) {
             return size;

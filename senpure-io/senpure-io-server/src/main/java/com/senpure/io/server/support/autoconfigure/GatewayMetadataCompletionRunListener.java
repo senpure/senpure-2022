@@ -50,8 +50,8 @@ public class GatewayMetadataCompletionRunListener extends AbstractRootApplicatio
         Class<?> bootClass = AppEvn.getStartClass();
         EnableGateway enableGateway = bootClass.getAnnotation(EnableGateway.class);
         if (enableGateway != null) {
-            Integer cs = environment.getProperty("server.io.gateway.cs-port", Integer.class);
-            Integer sc = environment.getProperty("server.io.gateway.sc-port", Integer.class);
+            Integer cs = environment.getProperty("server.io.gateway.csPort", Integer.class);
+            Integer sc = environment.getProperty("server.io.gateway.scPort", Integer.class);
             ServerProperties serverProperties = new ServerProperties();
             ServerProperties.Gateway gateway = serverProperties.getGateway();
             if (cs == null) {
@@ -67,13 +67,13 @@ public class GatewayMetadataCompletionRunListener extends AbstractRootApplicatio
                 return;
             }
             Map<String, Object> map = new HashMap<>();
-            map.put("eureka.instance.metadata-map.cs-port", cs);
-            map.put("eureka.instance.metadata-map.sc-port", sc);
+            map.put("eureka.instance.metadata-map.csPort", cs);
+            map.put("eureka.instance.metadata-map.scPort", sc);
             PropertySource<?> propertySource = new MapPropertySource("gatewayMetadataMap", map);
             boolean add = true;
             for (PropertySource<?> temp : environment.getPropertySources()) {
-                if (temp.containsProperty("eureka.instance.metadata-map.cs-port")
-                        || temp.containsProperty("eureka.instance.metadata-map.sc-port")) {
+                if (temp.containsProperty("eureka.instance.metadata-map.csPort")
+                        || temp.containsProperty("eureka.instance.metadata-map.scPort")) {
                     if (temp instanceof OriginTrackedMapPropertySource) {
                         add = false;
                         environment.getPropertySources().addBefore(temp.getName(), propertySource);

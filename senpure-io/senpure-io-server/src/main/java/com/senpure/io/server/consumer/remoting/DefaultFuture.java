@@ -25,7 +25,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class DefaultFuture implements ResponseFuture {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultFuture.class);
-    private static Map<Integer, DefaultFuture> FUTURES = new ConcurrentHashMap<>();
+    private static final Map<Integer, DefaultFuture> FUTURES = new ConcurrentHashMap<>();
 
 
     private final int requestId;
@@ -47,7 +47,7 @@ public class DefaultFuture implements ResponseFuture {
     public DefaultFuture(ConsumerMessage frame, Channel channel, int timeout) {
 
         this.requestId = frame.getRequestId();
-        this.messageId = frame.getMessage().getMessageId();
+        this.messageId = frame.getMessage().messageId();
         this.timeout = timeout;
         this.channel = channel;
         FUTURES.put(requestId, this);

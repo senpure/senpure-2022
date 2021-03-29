@@ -10,7 +10,6 @@ public interface Event extends Bean {
     /**
      * 事件唯一标识
      *
-     * @return
      */
-    int getEventId();
+    int eventId();
 }

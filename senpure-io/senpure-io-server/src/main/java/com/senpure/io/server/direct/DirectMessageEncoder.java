@@ -1,31 +1,17 @@
 package com.senpure.io.server.direct;
 
 
-import com.senpure.io.protocol.CompressBean;
-import com.senpure.io.protocol.Message;
+import com.senpure.io.server.AbstractMessageEncoder;
+import com.senpure.io.server.provider.ProviderSendMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.MessageToByteEncoder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class DirectMessageEncoder extends MessageToByteEncoder<DirectMessage> {
-    protected Logger logger = LoggerFactory.getLogger(getClass());
+public class DirectMessageEncoder extends AbstractMessageEncoder<ProviderSendMessage> {
 
 
-    //包长int ,消息Id int, 二进制数据
     @Override
-    protected void encode(ChannelHandlerContext channelHandlerContext, DirectMessage frame, ByteBuf out) throws Exception {
-        Message message = frame.getMessage();
-        int headLength = CompressBean.computeVar32Size(frame.getRequestId());
-        headLength += CompressBean.computeVar32Size(message.getMessageId());
-        int packageLength = headLength + message.getSerializedSize();
-        out.ensureWritable(CompressBean.computeVar32Size(packageLength) + packageLength);
-        CompressBean.writeVar32(out, packageLength);
-        CompressBean.writeVar32(out, frame.getRequestId());
-        CompressBean.writeVar32(out, message.getMessageId());
-        message.write(out);
+    protected void encode(ChannelHandlerContext channelHandlerContext, ProviderSendMessage message, ByteBuf byteBuf) {
+
+        encode(byteBuf, message.getRequestId(), message.getMessage());
     }
-
-
 }

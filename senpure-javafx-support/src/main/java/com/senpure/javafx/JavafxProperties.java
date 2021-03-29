@@ -12,7 +12,8 @@ import java.util.Locale;
  * @time 2020-06-19 14:46:45
  */
 public class JavafxProperties {
-
+    public static final String DEFAULT_BASENAME = "i18n/app";
+    public static final String DEFAULT_CSS = "app.css";
     /**
      * 应用标题支持%国际化,优先级低于view中的配置
      */

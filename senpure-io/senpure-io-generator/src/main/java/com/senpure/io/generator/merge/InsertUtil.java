@@ -1,6 +1,8 @@
 package com.senpure.io.generator.merge;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 
 /**
  * InsertUtil

@@ -193,7 +193,7 @@ public class IoProtocolReader extends IoBaseListener {
 
     @Override
     public void enterMessageId(IoParser.MessageIdContext ctx) {
-        message.setId(Integer.valueOf(ctx.getText()));
+        message.setId(Integer.parseInt(ctx.getText()));
     }
 
     @Override
@@ -240,7 +240,7 @@ public class IoProtocolReader extends IoBaseListener {
 
     @Override
     public void enterFieldIndex(IoParser.FieldIndexContext ctx) {
-        field.setIndex(Integer.valueOf(ctx.getText()));
+        field.setIndex(Integer.parseInt(ctx.getText()));
     }
 
     @Override

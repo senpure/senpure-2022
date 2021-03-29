@@ -36,6 +36,7 @@ public class JavafxSpringBootApplication extends Application {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private static String[] args;
+
     private static Class<? extends JavafxView> primaryView;
     private static Class<?> primarySource;
     private static final List<Image> icons = new ArrayList<>();
@@ -45,11 +46,11 @@ public class JavafxSpringBootApplication extends Application {
     private static SpringBefore springBefore;
 
 
+
+
     public static void launch(Class<? extends Application> primarySource, Class<? extends JavafxView> primaryView, String[] args) {
         launch(primarySource, primaryView, new SpringBefore(), args);
     }
-
-
     public static void launch(Class<? extends Application> primarySource, Class<? extends JavafxView> primaryView, SpringBefore springBefore, String[] args) {
         AppEvn.markClassRootPath(primarySource);
         if (springBefore.isInstallAnsiConsole()) {
@@ -61,7 +62,6 @@ public class JavafxSpringBootApplication extends Application {
         JavafxSpringBootApplication.springBefore = springBefore;
         launch(primarySource, args);
     }
-
     @Override
     public void init() {
         defaultIcons.addAll(loadDefaultIcons());
@@ -147,7 +147,7 @@ public class JavafxSpringBootApplication extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) throws Exception {
         //  Class<?> primarySource
         Javafx.setPrimaryStage(primaryStage);
         Javafx.setHostServices(getHostServices());

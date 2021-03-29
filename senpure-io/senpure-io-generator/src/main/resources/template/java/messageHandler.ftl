@@ -1,7 +1,7 @@
 package ${javaHandlerPackage};
 
 import ${javaPackage}.${javaName};
-import com.senpure.io.consumer.handler.AbstractProducerMessageHandler;
+import com.senpure.io.server.provider.handler.AbstractProviderMessageHandler;
 import io.netty.channel.Channel;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +12,7 @@ ${sovereignty}
  * @time ${.now?datetime}
  */
 @Component
-public class ${javaHandlerName} extends AbstractProducerMessageHandler<${javaName}> {
+public class ${javaHandlerName} extends AbstractProviderMessageHandler<${javaName}> {
 
     @Override
     public void execute(Channel channel, long token, long userId, ${javaName} message) {
@@ -21,13 +21,13 @@ public class ${javaHandlerName} extends AbstractProducerMessageHandler<${javaNam
     }
 
     @Override
-    public int handlerId() {
+    public int messageId() {
                 //${.now?datetime} ${id?c}
         return ${javaName}.MESSAGE_ID;
     }
 
     @Override
-    public ${javaName} getEmptyMessage() {
+    public ${javaName} newEmptyMessage() {
         return new ${javaName}();
     }
 }

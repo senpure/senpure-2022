@@ -1,15 +1,15 @@
 package com.senpure.io.server.gateway.provider.handler;
 
 import com.senpure.io.server.ChannelAttributeUtil;
-import com.senpure.io.server.gateway.Server2GatewayMessage;
+import com.senpure.io.server.gateway.GatewayReceiveProviderMessage;
 import com.senpure.io.server.protocol.message.SCKickOffMessage;
 import io.netty.channel.Channel;
 
 public class SCKickOffMessageHandler extends  AbstractProviderMessageHandler{
     @Override
-    public void execute(Channel channel, Server2GatewayMessage server2GatewayMessage) {
+    public void execute(Channel channel, GatewayReceiveProviderMessage gatewayReceiveProviderMessage) {
         SCKickOffMessage message = new SCKickOffMessage();
-        messageExecutor.readMessage(message, server2GatewayMessage);
+        messageExecutor.readMessage(message, gatewayReceiveProviderMessage);
         long tempUserId = message.getUserId();
         Channel userChannel = null;
         if (tempUserId > 0) {

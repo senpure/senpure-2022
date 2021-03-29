@@ -20,7 +20,8 @@ import com.senpure.io.generator.ui.model.ProtocolData;
 import com.senpure.io.generator.util.CheckUtil;
 import com.senpure.io.generator.util.NoteUtil;
 import com.senpure.io.generator.util.TemplateUtil;
-import de.felixroske.jfxsupport.FXMLController;
+import com.senpure.javafx.Controller;
+import com.senpure.javafx.JavafxView;
 import javafx.animation.PathTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -55,8 +56,8 @@ import java.util.function.Consumer;
  * @author senpure
  * @time 2019-07-05 14:19:11
  */
-@FXMLController
-public class MainController implements Initializable {
+@Controller
+public class MainController implements Initializable , JavafxView {
 
 
     private Logger logger = LoggerFactory.getLogger(getClass());

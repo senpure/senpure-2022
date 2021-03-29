@@ -31,7 +31,7 @@ public class ${name} extends CompressMessage {
 <#include "compressField.ftl">
 
     @Override
-    public int getMessageId() {
+    public int messageId() {
         return ${id?c};
     }
 <#include "toString.ftl">

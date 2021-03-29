@@ -17,7 +17,7 @@ public class WaitRelationTask {
     private long relationTime;
     private final long maxDelay = 5000;
 
-    private Client2GatewayMessage message;
+    private GatewayReceiveConsumerMessage message;
 
     private Provider provider;
 
@@ -64,11 +64,11 @@ public class WaitRelationTask {
     }
 
 
-    public Client2GatewayMessage getMessage() {
+    public GatewayReceiveConsumerMessage getMessage() {
         return message;
     }
 
-    public void setMessage(Client2GatewayMessage message) {
+    public void setMessage(GatewayReceiveConsumerMessage message) {
         this.message = message;
     }
 

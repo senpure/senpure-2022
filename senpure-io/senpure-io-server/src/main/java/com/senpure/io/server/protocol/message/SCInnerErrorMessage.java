@@ -3,8 +3,8 @@ package com.senpure.io.server.protocol.message;
 import com.senpure.io.protocol.CompressMessage;
 import io.netty.buffer.ByteBuf;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 服务器内部错误提示
@@ -34,7 +34,7 @@ public class SCInnerErrorMessage extends CompressMessage {
      */
     @Override
     public void write(ByteBuf buf) {
-        getSerializedSize();
+        serializedSize();
         //错误码
         if (code != null) {
             writeString(buf, 11, code);
@@ -53,9 +53,9 @@ public class SCInnerErrorMessage extends CompressMessage {
      * 读取字节缓存
      */
     @Override
-    public void read(ByteBuf buf, int endIndex) {
+    public void read(ByteBuf buf, int maxIndex) {
         while (true) {
-            int tag = readTag(buf, endIndex);
+            int tag = readTag(buf, maxIndex);
             switch (tag) {
                 case 0://end
                     return;
@@ -81,7 +81,7 @@ public class SCInnerErrorMessage extends CompressMessage {
     private int serializedSize = -1;
 
     @Override
-    public int getSerializedSize() {
+    public int serializedSize() {
         int size = serializedSize;
         if (size != -1) {
             return size;
@@ -162,7 +162,7 @@ public class SCInnerErrorMessage extends CompressMessage {
     }
 
     @Override
-    public int getMessageId() {
+    public int messageId() {
         return 100;
     }
 

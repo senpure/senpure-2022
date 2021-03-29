@@ -23,7 +23,7 @@ public class IdName extends CompressBean {
      */
     @Override
     public void write(ByteBuf buf) {
-        getSerializedSize();
+        serializedSize();
         //消息id
         writeVar32(buf, 8, id);
         //有意义的字符串
@@ -36,9 +36,9 @@ public class IdName extends CompressBean {
      * 读取字节缓存
      */
     @Override
-    public void read(ByteBuf buf, int endIndex) {
+    public void read(ByteBuf buf, int maxIndex) {
         while (true) {
-            int tag = readTag(buf, endIndex);
+            int tag = readTag(buf, maxIndex);
             switch (tag) {
                 case 0://end
                     return;
@@ -60,7 +60,7 @@ public class IdName extends CompressBean {
     private int serializedSize = -1;
 
     @Override
-    public int getSerializedSize() {
+    public int serializedSize() {
         int size = serializedSize;
         if (size != -1) {
             return size;

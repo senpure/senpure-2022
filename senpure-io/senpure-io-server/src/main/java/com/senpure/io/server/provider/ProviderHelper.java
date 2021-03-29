@@ -24,22 +24,22 @@ public class ProviderHelper {
 
     private static class RequestIdRunnable implements Runnable {
 
-        private Runnable runnable;
+        private final Runnable runnable;
 
-        private Integer requestId;
+        private final Integer requestId;
 
         public RequestIdRunnable(Runnable runnable) {
             this.runnable = runnable;
-            requestId = GatewayManager.getRequestId();
+            requestId = MessageSender.REQUEST_ID.get();
         }
 
         @Override
         public void run() {
-            GatewayManager.setRequestId(requestId);
+            MessageSender.REQUEST_ID.set(requestId);
             try {
                 runnable.run();
             } finally {
-                GatewayManager.clearRequestId();
+                MessageSender.REQUEST_ID.remove();
             }
 
         }

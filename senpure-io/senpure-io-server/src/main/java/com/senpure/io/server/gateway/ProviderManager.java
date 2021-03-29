@@ -35,7 +35,7 @@ public class ProviderManager {
     }
 
 
-    private final ConcurrentMap<Long, ProducerRelation> tokenProducerMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Long, ProviderRelation> tokenProviderMap = new ConcurrentHashMap<>();
 
     private final List<Provider> useProviders = new ArrayList<>();
 
@@ -46,34 +46,34 @@ public class ProviderManager {
 
 
     public void bind(Long token, Long relationToken, Provider provider) {
-        ProducerRelation producerRelation = new ProducerRelation();
-        producerRelation.provider = provider;
-        producerRelation.relationToken = relationToken;
-        ProducerRelation old = tokenProducerMap.put(token, producerRelation);
+        ProviderRelation providerRelation = new ProviderRelation();
+        providerRelation.provider = provider;
+        providerRelation.relationToken = relationToken;
+        ProviderRelation old = tokenProviderMap.put(token, providerRelation);
         if (old == null) {
             provider.getStatistic().consumerIncr();
         }
     }
 
 
-    public void sendMessage(Client2GatewayMessage client2GatewayMessage) {
-        ProducerRelation producerRelation = tokenProducerMap.get(client2GatewayMessage.getToken());
+    public void sendMessage(GatewayReceiveConsumerMessage gatewayReceiveConsumerMessage) {
+        ProviderRelation providerRelation = tokenProviderMap.get(gatewayReceiveConsumerMessage.getToken());
         Provider provider;
-        if (producerRelation == null) {
-            provider = nextProducer();
+        if (providerRelation == null) {
+            provider = nextProvider();
             if (provider == null) {
                 logger.warn("{}没有服务实例可以使用", serverName);
                 SCInnerErrorMessage errorMessage = new SCInnerErrorMessage();
                 errorMessage.setCode(Constant.ERROR_NOT_FOUND_SERVER);
-                errorMessage.getArgs().add(String.valueOf(client2GatewayMessage.getMessageId()));
-                errorMessage.setMessage("没有服务器处理" + MessageIdReader.read(client2GatewayMessage.getMessageId()));
-                messageExecutor.sendMessage2Consumer(client2GatewayMessage.getRequestId(), client2GatewayMessage.getToken(), errorMessage);
+                errorMessage.getArgs().add(String.valueOf(gatewayReceiveConsumerMessage.getMessageId()));
+                errorMessage.setMessage("没有服务器处理" + MessageIdReader.read(gatewayReceiveConsumerMessage.getMessageId()));
+                messageExecutor.sendMessage2Consumer(gatewayReceiveConsumerMessage.getRequestId(), gatewayReceiveConsumerMessage.getToken(), errorMessage);
             } else {
-                relationAndWaitSendMessage(provider, client2GatewayMessage);
+                relationAndWaitSendMessage(provider, gatewayReceiveConsumerMessage);
             }
 
         } else {
-            producerRelation.provider.sendMessage(client2GatewayMessage);
+            providerRelation.provider.sendMessage(gatewayReceiveConsumerMessage);
 
         }
     }
@@ -81,17 +81,17 @@ public class ProviderManager {
 
     public void sendMessage2Consumer(@Nullable String serverKey, int messageId, byte[] data) {
         if (serverKey != null) {
-            for (Map.Entry<Long, ProducerRelation> entry : tokenProducerMap.entrySet()) {
+            for (Map.Entry<Long, ProviderRelation> entry : tokenProviderMap.entrySet()) {
                 Long userToken = entry.getKey();
-                ProducerRelation producerRelation = entry.getValue();
-                Provider provider = producerRelation.provider;
+                ProviderRelation providerRelation = entry.getValue();
+                Provider provider = providerRelation.provider;
                 if (provider.getServerKey().equals(serverKey)) {
                     messageExecutor.sendMessage2Consumer(userToken, messageId, data);
                     break;
                 }
             }
         } else {
-            for (Map.Entry<Long, ProducerRelation> entry : tokenProducerMap.entrySet()) {
+            for (Map.Entry<Long, ProviderRelation> entry : tokenProviderMap.entrySet()) {
                 Long userToken = entry.getKey();
                 messageExecutor.sendMessage2Consumer(userToken, messageId, data);
 
@@ -102,33 +102,33 @@ public class ProviderManager {
     }
 
     /**
-     * @param provider
-     * @param relationToken
-     * @param client2GatewayMessage 可以为空
+     * @param provider provider
+     * @param relationToken relationToken
+     * @param message 可以为空
      */
     private void waitRelationTask(Provider provider,
                                   Long relationToken,
-                                  @Nullable Client2GatewayMessage client2GatewayMessage) {
+                                  @Nullable GatewayReceiveConsumerMessage message) {
         WaitRelationTask waitRelationTask = new WaitRelationTask();
         waitRelationTask.setRelationToken(relationToken);
-        waitRelationTask.setMessage(client2GatewayMessage);
+        waitRelationTask.setMessage(message);
         waitRelationTask.setProvider(provider);
         waitRelationTask.setProviderManager(this);
         messageExecutor.waitRelationMap.put(relationToken, waitRelationTask);
     }
 
-    public void relationAndWaitSendMessage(Provider provider, Client2GatewayMessage client2GatewayMessage) {
+    public void relationAndWaitSendMessage(Provider provider, GatewayReceiveConsumerMessage frame) {
         long relationToken = messageExecutor.idGenerator.nextId();
-        CSRelationUserGatewayMessage message = new CSRelationUserGatewayMessage();
-        message.setToken(client2GatewayMessage.getToken());
-        message.setUserId(client2GatewayMessage.getUserId());
-        message.setRelationToken(relationToken);
-        Client2GatewayMessage toMessage = messageExecutor.createMessage(message);
-        waitRelationTask(provider, relationToken, client2GatewayMessage);
+        CSRelationUserGatewayMessage relationUserGatewayMessage = new CSRelationUserGatewayMessage();
+        relationUserGatewayMessage.setToken(frame.getToken());
+        relationUserGatewayMessage.setUserId(frame.getUserId());
+        relationUserGatewayMessage.setRelationToken(relationToken);
+        GatewayReceiveConsumerMessage toMessage = messageExecutor.createMessage(relationUserGatewayMessage);
+        waitRelationTask(provider, relationToken, frame);
         provider.sendMessage(toMessage);
     }
 
-    protected Provider nextProducer() {
+    protected Provider nextProvider() {
         int size = useProviders.size();
         switch (size) {
             case 0:
@@ -150,7 +150,7 @@ public class ProviderManager {
     /**
      * 服务器掉线
      *
-     * @param channel
+     * @param channel channel
      */
     public synchronized void providerOffLine(Channel channel) {
         providerOffLine(channel, prepStopOldInstance);
@@ -173,15 +173,15 @@ public class ProviderManager {
     }
 
     public void afterUserAuthorize(long channelToken, long userId) {
-        ProducerRelation producerRelation = tokenProducerMap.get(channelToken);
-        if (producerRelation != null) {
-            logger.info("对 {} --> {} 进行userId关联", serverName, producerRelation.provider.getServerKey());
+        ProviderRelation providerRelation = tokenProviderMap.get(channelToken);
+        if (providerRelation != null) {
+            logger.info("对 {} --> {} 进行userId关联", serverName, providerRelation.provider.getServerKey());
             CSRelationUserGatewayMessage message = new CSRelationUserGatewayMessage();
             message.setUserId(userId);
-            message.setRelationToken(producerRelation.relationToken);
-            Client2GatewayMessage toMessage = messageExecutor.createMessage(message);
-            waitRelationTask(producerRelation.provider, producerRelation.relationToken, null);
-            producerRelation.provider.sendMessage(toMessage);
+            message.setRelationToken(providerRelation.relationToken);
+            GatewayReceiveConsumerMessage toMessage = messageExecutor.createMessage(message);
+            waitRelationTask(providerRelation.provider, providerRelation.relationToken, null);
+            providerRelation.provider.sendMessage(toMessage);
         }
     }
 
@@ -209,23 +209,23 @@ public class ProviderManager {
     }
 
     private void breakUserGateway(Channel consumerChannel, Long token, Long userId, String type, boolean localRemove) {
-        ProducerRelation producerRelation = localRemove ? tokenProducerMap.remove(token) : tokenProducerMap.get(token);
-        if (producerRelation != null) {
+        ProviderRelation providerRelation = localRemove ? tokenProviderMap.remove(token) : tokenProviderMap.get(token);
+        if (providerRelation != null) {
             if (localRemove) {
-                producerRelation.provider.getStatistic().consumerDecr();
+                providerRelation.provider.getStatistic().consumerDecr();
             }
             logger.info("{} {} 取消 对{} :token{} userId:{}的 关联  {}",
-                    serverName, producerRelation.provider.getServerKey(), consumerChannel, token, userId, localRemove ? "移除" : "不移除");
+                    serverName, providerRelation.provider.getServerKey(), consumerChannel, token, userId, localRemove ? "移除" : "不移除");
             CSBreakUserGatewayMessage breakUserGatewayMessage = new CSBreakUserGatewayMessage();
-            breakUserGatewayMessage.setRelationToken(producerRelation.relationToken);
+            breakUserGatewayMessage.setRelationToken(providerRelation.relationToken);
             breakUserGatewayMessage.setUserId(userId);
             breakUserGatewayMessage.setToken(localRemove ? token : 0);
             breakUserGatewayMessage.setType(type);
-            Client2GatewayMessage client2GatewayMessage = messageExecutor.createMessage(breakUserGatewayMessage);
-            client2GatewayMessage.setMessageId(breakUserGatewayMessage.getMessageId());
-            client2GatewayMessage.setUserId(breakUserGatewayMessage.getUserId());
-            client2GatewayMessage.setToken(breakUserGatewayMessage.getToken());
-            producerRelation.provider.sendMessage(client2GatewayMessage);
+            GatewayReceiveConsumerMessage gatewayReceiveConsumerMessage = messageExecutor.createMessage(breakUserGatewayMessage);
+            gatewayReceiveConsumerMessage.setMessageId(breakUserGatewayMessage.messageId());
+            gatewayReceiveConsumerMessage.setUserId(breakUserGatewayMessage.getUserId());
+            gatewayReceiveConsumerMessage.setToken(breakUserGatewayMessage.getToken());
+            providerRelation.provider.sendMessage(gatewayReceiveConsumerMessage);
         } else {
             logger.info("{} 没有对{} 有关联 :token{} userId:{} ",
                     serverName, consumerChannel, token, userId);
@@ -237,14 +237,14 @@ public class ProviderManager {
     private void clearRelation(Provider serverChannelManager) {
         logger.warn("{} {} 全部channel已经下线 清空关联列表", serverName, serverChannelManager.getServerKey());
         List<Long> tokens = new ArrayList<>();
-        for (Map.Entry<Long, ProducerRelation> entry : tokenProducerMap.entrySet()) {
+        for (Map.Entry<Long, ProviderRelation> entry : tokenProviderMap.entrySet()) {
             if (serverChannelManager == entry.getValue().provider) {
                 tokens.add(entry.getKey());
             }
         }
         for (Long token : tokens) {
             logger.info("{} 取消关联 {} {} ", token, serverName, serverChannelManager.getServerKey());
-            tokenProducerMap.remove(token);
+            tokenProviderMap.remove(token);
         }
     }
 
@@ -299,7 +299,7 @@ public class ProviderManager {
         this.nextStrategy = nextStrategy;
     }
 
-    static class ProducerRelation {
+    static class ProviderRelation {
         Provider provider;
         Long relationToken;
     }

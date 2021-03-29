@@ -31,7 +31,7 @@ public abstract class AbstractEventHandler<T extends Event> implements EventHand
     }
 
     @Override
-    public T getEmptyEvent() {
+    public T newEmptyEvent() {
         try {
             return eventClass.newInstance();
         } catch (Exception e) {

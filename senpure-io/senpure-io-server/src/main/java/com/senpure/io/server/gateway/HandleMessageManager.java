@@ -1,14 +1,9 @@
 package com.senpure.io.server.gateway;
 
 import com.senpure.base.util.Assert;
-import com.senpure.io.protocol.CompressBean;
-import com.senpure.io.server.Constant;
 import com.senpure.io.server.gateway.provider.Provider;
 import com.senpure.io.server.protocol.message.CSAskHandleMessage;
-import com.senpure.io.server.protocol.message.SCInnerErrorMessage;
 import com.senpure.io.server.support.MessageIdReader;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +28,7 @@ public class HandleMessageManager {
         this.handleMessageId = handleMessageId;
     }
 
-    public synchronized void addProducerManager(int messageId, ProviderManager providerManager) {
+    public synchronized void addProviderManager(int messageId, ProviderManager providerManager) {
         if (this.handleMessageId != messageId) {
             Assert.error("handleMessageId  不匹配");
         }
@@ -56,7 +51,7 @@ public class HandleMessageManager {
         }
     }
 
-    public void execute(Client2GatewayMessage message) {
+    public void execute(GatewayReceiveConsumerMessage message) {
         if (direct) {
             providerManager.sendMessage(message);
         } else {
@@ -83,7 +78,7 @@ public class HandleMessageManager {
             askHandleMessage.setAskToken(messageExecutor.idGenerator.nextId());
             askHandleMessage.setData(message.getData());
 
-            Client2GatewayMessage temp = messageExecutor.createMessage(askHandleMessage);
+            GatewayReceiveConsumerMessage frame = messageExecutor.createMessage(askHandleMessage);
 
 
             WaitAskTask waitAskTask = new WaitAskTask(messageExecutor.getGateway().getAskMaxDelay());
@@ -102,7 +97,7 @@ public class HandleMessageManager {
             messageExecutor.waitAskMap.put(waitAskTask.getAskToken(), waitAskTask);
             for (ProviderManager providerManager : providerManagers) {
                 for (Provider provider : providerManager.getUseProviders()) {
-                    provider.sendMessage(temp);
+                    provider.sendMessage(frame);
                 }
             }
         }

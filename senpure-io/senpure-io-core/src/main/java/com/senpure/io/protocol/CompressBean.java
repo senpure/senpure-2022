@@ -30,6 +30,9 @@ public abstract class CompressBean implements Bean {
     }
 
     public static void writeVar32(ByteBuf buf, int value) {
+        //16进制   0x7F      0x80
+        //十进制   127       128
+        //二进制   01111111  10000000
         while (true) {
             if ((value & ~0x7F) == 0) {
                 buf.writeByte(value);
@@ -162,7 +165,7 @@ public abstract class CompressBean implements Bean {
     public static void writeBean(ByteBuf buf, int tag, Bean value) {
         if (value != null) {
             writeVar32(buf, tag);
-            writeVar32(buf, value.getSerializedSize());
+            writeVar32(buf, value.serializedSize());
             value.write(buf);
         }
     }
@@ -215,6 +218,7 @@ public abstract class CompressBean implements Bean {
                             buf.resetReaderIndex();
                             return 0;
                         }
+
                         result |= (tmp = buf.readByte()) << 28;
                         if (tmp < 0) {
                             // Discard upper 32 bits.
@@ -334,7 +338,7 @@ public abstract class CompressBean implements Bean {
     }
 
 
-    static int getTagWriteType(int tag) {
+    static int getTagWireType(int tag) {
         return tag & 7;
     }
 
@@ -354,17 +358,17 @@ public abstract class CompressBean implements Bean {
     }
 
     public void skip(ByteBuf buf, int tag) {
-        switch (getTagWriteType(tag)) {
-            case 0:
+        switch (getTagWireType(tag)) {
+            case WIRE_TYPE_VARINT:
                 readVar64(buf);
                 break;
-            case 1:
+            case WIRE_TYPE_FIXED32:
                 buf.skipBytes(4);
                 break;
-            case 2:
+            case  WIRE_TYPE_FIXED64:
                 buf.skipBytes(8);
                 break;
-            case 3:
+            case WIRE_TYPE_LENGTH_DELIMITED:
                 buf.skipBytes(readVar32(buf));
                 break;
         }
@@ -443,7 +447,7 @@ public abstract class CompressBean implements Bean {
     }
 
     public static int computeBeanSize(Bean value) {
-        int size = value.getSerializedSize();
+        int size = value.serializedSize();
         return _computeVar32Size(size) + size;
     }
 

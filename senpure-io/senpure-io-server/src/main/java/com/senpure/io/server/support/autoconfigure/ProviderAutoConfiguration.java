@@ -3,14 +3,16 @@ package com.senpure.io.server.support.autoconfigure;
 import com.senpure.base.util.Assert;
 import com.senpure.executor.DefaultTaskLoopGroup;
 import com.senpure.executor.TaskLoopGroup;
+import com.senpure.io.server.DefaultMessageDecoderContext;
+import com.senpure.io.server.MessageDecoderContext;
 import com.senpure.io.server.ServerProperties;
 import com.senpure.io.server.protocol.message.CSRelationUserGatewayMessage;
-import com.senpure.io.server.provider.GatewayManager;
+import com.senpure.io.server.provider.DefaultProviderMessageHandlerContext;
+import com.senpure.io.server.provider.MessageSender;
 import com.senpure.io.server.provider.ProviderMessageExecutor;
-import com.senpure.io.server.provider.ProviderMessageHandlerUtil;
+import com.senpure.io.server.provider.ProviderMessageHandlerContext;
 import com.senpure.io.server.provider.handler.CSBreakUserGatewayMessageHandler;
 import com.senpure.io.server.provider.handler.ProviderMessageHandler;
-import com.senpure.io.server.support.ProducerServerStarter;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,16 +34,17 @@ import javax.annotation.Resource;
 
 public class ProviderAutoConfiguration {
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     private TaskLoopGroup taskLoopGroup;
+    private ServerProperties properties;
 
-    private void check(ServerProperties serverProperties) {
-        if (StringUtils.isEmpty(serverProperties.getName())) {
-            serverProperties.setName("providerServer");
+    private void check(ServerProperties properties) {
+        if (StringUtils.isEmpty(properties.getName())) {
+            properties.setName("providerServer");
         }
-        ServerProperties.Provider provider = serverProperties.getProvider();
+        ServerProperties.Provider provider = properties.getProvider();
         if (!provider.isSetReadableName()) {
-            provider.setReadableName(serverProperties.getName());
+            provider.setReadableName(properties.getName());
         }
         //io *2 logic *1 综合1.5
         double size = Runtime.getRuntime().availableProcessors() * 1.5;
@@ -55,36 +58,45 @@ public class ProviderAutoConfiguration {
         if (provider.getExecutorThreadPoolSize() < 1) {
             provider.setExecutorThreadPoolSize(logicSize);
         }
+        this.properties = properties;
     }
 
+    public ProviderAutoConfiguration(ServerProperties serverProperties) {
+        check(serverProperties);
+    }
 
     @Bean
     @ConditionalOnMissingBean(TaskLoopGroup.class)
-    public TaskLoopGroup taskLoopGroup(ServerProperties serverProperties) {
-        check(serverProperties);
-        TaskLoopGroup service = new DefaultTaskLoopGroup(serverProperties.getProvider().getExecutorThreadPoolSize(),
-                new DefaultThreadFactory(serverProperties.getName() + "-executor"));
+    public TaskLoopGroup taskLoopGroup() {
+
+        TaskLoopGroup service = new DefaultTaskLoopGroup(properties.getProvider().getExecutorThreadPoolSize(),
+                new DefaultThreadFactory(properties.getName() + "-executor"));
         this.taskLoopGroup = service;
         return service;
 
     }
 
-
     @Bean
-    public GatewayManager gatewayManager() {
-        logger.info("bean gatewayManager");
-        return new GatewayManager();
+    @ConditionalOnMissingBean(MessageDecoderContext.class)
+    public MessageDecoderContext messageDecoderContext() {
+
+        return new DefaultMessageDecoderContext();
     }
 
     @Bean
-    public ProviderMessageExecutor producerMessageExecutor() {
-
-        return new ProviderMessageExecutor();
+    public ProviderMessageHandlerContext providerMessageHandlerContext() {
+        return new DefaultProviderMessageHandlerContext();
     }
 
     @Bean
-    public ProducerServerStarter producerServerStarter() {
-        return new ProducerServerStarter();
+    public ProviderMessageExecutor providerMessageExecutor(TaskLoopGroup service, MessageSender messageSender, ProviderMessageHandlerContext handlerContext) {
+
+        return new ProviderMessageExecutor(service, messageSender, handlerContext);
+    }
+
+    @Bean
+    public ProviderHandlerChecker providerHandlerChecker() {
+        return new ProviderHandlerChecker();
     }
 
 
@@ -95,26 +107,21 @@ public class ProviderAutoConfiguration {
         }
     }
 
-    @Bean
-    public ProviderHandlerChecker providerHandlerChecker() {
-        return new ProviderHandlerChecker();
-    }
 
     public static class ProviderHandlerChecker implements ApplicationRunner {
         @Resource
         private CSBreakUserGatewayMessageHandler csBreakUserGatewayMessageHandler;
+        @Resource
+        private ProviderMessageHandlerContext handlerContext;
 
         @Override
         public void run(ApplicationArguments args) {
-            ProviderMessageHandler<?> handler = null;
-//            handler = ProviderMessageHandlerUtil.getHandler(CSBreakUserGatewayMessage.MESSAGE_ID);
-//            if (handler == null) {
-//                Assert.error("缺少[CSBreakUserGatewayMessage]处理器");
-//            }
+            ProviderMessageHandler<?> handler;
+
             if (csBreakUserGatewayMessageHandler == null) {
                 Assert.error("缺少[CSBreakUserGatewayMessage]处理器");
             }
-            handler = ProviderMessageHandlerUtil.getHandler(CSRelationUserGatewayMessage.MESSAGE_ID);
+            handler = handlerContext.handler(CSRelationUserGatewayMessage.MESSAGE_ID);
             if (handler == null) {
                 Assert.error("缺少[CSRelationUserGatewayMessage]处理器");
             }

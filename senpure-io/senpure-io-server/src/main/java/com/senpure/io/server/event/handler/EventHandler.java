@@ -11,9 +11,9 @@ import com.senpure.io.protocol.Event;
  */
 public interface EventHandler<T extends Event> {
 
-    T getEmptyEvent();
+    T newEmptyEvent();
 
-    int handlerId();
+    int eventId();
 
     void execute(T event) throws  Exception;
 

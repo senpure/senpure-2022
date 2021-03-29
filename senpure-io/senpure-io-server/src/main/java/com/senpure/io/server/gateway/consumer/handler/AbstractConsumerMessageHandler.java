@@ -18,6 +18,6 @@ public abstract class AbstractConsumerMessageHandler implements ConsumerMessageH
 
     @Override
     public void afterPropertiesSet() {
-        messageExecutor.regConsumerMessageHandler(this);
+        messageExecutor.registerConsumerMessageHandler(this);
     }
 }

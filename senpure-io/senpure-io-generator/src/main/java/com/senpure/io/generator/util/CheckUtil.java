@@ -2,8 +2,8 @@ package com.senpure.io.generator.util;
 
 import com.senpure.base.AppEvn;
 import com.senpure.base.util.JSON;
-import com.senpure.io.generator.model.*;
 import com.senpure.io.generator.model.Enum;
+import com.senpure.io.generator.model.*;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

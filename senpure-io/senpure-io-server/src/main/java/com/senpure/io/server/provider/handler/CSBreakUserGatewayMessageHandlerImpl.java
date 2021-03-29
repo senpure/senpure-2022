@@ -1,11 +1,9 @@
 package com.senpure.io.server.provider.handler;
 
 
-import com.senpure.io.server.provider.GatewayManager;
 import com.senpure.io.server.protocol.message.CSBreakUserGatewayMessage;
 import io.netty.channel.Channel;
 
-import javax.annotation.Resource;
 
 /**
  * 断开用户与网关处理器
@@ -15,28 +13,28 @@ import javax.annotation.Resource;
  */
 public class CSBreakUserGatewayMessageHandlerImpl extends AbstractInnerMessageHandler<CSBreakUserGatewayMessage>
         implements CSBreakUserGatewayMessageHandler {
-    @Resource
-    protected GatewayManager gatewayManager;
+
 
 
     @Override
     public void execute(Channel channel, long token, long userId, CSBreakUserGatewayMessage message) {
         if (message.getToken() != 0) {
-            gatewayManager.breakToken(message.getToken(), message.getRelationToken());
+            messageSender.breakToken(message.getToken(), message.getRelationToken());
         }
-        gatewayManager.breakUser(message.getUserId(), message.getRelationToken());
+        messageSender.breakUser(message.getUserId(), message.getRelationToken());
     }
 
 
+    /**
+     * new 一个空对象
+     */
     @Override
-    public int handleMessageId() {
-        return CSBreakUserGatewayMessage.MESSAGE_ID;
-    }
-
-    @Override
-    public CSBreakUserGatewayMessage getEmptyMessage() {
+    public CSBreakUserGatewayMessage newEmptyMessage() {
         return new CSBreakUserGatewayMessage();
     }
 
-
+    @Override
+    public int messageId() {
+        return CSBreakUserGatewayMessage.MESSAGE_ID;
+    }
 }

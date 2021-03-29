@@ -1,6 +1,6 @@
 package com.senpure.io.generator.ui;
 
-import de.felixroske.jfxsupport.GUIState;
+import com.senpure.javafx.Javafx;
 import javafx.stage.Stage;
 
 /**
@@ -11,6 +11,6 @@ import javafx.stage.Stage;
  */
 public class UiContext {
     public static Stage getPrimaryStage() {
-        return GUIState.getStage();
+        return Javafx.getPrimaryStage();
     }
 }

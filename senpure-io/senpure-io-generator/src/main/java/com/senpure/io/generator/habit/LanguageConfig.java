@@ -10,7 +10,7 @@ import com.senpure.io.generator.executor.LanguageExecutor;
  */
 public interface LanguageConfig {
 
-    LanguageExecutor languageExecutor();
+    LanguageExecutor<?> languageExecutor();
 
     boolean hasSensitive();
 

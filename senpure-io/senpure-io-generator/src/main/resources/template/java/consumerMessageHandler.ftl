@@ -21,13 +21,13 @@ public class ${javaHandlerName} extends AbstractConsumerMessageHandler<${javaNam
     }
 
     @Override
-    public int handlerId() {
+    public int messageId() {
                // ${.now?datetime} ${id?c}
         return ${javaName}.MESSAGE_ID;
     }
 
     @Override
-    public ${javaName} getEmptyMessage() {
+    public ${javaName} newEmptyMessage() {
         return new ${javaName}();
     }
 

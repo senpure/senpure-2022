@@ -1,6 +1,6 @@
 package com.senpure.io.server.gateway.provider.handler;
 
-import com.senpure.io.server.gateway.Server2GatewayMessage;
+import com.senpure.io.server.gateway.GatewayReceiveProviderMessage;
 import com.senpure.io.server.gateway.WaitRelationTask;
 import com.senpure.io.server.protocol.message.CSBreakUserGatewayMessage;
 import com.senpure.io.server.protocol.message.SCRelationUserGatewayMessage;
@@ -8,9 +8,9 @@ import io.netty.channel.Channel;
 
 public class SCRelationUserGatewayMessageHandler extends AbstractProviderMessageHandler {
     @Override
-    public void execute(Channel channel, Server2GatewayMessage server2GatewayMessage) {
+    public void execute(Channel channel, GatewayReceiveProviderMessage gatewayReceiveProviderMessage) {
         SCRelationUserGatewayMessage message = new SCRelationUserGatewayMessage();
-        messageExecutor.readMessage(message, server2GatewayMessage);
+        messageExecutor.readMessage(message, gatewayReceiveProviderMessage);
         WaitRelationTask waitRelationTask =  messageExecutor.waitRelationMap.get(message.getRelationToken());
         if (waitRelationTask != null) {
             if (message.getRelationToken() == waitRelationTask.getRelationToken()) {

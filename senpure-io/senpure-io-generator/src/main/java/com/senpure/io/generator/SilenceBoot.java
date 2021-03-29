@@ -6,7 +6,6 @@ import com.senpure.io.generator.executor.ExecutorContext;
 import com.senpure.io.generator.habit.*;
 import com.senpure.io.generator.reader.IoProtocolReader;
 import com.senpure.io.generator.reader.IoReader;
-
 import com.senpure.template.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

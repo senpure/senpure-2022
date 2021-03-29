@@ -17,13 +17,18 @@ public class CSHeartMessageHandler extends AbstractInnerMessageHandler<CSHeartMe
 
     }
 
+
     @Override
-    public int handleMessageId() {
+    public int messageId() {
         return CSHeartMessage.MESSAGE_ID;
     }
 
+    /**
+     * new 一个空对象
+     */
     @Override
-    public CSHeartMessage getEmptyMessage() {
+    public CSHeartMessage newEmptyMessage() {
         return new CSHeartMessage();
     }
+
 }

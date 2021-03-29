@@ -120,40 +120,48 @@ public class GatewayAutoConfiguration {
 
         if (!properties.getGateway().isSnowflakeUseCode()) {
             ServiceInstance serviceInstance = loadBalancerClient.choose(properties.getGateway().getSnowflakeDispatcherName());
+            boolean readRemote = true;
             if (serviceInstance == null) {
+                if (!properties.getGateway().isNotFoundSnowflakeUseCode()) {
+                    Assert.error(properties.getGateway().getSnowflakeDispatcherName() + "雪花调度服务没有启动");
+                } else {
+                    readRemote = false;
+                }
                 // logger.error("{} 雪花调度服务没有启动", properties.getGateway().getSnowflakeDispatcherName());
-                Assert.error(properties.getGateway().getSnowflakeDispatcherName() + "雪花调度服务没有启动");
             }
-            String url = "http://" + properties.getGateway().getSnowflakeDispatcherName() + "/snowflake/dispatch?serverName={serverName}&serverKey={serverKey}";
-            Map<String, String> params = new LinkedHashMap<>();
-            params.put("serverName", properties.getName());
-            String serverKey;
+            if (readRemote) {
+
+                String url = "http://" + properties.getGateway().getSnowflakeDispatcherName() + "/snowflake/dispatch?serverName={serverName}&serverKey={serverKey}";
+                Map<String, String> params = new LinkedHashMap<>();
+                params.put("serverName", properties.getName());
+                String serverKey;
 //            if (AppEvn.classInJar(AppEvn.getStartClass())) {
 //                serverKey = AppEvn.getClassPath(AppEvn.getStartClass());
 //            } else {
 //                serverKey = AppEvn.getClassRootPath();
 //            }
-            InetAddress inetAddress = getLocalHostLANAddress();
-            if (inetAddress == null) {
-                Assert.error("本机地址为空");
+                InetAddress inetAddress = getLocalHostLANAddress();
+                if (inetAddress == null) {
+                    Assert.error("本机地址为空");
 
-            }
-            serverKey = properties.getName() + " " +inetAddress.getHostAddress() + ":" + (httpPort > 0 ? httpPort : properties.getGateway().getCsPort());
-            params.put("serverKey", serverKey);
-            //  ObjectNode nodes = restTemplate.getForObject(url, ObjectNode.class, params);
-            // logger.debug("雪花调度返回 {}", JSON.toJSONString(nodes));
-            Result result = restTemplate.getForObject(url, Result.class, params);
+                }
+                serverKey = properties.getName() + " " + inetAddress.getHostAddress() + ":" + (httpPort > 0 ? httpPort : properties.getGateway().getCsPort());
+                params.put("serverKey", serverKey);
+                //  ObjectNode nodes = restTemplate.getForObject(url, ObjectNode.class, params);
+                // logger.debug("雪花调度返回 {}", JSON.toJSONString(nodes));
+                Result result = restTemplate.getForObject(url, Result.class, params);
 
-            logger.debug("雪花调度返回 {}", result);
-            if (result == null) {
-                Assert.error(properties.getGateway().getSnowflakeDispatcherName() + "雪花调度服务出错 : result is null");
+                logger.debug("雪花调度返回 {}", result);
+                if (result == null) {
+                    Assert.error(properties.getGateway().getSnowflakeDispatcherName() + "雪花调度服务出错 : result is null");
 
+                }
+                if (result.getCode() != 1) {
+                    Assert.error(properties.getGateway().getSnowflakeDispatcherName() + "雪花调度服务出错 :" + result.message + (result.getValidators() == null ? "" : result.getValidators().toString()));
+                }
+                properties.getGateway().setSnowflakeDataCenterId(result.getServerCenterAndWork().getCenterId());
+                properties.getGateway().setSnowflakeWorkId(result.getServerCenterAndWork().getWorkId());
             }
-            if (result.getCode() != 1) {
-                Assert.error(properties.getGateway().getSnowflakeDispatcherName() + "雪花调度服务出错 :" + result.message + (result.getValidators() == null ? "" : result.getValidators().toString()));
-            }
-            properties.getGateway().setSnowflakeDataCenterId(result.getServerCenterAndWork().getCenterId());
-            properties.getGateway().setSnowflakeWorkId(result.getServerCenterAndWork().getWorkId());
         }
         GatewayServerStarter gatewayServer = new GatewayServerStarter();
         gatewayServer.setProperties(properties);

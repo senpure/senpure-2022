@@ -1,16 +1,14 @@
 package com.senpure.io.server.gateway.provider.handler;
 
 import com.senpure.io.server.ChannelAttributeUtil;
+import com.senpure.io.server.gateway.GatewayReceiveProviderMessage;
 import com.senpure.io.server.gateway.HandleMessageManager;
 import com.senpure.io.server.gateway.ProviderManager;
-import com.senpure.io.server.gateway.Server2GatewayMessage;
 import com.senpure.io.server.gateway.provider.Provider;
 import com.senpure.io.server.protocol.bean.HandleMessage;
 import com.senpure.io.server.protocol.message.CSRegServerHandleMessageMessage;
 import com.senpure.io.server.protocol.message.SCRegServerHandleMessageMessage;
 import com.senpure.io.server.support.MessageIdReader;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 
 import java.util.List;
@@ -19,13 +17,13 @@ import java.util.concurrent.ConcurrentMap;
 public class SCRegServerHandleMessageMessageHandler extends AbstractProviderMessageHandler {
 
     @Override
-    public void execute(Channel channel, Server2GatewayMessage server2GatewayMessage) {
+    public void execute(Channel channel, GatewayReceiveProviderMessage gatewayReceiveProviderMessage) {
         //todo 没有加锁 线程安全问题
         //todo 一个服务只允许一个ask id
         StringBuilder sb = new StringBuilder();
         try {
             SCRegServerHandleMessageMessage message = new SCRegServerHandleMessageMessage();
-            messageExecutor.readMessage(message, server2GatewayMessage);
+            messageExecutor.readMessage(message, gatewayReceiveProviderMessage);
             List<HandleMessage> handleMessages = message.getMessages();
             String serverKey = message.getServerKey();
             ChannelAttributeUtil.setRemoteServerName(channel, message.getServerName());
@@ -34,7 +32,7 @@ public class SCRegServerHandleMessageMessageHandler extends AbstractProviderMess
             for (HandleMessage handleMessage : handleMessages) {
                 logger.info("{}", handleMessage);
             }
-            ConcurrentMap<String, ProviderManager> producerManagerMap = messageExecutor.producerManagerMap;
+            ConcurrentMap<String, ProviderManager> producerManagerMap = messageExecutor.providerManagerMap;
             ConcurrentMap<Integer, ProviderManager> messageHandleMap = messageExecutor.messageHandleMap;
             ProviderManager providerManager = producerManagerMap.get(message.getServerName());
             if (providerManager == null) {
@@ -95,7 +93,7 @@ public class SCRegServerHandleMessageMessageHandler extends AbstractProviderMess
                     handleMessageManager = new HandleMessageManager(handleMessage.getHandleMessageId(), handleMessage.isDirect(), messageExecutor);
                     handleMessageManagerMap.put(handleMessage.getHandleMessageId(), handleMessageManager);
                 }
-                handleMessageManager.addProducerManager(handleMessage.getHandleMessageId(), providerManager);
+                handleMessageManager.addProviderManager(handleMessage.getHandleMessageId(), providerManager);
             }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);

@@ -1,12 +1,12 @@
 package com.senpure.io.server.support.annotation;
 
 import com.senpure.io.server.ServerProperties;
-import com.senpure.io.server.support.autoconfigure.BreakUserSelector;
 import com.senpure.io.server.support.autoconfigure.ProviderAutoConfiguration;
+import com.senpure.io.server.support.autoconfigure.ProviderDirectAutoConfiguration;
+import com.senpure.io.server.support.autoconfigure.ProviderGatewayAutoConfiguration;
 import com.senpure.io.server.support.autoconfigure.ProviderMessageHandlerAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.annotation.AliasFor;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
@@ -23,8 +23,11 @@ import java.lang.annotation.Target;
 @Documented
 @EnableConfigurationProperties({ServerProperties.class})
 @Import({ProviderAutoConfiguration.class,
-       // BreakUserSelector.class,
-        ProviderMessageHandlerAutoConfiguration.class})
+        ProviderGatewayAutoConfiguration.class,
+        ProviderDirectAutoConfiguration.class,
+        ProviderMessageHandlerAutoConfiguration.class
+
+})
 public @interface EnableProvider {
 //    /**
 //     * 注册断开处理器

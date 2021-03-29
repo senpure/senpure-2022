@@ -1,14 +1,13 @@
 package com.senpure.io.server.gateway.consumer.handler;
 
-import com.senpure.io.server.gateway.Client2GatewayMessage;
-import com.senpure.io.server.gateway.Server2GatewayMessage;
+import com.senpure.io.server.gateway.GatewayReceiveConsumerMessage;
 import io.netty.channel.Channel;
 
 public interface ConsumerMessageHandler {
 
-    void execute(Channel channel, Client2GatewayMessage message);
+    void execute(Channel channel, GatewayReceiveConsumerMessage message);
 
-    int handleMessageId();
+    int messageId();
 
     default boolean stopForward() {
         return true;

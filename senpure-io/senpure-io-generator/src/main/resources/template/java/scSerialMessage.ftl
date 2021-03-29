@@ -34,7 +34,7 @@ public class ${name} extends <#if type="CS">Message<#else>OrderMessage</#if> {
 <#include "compressField.ftl">
 
     @Override
-    public int getMessageId() {
+    public int messageId() {
         return ${id?c};
     }
 <#include "toString.ftl">

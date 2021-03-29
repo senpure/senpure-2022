@@ -1,6 +1,6 @@
 package com.senpure.io.generator.ui.view;
 
-import de.felixroske.jfxsupport.AbstractFxmlView;
+import com.senpure.javafx.JavafxView;
 
 /**
  * LuaView
@@ -9,6 +9,6 @@ import de.felixroske.jfxsupport.AbstractFxmlView;
  * @time 2019-08-16 10:01:11
  */
 
-public class LuaView extends AbstractFxmlView {
+public class LuaView implements JavafxView {
 
 }

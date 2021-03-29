@@ -62,7 +62,7 @@
      */
     @Override
     public void write(ByteBuf buf) {
-        getSerializedSize();
+        serializedSize();
 <#list fields as field>
     <#if field.hasExplain>
         //${field.explain}
@@ -201,7 +201,7 @@
 </#list>
 
     @Override
-    public int getSerializedSize() {
+    public int serializedSize() {
         int size = serializedSize;
         if (size != -1) {
             return size;

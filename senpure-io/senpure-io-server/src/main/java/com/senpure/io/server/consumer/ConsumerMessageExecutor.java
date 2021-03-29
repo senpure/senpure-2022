@@ -24,14 +24,18 @@ import java.util.concurrent.ScheduledExecutorService;
  */
 public class ConsumerMessageExecutor {
 
-    private Logger logger = LoggerFactory.getLogger(ConsumerMessageExecutor.class);
+    private final Logger logger = LoggerFactory.getLogger(ConsumerMessageExecutor.class);
     private TaskLoopGroup service;
     private int serviceRefCount = 0;
-    private Set<Integer> errorMessageIds = new HashSet<>();
+    private final Set<Integer> errorMessageIds = new HashSet<>();
 
-    public ConsumerMessageExecutor(ServerProperties.Consumer properties) {
+
+    private final ConsumerMessageHandlerContext handlerContext;
+
+    public ConsumerMessageExecutor(ServerProperties.Consumer properties, ConsumerMessageHandlerContext handlerContext) {
         errorMessageIds.add(SCInnerErrorMessage.MESSAGE_ID);
         errorMessageIds.add(properties.getScErrorMessageId());
+        this.handlerContext = handlerContext;
     }
 
 
@@ -47,16 +51,23 @@ public class ConsumerMessageExecutor {
         service.execute(runnable);
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void execute(Channel channel, ConsumerMessage frame) {
         service.execute(() -> {
             int requestId = frame.getRequestId();
             Message message = frame.getMessage();
             if (requestId == 0) {
-                try {
-                    ConsumerMessageHandler handler = ConsumerMessageHandlerUtil.getHandler(message.getMessageId());
-                    handler.execute(channel, message);
-                } catch (Exception e) {
-                    logger.error("执行handler[" + ConsumerMessageHandlerUtil.getHandler(message.getMessageId()).getClass().getName() + "]逻辑出错 ", e);
+
+                ConsumerMessageHandler handler = handlerContext.handler(message.messageId());
+                if (handler == null) {
+                    logger.warn("没有找到消息处理程序{} ", message.messageId());
+                } else {
+                    try {
+                        handler.execute(channel, message);
+                    } catch (Exception e) {
+                        logger.error("执行handler[" + handler.getClass().getName() + "]逻辑出错 ", e);
+                    }
+
                 }
             } else {
                 DefaultFuture future = DefaultFuture.received(requestId);
@@ -79,7 +90,7 @@ public class ConsumerMessageExecutor {
     }
 
     public boolean isErrorMessage(Message message) {
-        return errorMessageIds.contains(message.getMessageId());
+        return errorMessageIds.contains(message.messageId());
     }
 
 

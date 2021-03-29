@@ -1,13 +1,13 @@
 package com.senpure.javafx;
 
-import com.senpure.base.util.Spring;
 import javafx.application.HostServices;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import org.springframework.beans.BeansException;
 import org.springframework.core.io.ResourceLoader;
 
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 /**
@@ -34,26 +34,34 @@ public class Javafx {
 
     // private static final Logger logger = LoggerFactory.getLogger(Javafx.class);
 
+
+    private static final Map<Class<?>, JavafxViewWrap> wrapMap = new HashMap<>();
+
     public static void showView(Class<? extends JavafxView> view) {
 
         showView(getView(view));
 
     }
-
     public static void showView(JavafxView view) {
+
+       showView(view.getClass());
+
+    }
+
+    private  static void showView(JavafxViewWrap view) {
         stageSetView(primaryStage, view);
         primaryStage.show();
 
     }
-
     public static void showView(Stage stage, JavafxView view) {
 
-        stageSetView(stage, view);
+        stageSetView(stage, getView(view.getClass()));
 
         stage.showAndWait();
     }
 
-    private static void stageSetView(Stage stage, JavafxView view) {
+
+    private static void stageSetView(Stage stage, JavafxViewWrap view) {
         if (stage.getScene() == null) {
             if (stage.getTitle() == null) {
                 String title;
@@ -82,18 +90,17 @@ public class Javafx {
         }
     }
 
-    public static JavafxView getView(Class<? extends JavafxView> view) {
-        JavafxView javafxView;
-        try {
-            javafxView = Spring.getBean(view);
-        } catch (BeansException e) {
-            Spring.regBean(view);
-            javafxView = Spring.getBean(view);
+    private  static JavafxViewWrap getView(Class<? extends JavafxView> view) {
+
+        JavafxViewWrap javafxViewWrap = wrapMap.get(view);
+
+        if (javafxViewWrap == null) {
+            javafxViewWrap = new JavafxViewWrap(view);
+            wrapMap.put(view, javafxViewWrap);
+            return wrapMap.get(view);
         }
-        return javafxView;
-
+        return javafxViewWrap;
     }
-
 
     public static Stage getPrimaryStage() {
         return primaryStage;

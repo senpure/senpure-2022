@@ -1,8 +1,8 @@
 package com.senpure.io.server.gateway.provider.handler;
 
 import com.senpure.io.server.ChannelAttributeUtil;
+import com.senpure.io.server.gateway.GatewayReceiveProviderMessage;
 import com.senpure.io.server.gateway.ProviderManager;
-import com.senpure.io.server.gateway.Server2GatewayMessage;
 import com.senpure.io.server.gateway.WaitAskTask;
 import com.senpure.io.server.gateway.provider.Provider;
 import com.senpure.io.server.protocol.message.SCAskHandleMessage;
@@ -11,9 +11,9 @@ import io.netty.channel.Channel;
 
 public class SCAskHandleMessageHandler extends AbstractProviderMessageHandler {
     @Override
-    public void execute(Channel channel, Server2GatewayMessage server2GatewayMessage) {
+    public void execute(Channel channel, GatewayReceiveProviderMessage gatewayReceiveProviderMessage) {
         SCAskHandleMessage message = new SCAskHandleMessage();
-        messageExecutor.readMessage(message, server2GatewayMessage);
+        messageExecutor.readMessage(message, gatewayReceiveProviderMessage);
         WaitAskTask waitAskTask = messageExecutor.waitAskMap.get(message.getAskToken());
         if (waitAskTask != null) {
             if (message.isHandle()) {
@@ -21,7 +21,7 @@ public class SCAskHandleMessageHandler extends AbstractProviderMessageHandler {
                 String serverKey = ChannelAttributeUtil.getRemoteServerKey(channel);
                 logger.debug("{} {} 可以处理 {} 值位 {} 的请求", serverName, serverKey,
                         MessageIdReader.read(waitAskTask.getFromMessageId()), message.getAskValue());
-                ProviderManager providerManager = messageExecutor.producerManagerMap.get(serverName);
+                ProviderManager providerManager = messageExecutor.providerManagerMap.get(serverName);
                 for (Provider useProvider : providerManager.getUseProviders()) {
                     if (useProvider.getServerKey().equalsIgnoreCase(serverKey)) {
                         waitAskTask.answer(providerManager, useProvider, true);

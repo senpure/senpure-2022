@@ -1,8 +1,10 @@
 package com.senpure.io.server.direct;
 
 import com.senpure.base.util.Assert;
+import com.senpure.io.server.MessageDecoderContext;
 import com.senpure.io.server.ServerProperties;
-import com.senpure.io.server.direct.handler.DirectServerHandler;
+import com.senpure.io.server.provider.ProviderLoggingHandler;
+import com.senpure.io.server.provider.ProviderMessageExecutor;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -22,30 +24,34 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 
-/**
- * DirectServer
- *
- * @author senpure
- * @time 2020-01-06 11:28:16
- */
 public class DirectServer {
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
-    private String readableName = "Io服务器";
-    private DirectMessageExecutor messageExecutor;
-    private ServerProperties.Direct properties;
-    private boolean addLoggingHandler = true;
-    private String readableServerName = "Io服务器";
 
-    public final boolean start() {
+
+    private ServerProperties.Provider properties;
+
+
+    private String serverName = "ProviderServer";
+    private String readableServerName = "ProviderServer";
+    private boolean setReadableServerName = false;
+    private ProviderMessageExecutor messageExecutor;
+    private boolean addLoggingHandler = true;
+
+    private MessageDecoderContext decoderContext;
+
+    private ClientManager clientManager;
+
+    public boolean start() {
         Assert.notNull(messageExecutor);
+        Assert.notNull(clientManager);
         Assert.notNull(properties);
+        Assert.notNull(decoderContext);
         logger.debug("启动 {} ，监听端口号 {}", properties.getReadableName(), properties.getPort());
         readableServerName = properties.getReadableName() + "[SC][" + properties.getPort() + "]";
         SslContext sslCtx = null;
-        // Configure SSL.
         if (properties.isSsl()) {
             try {
                 SelfSignedCertificate ssc = new SelfSignedCertificate();
@@ -71,15 +77,15 @@ public class DirectServer {
                             if (finalSslCtx != null) {
                                 p.addLast(finalSslCtx.newHandler(ch.alloc()));
                             }
-                            p.addLast(new DirectMessageDecoder());
+                            p.addLast(new DirectMessageDecoder(decoderContext));
                             p.addLast(new DirectMessageEncoder());
                             if (addLoggingHandler) {
-                                p.addLast(new DirectLoggingHandler(LogLevel.DEBUG, properties.isInFormat(), properties.isOutFormat()));
+                                p.addLast(new ProviderLoggingHandler(LogLevel.DEBUG, properties.isInFormat(), properties.isOutFormat()));
                             }
                             if (properties.isEnableHeartCheck()) {
                                 p.addLast(new IdleStateHandler(properties.getReaderIdleTime(), 0L, 0L, TimeUnit.MILLISECONDS));
                             }
-                            p.addLast(new DirectServerHandler(messageExecutor));
+                            p.addLast(new DirectServerHandler(messageExecutor, clientManager));
 
                         }
                     });
@@ -110,27 +116,35 @@ public class DirectServer {
         return readableServerName;
     }
 
-    public String getReadableName() {
-        return readableName;
+    public void setProperties(ServerProperties.Provider properties) {
+        this.properties = properties;
     }
 
-    public void setReadableName(String readableName) {
-        this.readableName = readableName;
+    public void setServerName(String serverName) {
+        this.serverName = serverName;
     }
 
-    public DirectMessageExecutor getMessageExecutor() {
-        return messageExecutor;
+    public void setReadableServerName(String readableServerName) {
+        this.readableServerName = readableServerName;
     }
 
-    public void setMessageExecutor(DirectMessageExecutor messageExecutor) {
+    public void setSetReadableServerName(boolean setReadableServerName) {
+        this.setReadableServerName = setReadableServerName;
+    }
+
+    public void setMessageExecutor(ProviderMessageExecutor messageExecutor) {
         this.messageExecutor = messageExecutor;
     }
 
-    public ServerProperties.Direct getProperties() {
-        return properties;
+    public void setAddLoggingHandler(boolean addLoggingHandler) {
+        this.addLoggingHandler = addLoggingHandler;
     }
 
-    public void setProperties(ServerProperties.Direct properties) {
-        this.properties = properties;
+    public void setDecoderContext(MessageDecoderContext decoderContext) {
+        this.decoderContext = decoderContext;
+    }
+
+    public void setClientManager(ClientManager clientManager) {
+        this.clientManager = clientManager;
     }
 }

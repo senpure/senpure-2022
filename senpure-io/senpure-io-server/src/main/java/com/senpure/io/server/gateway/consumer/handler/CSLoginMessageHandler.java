@@ -4,7 +4,7 @@ public class CSLoginMessageHandler extends CSConsumerVerifyMessageHandler {
 
 
     @Override
-    public int handleMessageId() {
+    public int messageId() {
         return messageExecutor.getCsLoginMessageId();
     }
 

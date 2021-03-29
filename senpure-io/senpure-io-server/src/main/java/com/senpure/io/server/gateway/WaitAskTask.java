@@ -35,7 +35,7 @@ public class WaitAskTask {
     private Provider provider;
 
     private ProviderManager providerManager;
-    private Client2GatewayMessage message;
+    private GatewayReceiveConsumerMessage message;
 
 
     public WaitAskTask(long maxDelay) {
@@ -51,7 +51,6 @@ public class WaitAskTask {
             }
             this.providerManager = providerManager;
             this.provider = provider;
-            return;
         }
     }
 
@@ -113,11 +112,11 @@ public class WaitAskTask {
     }
 
 
-    public Client2GatewayMessage getMessage() {
+    public GatewayReceiveConsumerMessage getMessage() {
         return message;
     }
 
-    public void setMessage(Client2GatewayMessage message) {
+    public void setMessage(GatewayReceiveConsumerMessage message) {
         this.message = message;
     }
 

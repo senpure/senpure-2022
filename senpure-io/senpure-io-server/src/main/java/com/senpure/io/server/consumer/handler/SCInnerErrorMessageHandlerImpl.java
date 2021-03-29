@@ -10,20 +10,19 @@ import io.netty.channel.Channel;
  * @author senpure
  * @time 2019-07-02 17:02:44
  */
-public class SCInnerErrorMessageHandlerImpl extends AbstractConsumerMessageHandler<SCInnerErrorMessage> implements  SCInnerErrorMessageHandler
-{
+public class SCInnerErrorMessageHandlerImpl extends AbstractConsumerMessageHandler<SCInnerErrorMessage> implements SCInnerErrorMessageHandler {
     @Override
     public void execute(Channel channel, SCInnerErrorMessage message) throws Exception {
-        logger.debug(message.toString());
+        logger.error(message.toString());
     }
 
     @Override
-    public int handleMessageId() {
+    public int messageId() {
         return SCInnerErrorMessage.MESSAGE_ID;
     }
 
     @Override
-    public SCInnerErrorMessage getEmptyMessage() {
+    public SCInnerErrorMessage newEmptyMessage() {
         return new SCInnerErrorMessage();
     }
 }

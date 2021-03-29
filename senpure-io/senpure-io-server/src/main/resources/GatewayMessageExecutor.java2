@@ -185,11 +185,11 @@ public class GatewayMessageExecutor {
         sgHandlerMap.put(SCRegServerHandleMessageMessage.MESSAGE_ID, this::regServerInstance);
         sgHandlerMap.put(SCRelationUserGatewayMessage.MESSAGE_ID, this::relationMessage);
         sgHandlerMap.put(SCAskHandleMessage.MESSAGE_ID, this::askMessage);
-        sgHandlerMap.put(SCIdNameMessage.MESSAGE_ID, (channel, server2GatewayMessage) -> idNameMessage(server2GatewayMessage));
-        sgHandlerMap.put(SCHeartMessage.MESSAGE_ID, (channel, server2GatewayMessage) -> true);
-        sgHandlerMap.put(scLoginMessageId, (channel, server2GatewayMessage) -> loginMessage(server2GatewayMessage));
+        sgHandlerMap.put(SCIdNameMessage.MESSAGE_ID, (channel, gatewayReceiveProviderMessage) -> idNameMessage(gatewayReceiveProviderMessage));
+        sgHandlerMap.put(SCHeartMessage.MESSAGE_ID, (channel, gatewayReceiveProviderMessage) -> true);
+        sgHandlerMap.put(scLoginMessageId, (channel, gatewayReceiveProviderMessage) -> loginMessage(gatewayReceiveProviderMessage));
         sgHandlerMap.put(SCBreakUserGatewayMessage.MESSAGE_ID, this::breakRelationMessage);
-        sgHandlerMap.put(SCKickOffMessage.MESSAGE_ID, (channel, server2GatewayMessage) -> kickOffMessage(server2GatewayMessage));
+        sgHandlerMap.put(SCKickOffMessage.MESSAGE_ID, (channel, gatewayReceiveProviderMessage) -> kickOffMessage(gatewayReceiveProviderMessage));
         sgHandlerMap.put(SCStatisticMessage.MESSAGE_ID, this::statisticMessage);
         startCheck();
     }
@@ -280,21 +280,21 @@ public class GatewayMessageExecutor {
         });
     }
 
-    public void readMessage(Message message, Server2GatewayMessage server2GatewayMessage) {
-        ByteBuf buf = Unpooled.buffer(server2GatewayMessage.getData().length);
-        buf.writeBytes(server2GatewayMessage.getData());
+    public void readMessage(Message message, Server2GatewayMessage gatewayReceiveProviderMessage) {
+        ByteBuf buf = Unpooled.buffer(gatewayReceiveProviderMessage.getData().length);
+        buf.writeBytes(gatewayReceiveProviderMessage.getData());
         message.read(buf, buf.writerIndex());
     }
 
 
     //todo 一个服务只允许一个ask id
-    private synchronized boolean regServerInstance(Channel channel, Server2GatewayMessage server2GatewayMessage) {
+    private synchronized boolean regServerInstance(Channel channel, Server2GatewayMessage gatewayReceiveProviderMessage) {
         StringBuilder sb = new StringBuilder();
         try {
             SCRegServerHandleMessageMessage message = new SCRegServerHandleMessageMessage();
 
-            ByteBuf buf = Unpooled.buffer(server2GatewayMessage.getData().length);
-            buf.writeBytes(server2GatewayMessage.getData());
+            ByteBuf buf = Unpooled.buffer(gatewayReceiveProviderMessage.getData().length);
+            buf.writeBytes(gatewayReceiveProviderMessage.getData());
             // logger.info("writerIndex {} readerIndex {} ", buf.writerIndex(), buf.readerIndex());
             message.read(buf, buf.writerIndex());
             List<HandleMessage> handleMessages = message.getMessages();
@@ -405,9 +405,9 @@ public class GatewayMessageExecutor {
     }
 
 
-    private boolean idNameMessage(Server2GatewayMessage server2GatewayMessage) {
+    private boolean idNameMessage(Server2GatewayMessage gatewayReceiveProviderMessage) {
         SCIdNameMessage message = new SCIdNameMessage();
-        readMessage(message, server2GatewayMessage);
+        readMessage(message, gatewayReceiveProviderMessage);
         MessageIdReader.relation(message.getIdNames());
         return true;
     }
@@ -417,11 +417,11 @@ public class GatewayMessageExecutor {
      * 处具体服务器返回的关联用户信息
      *
      * @param channel
-     * @param server2GatewayMessage
+     * @param gatewayReceiveProviderMessage
      */
-    private boolean relationMessage(Channel channel, Server2GatewayMessage server2GatewayMessage) {
+    private boolean relationMessage(Channel channel, Server2GatewayMessage gatewayReceiveProviderMessage) {
         SCRelationUserGatewayMessage message = new SCRelationUserGatewayMessage();
-        readMessage(message, server2GatewayMessage);
+        readMessage(message, gatewayReceiveProviderMessage);
         WaitRelationTask waitRelationTask = waitRelationMap.get(message.getRelationToken());
         if (waitRelationTask != null) {
             if (message.getRelationToken() == waitRelationTask.getRelationToken()) {
@@ -438,9 +438,9 @@ public class GatewayMessageExecutor {
         return true;
     }
 
-    private boolean statisticMessage(Channel channel, Server2GatewayMessage server2GatewayMessage) {
+    private boolean statisticMessage(Channel channel, Server2GatewayMessage gatewayReceiveProviderMessage) {
         SCStatisticMessage message = new SCStatisticMessage();
-        readMessage(message, server2GatewayMessage);
+        readMessage(message, gatewayReceiveProviderMessage);
         String producerKey = ChannelAttributeUtil.getRemoteServerKey(channel);
         String producerName = ChannelAttributeUtil.getRemoteServerName(channel);
         ProviderManager providerManager = producerManagerMap.get(producerName);
@@ -459,16 +459,16 @@ public class GatewayMessageExecutor {
         return true;
     }
 
-    private boolean breakRelationMessage(Channel channel, Server2GatewayMessage server2GatewayMessage) {
+    private boolean breakRelationMessage(Channel channel, Server2GatewayMessage gatewayReceiveProviderMessage) {
         SCBreakUserGatewayMessage message = new SCBreakUserGatewayMessage();
-        readMessage(message, server2GatewayMessage);
-        long tempUserId = server2GatewayMessage.getMessageId();
+        readMessage(message, gatewayReceiveProviderMessage);
+        long tempUserId = gatewayReceiveProviderMessage.getMessageId();
         Channel userChannel = null;
         if (tempUserId > 0) {
             userChannel = userClientChannel.get(tempUserId);
         }
         if (userChannel == null) {
-            userChannel = tokenChannel.get(server2GatewayMessage.getToken());
+            userChannel = tokenChannel.get(gatewayReceiveProviderMessage.getToken());
         }
         if (userChannel != null) {
             Long userId = ChannelAttributeUtil.getUserId(userChannel);
@@ -531,9 +531,9 @@ public class GatewayMessageExecutor {
         return false;
     }
 
-    private boolean kickOffMessage(Server2GatewayMessage server2GatewayMessage) {
+    private boolean kickOffMessage(Server2GatewayMessage gatewayReceiveProviderMessage) {
         SCKickOffMessage message = new SCKickOffMessage();
-        readMessage(message, server2GatewayMessage);
+        readMessage(message, gatewayReceiveProviderMessage);
         long tempUserId = message.getUserId();
         Channel userChannel = null;
         if (tempUserId > 0) {
@@ -551,9 +551,9 @@ public class GatewayMessageExecutor {
         return true;
     }
 
-    private boolean askMessage(Channel channel, Server2GatewayMessage server2GatewayMessage) {
+    private boolean askMessage(Channel channel, Server2GatewayMessage gatewayReceiveProviderMessage) {
         SCAskHandleMessage message = new SCAskHandleMessage();
-        readMessage(message, server2GatewayMessage);
+        readMessage(message, gatewayReceiveProviderMessage);
         WaitAskTask waitAskTask = waitAskMap.get(message.getAskToken());
         if (waitAskTask != null) {
             if (message.isHandle()) {
@@ -649,7 +649,7 @@ public class GatewayMessageExecutor {
     }
 
     private interface SGInnerHandler {
-        boolean execute(Channel channel, Server2GatewayMessage server2GatewayMessage);
+        boolean execute(Channel channel, Server2GatewayMessage gatewayReceiveProviderMessage);
 
     }
 

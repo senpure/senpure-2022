@@ -22,6 +22,7 @@ public class ServerProperties {
     private Gateway gateway = new Gateway();
     private Provider provider = new Provider();
 
+
     public static class Direct {
 
         private boolean setReadableName = false;
@@ -184,10 +185,21 @@ public class ServerProperties {
 
     public static class Consumer {
 
+
         /**
          * 连接的服务目标服务名
          */
         private String remoteName = "gateway";
+        /**
+         * 使用直连模式
+         */
+        private boolean direct;
+
+        /**
+         * 直连模式时 直接连接的端口号
+         */
+        private int remotePort = 2222;
+        private String remoteHost = "127.0.0.1";
         private boolean setReadableName = false;
         /**
          * 自动连接服务
@@ -257,6 +269,14 @@ public class ServerProperties {
          * 服务器返回错误消息id
          */
         private int scErrorMessageId = 1000500;
+
+        public String getRemoteHost() {
+            return remoteHost;
+        }
+
+        public void setRemoteHost(String remoteHost) {
+            this.remoteHost = remoteHost;
+        }
 
         public boolean isOutFormat() {
             return outFormat;
@@ -401,14 +421,40 @@ public class ServerProperties {
         public void setAutoConnect(boolean autoConnect) {
             this.autoConnect = autoConnect;
         }
+
+        public boolean isDirect() {
+            return direct;
+        }
+
+        public void setDirect(boolean direct) {
+            this.direct = direct;
+        }
+
+        public int getRemotePort() {
+            return remotePort;
+        }
+
+        public void setRemotePort(int remotePort) {
+            this.remotePort = remotePort;
+        }
     }
 
     public static class Provider {
+        public static enum MODEL {
+            GATEWAY,
+            DIRECT
+        }
+
         /**
          * 网关服务名
          */
         private String gatewayName = "gateway";
+
+        private MODEL model = MODEL.GATEWAY;
+
         private boolean setReadableName = false;
+
+        private int port = 2222;
         /**
          * 服务器名
          */
@@ -425,6 +471,10 @@ public class ServerProperties {
          * 处理事件的线程数
          */
         private int eventThreadPoolSize = 0;
+        /**
+         * netty boosGroup 线程数
+         */
+        private int ioBossThreadPoolSize = 1;
         /**
          * netty workGroup 线程数
          */
@@ -466,7 +516,7 @@ public class ServerProperties {
          * 心跳写入间隔毫秒
          */
         private long writerIdleTime = 5000;
-
+        private long readerIdleTime = 10000;
 
         public boolean isSetReadableName() {
             return setReadableName;
@@ -482,6 +532,29 @@ public class ServerProperties {
             setReadableName = true;
         }
 
+        public int getIoBossThreadPoolSize() {
+            return ioBossThreadPoolSize;
+        }
+
+        public void setIoBossThreadPoolSize(int ioBossThreadPoolSize) {
+            this.ioBossThreadPoolSize = ioBossThreadPoolSize;
+        }
+
+        public int getPort() {
+            return port;
+        }
+
+        public void setPort(int port) {
+            this.port = port;
+        }
+
+        public long getReaderIdleTime() {
+            return readerIdleTime;
+        }
+
+        public void setReaderIdleTime(long readerIdleTime) {
+            this.readerIdleTime = readerIdleTime;
+        }
 
         public int getExecutorThreadPoolSize() {
             return executorThreadPoolSize;
@@ -594,6 +667,14 @@ public class ServerProperties {
         public void setMessageRetryTimeLimit(int messageRetryTimeLimit) {
             this.messageRetryTimeLimit = messageRetryTimeLimit;
         }
+
+        public MODEL getModel() {
+            return model;
+        }
+
+        public void setModel(MODEL model) {
+            this.model = model;
+        }
     }
 
     public static class Gateway {
@@ -669,7 +750,11 @@ public class ServerProperties {
          */
         private String snowflakeDispatcherName = "dispatcher";
         /**
-         * 是否直接是配置文件中的雪花算法的dataCenterId 与workId
+         * 没有找到雪花服务直接使用配置的dataCenterId与workId
+         */
+        private boolean notFoundSnowflakeUseCode=false;
+        /**
+         * 是否直接是配置文件中的雪花算法的dataCenterId与workId
          */
         private boolean snowflakeUseCode = false;
         /**
@@ -680,6 +765,7 @@ public class ServerProperties {
          * 雪花算法 workId
          */
         private int snowflakeWorkId = 0;
+
         /**
          * 询问处理最多延迟毫秒
          */
@@ -858,6 +944,14 @@ public class ServerProperties {
 
         public void setEnableCSHeartCheck(boolean enableCSHeartCheck) {
             this.enableCSHeartCheck = enableCSHeartCheck;
+        }
+
+        public boolean isNotFoundSnowflakeUseCode() {
+            return notFoundSnowflakeUseCode;
+        }
+
+        public void setNotFoundSnowflakeUseCode(boolean notFoundSnowflakeUseCode) {
+            this.notFoundSnowflakeUseCode = notFoundSnowflakeUseCode;
         }
 
         @Override

@@ -2,10 +2,9 @@ package com.senpure.io.server.provider.handler;
 
 
 import com.senpure.io.protocol.Message;
-import com.senpure.io.server.provider.Provider2GatewayMessage;
-import com.senpure.io.server.provider.ProviderMessageHandlerUtil;
 import com.senpure.io.server.protocol.message.CSAskHandleMessage;
 import com.senpure.io.server.protocol.message.SCAskHandleMessage;
+import com.senpure.io.server.provider.ProviderSendMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -20,26 +19,27 @@ import java.util.Arrays;
  */
 public class CSAskHandleMessageHandler extends AbstractInnerMessageHandler<CSAskHandleMessage> {
 
-    @SuppressWarnings("rawtypes")
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public void execute(Channel channel, long token, long userId, CSAskHandleMessage message) {
-        ProviderMessageHandler producerMessageHandler = ProviderMessageHandlerUtil.getHandler(message.getFromMessageId());
-        ProviderAskMessageHandler askMessageHandler;
-        ProviderAskMessageHandler.Answer answer = null;
-        if (producerMessageHandler instanceof ProviderAskMessageHandler) {
-            askMessageHandler = (ProviderAskMessageHandler) producerMessageHandler;
 
-            Message emptyMessage = askMessageHandler.getEmptyMessage();
-           // ByteBuf buf = Unpooled.buffer(message.getData().length);
-            ByteBuf buf  =  Unpooled.copiedBuffer(message.getData());
-            emptyMessage.read(buf, buf.writerIndex());
-            answer = askMessageHandler.ask(emptyMessage);
+        ProviderMessageHandler handler = handlerContext.handler(message.getFromMessageId());
+        ProviderAskMessageHandler askHandler;
+        ProviderAskMessageHandler.Answer answer = null;
+        if (handler instanceof ProviderAskMessageHandler) {
+            askHandler = (ProviderAskMessageHandler) handler;
+            ByteBuf buf = Unpooled.copiedBuffer(message.getData());
+            Message askMessage = handler.newEmptyMessage();
+            askMessage.read(buf, buf.writerIndex());
+            answer = askHandler.ask(askMessage);
+
         } else {
-            logger.warn("{} 没有实现 ProducerAskMessageHandler", producerMessageHandler.getClass().getName());
+            logger.warn("{} 没有实现 ProducerAskMessageHandler messageId {}", handler.getClass().getName(), message.getFromMessageId());
         }
+
         SCAskHandleMessage scAskHandleMessage = new SCAskHandleMessage();
         scAskHandleMessage.setFromMessageId(message.getFromMessageId());
-
         scAskHandleMessage.setAskToken(message.getAskToken());
         if (answer == null) {
             scAskHandleMessage.setAskValue(Arrays.toString(message.getData()));
@@ -48,23 +48,23 @@ public class CSAskHandleMessageHandler extends AbstractInnerMessageHandler<CSAsk
             scAskHandleMessage.setAskValue(answer.getValue());
         }
 
-
-        Provider2GatewayMessage toGateway = new Provider2GatewayMessage();
-        toGateway.setToken(token);
-        toGateway.setUserIds(new Long[0]);
-        toGateway.setMessage(scAskHandleMessage);
-        toGateway.setMessageId(scAskHandleMessage.getMessageId());
-        channel.writeAndFlush(toGateway);
+        ProviderSendMessage frame = messageSender.createMessageByToken(token, scAskHandleMessage);
+        //这里的token是无效的所以直接使用 channel
+        channel.writeAndFlush(frame);
 
     }
 
+
     @Override
-    public int handleMessageId() {
+    public int messageId() {
         return CSAskHandleMessage.MESSAGE_ID;
     }
 
+    /**
+     * new 一个空对象
+     */
     @Override
-    public CSAskHandleMessage getEmptyMessage() {
+    public CSAskHandleMessage newEmptyMessage() {
         return new CSAskHandleMessage();
     }
 }

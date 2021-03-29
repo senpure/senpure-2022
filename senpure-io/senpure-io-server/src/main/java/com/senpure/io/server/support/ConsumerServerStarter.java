@@ -1,6 +1,7 @@
 package com.senpure.io.server.support;
 
 import com.senpure.executor.TaskLoopGroup;
+import com.senpure.io.server.MessageDecoderContext;
 import com.senpure.io.server.ServerProperties;
 import com.senpure.io.server.consumer.ConsumerMessageExecutor;
 import com.senpure.io.server.consumer.ConsumerServer;
@@ -30,7 +31,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class ConsumerServerStarter implements ApplicationRunner {
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     @Resource
     private DiscoveryClient discoveryClient;
     @Resource
@@ -40,12 +41,13 @@ public class ConsumerServerStarter implements ApplicationRunner {
 
     @Resource
     private ConsumerMessageExecutor messageExecutor;
-
     @Resource
-    private  TaskLoopGroup taskLoopGroup;
+    private MessageDecoderContext decoderContext;
+    @Resource
+    private TaskLoopGroup taskLoopGroup;
 
-    private ServerProperties.Gateway gateway = new ServerProperties.Gateway();
-    private List<ConsumerServer> servers = new ArrayList<>();
+    private final ServerProperties.Gateway gateway = new ServerProperties.Gateway();
+    private final List<ConsumerServer> servers = new ArrayList<>();
     private long lastFailTime = 0;
     private long lastLogTime = 0;
     private long failTimes = 0;
@@ -82,41 +84,50 @@ public class ConsumerServerStarter implements ApplicationRunner {
         return false;
     }
 
-    @Override
 
-    public void run(ApplicationArguments args) throws Exception {
+    @Override
+    public void run(ApplicationArguments args) {
         if (properties.getConsumer().isAutoConnect()) {
             messageExecutor.getService().scheduleWithFixedDelay(() -> {
                 try {
                     boolean canLog = canLog();
                     if (remoteServerManager.getDefaultChannelManager() == null) {
-
-                        List<ServiceInstance> serviceInstances = discoveryClient.getInstances(properties.getConsumer().getRemoteName());
-                        if (serviceInstances.size() == 0) {
-                            if (canLog) {
-                                logger.warn("没有服务可用{}", properties.getConsumer().getRemoteName());
-                            }
-                            return;
-                        }
-                        ServiceInstance instance;
-                        if (lastFailServerKey == null) {
-                            instance = serviceInstances.get(0);
-                        } else {
-                            Random random = new Random();
-                            instance = serviceInstances.get(random.nextInt(serviceInstances.size()));
-                        }
-
-                        String portStr = instance.getMetadata().get("csPort");
                         int port;
-                        if (portStr == null) {
-                            port = gateway.getCsPort();
+                        String host;
+                        if (properties.getConsumer().isDirect()) {
+                            host = properties.getConsumer().getRemoteHost();
+                            port = properties.getConsumer().getRemotePort();
                         } else {
-                            port = Integer.parseInt(portStr);
+
+                            List<ServiceInstance> serviceInstances = discoveryClient.getInstances(properties.getConsumer().getRemoteName());
+                            if (serviceInstances.size() == 0) {
+                                if (canLog) {
+                                    logger.warn("没有服务可用{}", properties.getConsumer().getRemoteName());
+                                }
+                                return;
+                            }
+                            ServiceInstance instance;
+                            if (lastFailServerKey == null) {
+                                instance = serviceInstances.get(0);
+                            } else {
+                                Random random = new Random();
+                                instance = serviceInstances.get(random.nextInt(serviceInstances.size()));
+                            }
+
+                            String portStr = instance.getMetadata().get("csPort");
+
+                            if (portStr == null) {
+                                port = gateway.getCsPort();
+                            } else {
+                                port = Integer.parseInt(portStr);
+                            }
+                            host = instance.getHost();
                         }
-                        String serverKey = remoteServerManager.getRemoteServerKey(instance.getHost(), port);
+
+                        String serverKey = remoteServerManager.getRemoteServerKey(host, port);
                         RemoteServerChannelManager remoteServerChannelManager = remoteServerManager.
                                 getRemoteServerChannelManager(serverKey);
-                        remoteServerChannelManager.setHost(instance.getHost());
+                        remoteServerChannelManager.setHost(host);
                         remoteServerChannelManager.setPort(port);
                         remoteServerChannelManager.setDefaultMessageRetryTimeLimit(properties.getConsumer().getMessageRetryTimeLimit());
                         remoteServerManager.setDefaultChannelManager(remoteServerChannelManager);
@@ -145,6 +156,7 @@ public class ConsumerServerStarter implements ApplicationRunner {
                                 consumerServer.setMessageExecutor(messageExecutor);
                                 consumerServer.setRemoteServerManager(remoteServerManager);
                                 consumerServer.setProperties(properties.getConsumer());
+                                consumerServer.setDecoderContext(decoderContext);
                                 if (consumerServer.start(remoteServerChannelManager.getHost(), remoteServerChannelManager.getPort())) {
                                     servers.add(consumerServer);
                                     //验证

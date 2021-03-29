@@ -15,9 +15,9 @@ import java.util.Arrays;
  */
 public class ProviderLoggingHandler extends LoggingHandler {
 
-    private boolean outFormat;
+    private final boolean outFormat;
 
-    private boolean inFormat;
+    private final boolean inFormat;
 
     public ProviderLoggingHandler(LogLevel level, boolean inFormat, boolean outFormat) {
         super(level);
@@ -29,9 +29,9 @@ public class ProviderLoggingHandler extends LoggingHandler {
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
 
         if (this.logger.isEnabled(this.internalLevel)) {
-            if (msg instanceof Provider2GatewayMessage) {
+            if (msg instanceof ProviderSendMessage) {
                 if (outFormat) {
-                    Provider2GatewayMessage message = (Provider2GatewayMessage) msg;
+                    ProviderSendMessage message = (ProviderSendMessage) msg;
                     this.logger.log(this.internalLevel, "{} token:{} userIds:{}{}{}",
                             "WRITE", message.getToken(), Arrays.toString(message.getUserIds()), "\n", message.getMessage().toString(null));
                     //this.logger.log(this.internalLevel, this.format(ctx, ChannelAttributeUtil.getChannelPlayerStr(ctx.channel())+" WRITE", "\n"+((Message) msg).toString(null)));
@@ -55,9 +55,9 @@ public class ProviderLoggingHandler extends LoggingHandler {
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
 
         if (this.logger.isEnabled(this.internalLevel)) {
-            if (msg instanceof Gateway2ProviderMessage) {
+            if (msg instanceof ProviderReceiveMessage) {
                 if (inFormat) {
-                    Gateway2ProviderMessage message = (Gateway2ProviderMessage) msg;
+                    ProviderReceiveMessage message = (ProviderReceiveMessage) msg;
                     this.logger.log(this.internalLevel, "{} token:{} userId:{}{}{}",
                             "RECEIVED", message.getToken(), message.getUserId(), "\n", message.getMessage().toString(null));
                     // this.logger.log(this.internalLevel, this.format(ctx, ChannelAttributeUtil.getChannelPlayerStr(ctx.channel()) + " RECEIVED", "\n" + ((Message) msg).toString(null)));

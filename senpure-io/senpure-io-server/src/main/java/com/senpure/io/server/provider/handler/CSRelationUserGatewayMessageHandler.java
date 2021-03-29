@@ -2,12 +2,9 @@ package com.senpure.io.server.provider.handler;
 
 
 import com.senpure.io.server.ChannelAttributeUtil;
-import com.senpure.io.server.provider.GatewayManager;
 import com.senpure.io.server.protocol.message.CSRelationUserGatewayMessage;
 import com.senpure.io.server.protocol.message.SCRelationUserGatewayMessage;
 import io.netty.channel.Channel;
-
-import javax.annotation.Resource;
 
 /**
  * 关联用户与网关处理器
@@ -17,39 +14,44 @@ import javax.annotation.Resource;
  */
 public class CSRelationUserGatewayMessageHandler extends AbstractInnerMessageHandler<CSRelationUserGatewayMessage> {
 
-    @Resource
-    private GatewayManager gatewayManager;
+
 
     @Override
     public void execute(Channel channel, long token, long userId, CSRelationUserGatewayMessage message) {
         String gatewayKey = ChannelAttributeUtil.getRemoteServerKey(channel);
         logger.debug("关联网关 与用户 gatewayKey :{}  token :{}  userId :{}", gatewayKey, message.getToken(), message.getUserId());
         if (message.getUserId() > 0) {
-            gatewayManager.relationUser(gatewayKey, message.getUserId(), message.getRelationToken());
+           messageSender.relationUser(gatewayKey, message.getUserId(), message.getRelationToken());
         }
         if (message.getToken()!= 0) {
-            gatewayManager.relationToken(gatewayKey, message.getToken(), message.getRelationToken());
+            messageSender.relationToken(gatewayKey, message.getToken(), message.getRelationToken());
         }
+
         SCRelationUserGatewayMessage scMessage = new SCRelationUserGatewayMessage();
         scMessage.setRelationToken(message.getRelationToken());
         scMessage.setToken(message.getToken());
         scMessage.setUserId(message.getUserId());
         if (message.getUserId() > 0) {
-            gatewayManager.sendMessage(message.getUserId(), scMessage);
+            messageSender.sendMessage(message.getUserId(), scMessage);
         } else {
-            gatewayManager.sendMessageByToken(message.getToken(), scMessage);
+            messageSender.sendMessageByToken(message.getToken(), scMessage);
         }
 
     }
 
+    /**
+     * new 一个空对象
+     */
+    @Override
+    public CSRelationUserGatewayMessage newEmptyMessage() {
+        return new CSRelationUserGatewayMessage();
+    }
+
 
     @Override
-    public int handleMessageId() {
+    public int messageId() {
         return CSRelationUserGatewayMessage.MESSAGE_ID;
     }
 
-    @Override
-    public CSRelationUserGatewayMessage getEmptyMessage() {
-        return new CSRelationUserGatewayMessage();
-    }
+
 }

@@ -1,7 +1,7 @@
 package com.senpure.io.server.protocol.message;
 
-import com.senpure.io.server.protocol.bean.Statistic;
 import com.senpure.io.protocol.CompressMessage;
+import com.senpure.io.server.protocol.bean.Statistic;
 import io.netty.buffer.ByteBuf;
 
 /**
@@ -28,7 +28,7 @@ public class SCStatisticMessage extends CompressMessage {
      */
     @Override
     public void write(ByteBuf buf) {
-        getSerializedSize();
+        serializedSize();
         if (statistic != null) {
             writeBean(buf, 11, statistic);
         }
@@ -38,9 +38,9 @@ public class SCStatisticMessage extends CompressMessage {
      * 读取字节缓存
      */
     @Override
-    public void read(ByteBuf buf, int endIndex) {
+    public void read(ByteBuf buf, int maxIndex) {
         while (true) {
-            int tag = readTag(buf, endIndex);
+            int tag = readTag(buf, maxIndex);
             switch (tag) {
                 case 0://end
                     return;
@@ -58,7 +58,7 @@ public class SCStatisticMessage extends CompressMessage {
     private int serializedSize = -1;
 
     @Override
-    public int getSerializedSize() {
+    public int serializedSize() {
         int size = serializedSize;
         if (size != -1) {
             return size;
@@ -82,7 +82,7 @@ public class SCStatisticMessage extends CompressMessage {
     }
 
     @Override
-    public int getMessageId() {
+    public int messageId() {
         return 116;
     }
 

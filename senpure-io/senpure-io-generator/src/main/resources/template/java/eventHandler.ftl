@@ -20,13 +20,13 @@ public class ${javaHandlerName} extends AbstractEventHandler<${javaName}> {
     }
 
     @Override
-    public int handlerId() {
+    public int eventId() {
                 //${.now?datetime} ${id?c}
         return ${javaName}.EVENT_ID;
     }
 
     @Override
-    public ${javaName} getEmptyEvent() {
+    public ${javaName} newEmptyEvent() {
         return new ${javaName}();
     }
 }

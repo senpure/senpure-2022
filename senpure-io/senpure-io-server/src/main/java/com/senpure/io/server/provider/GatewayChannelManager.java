@@ -2,7 +2,7 @@ package com.senpure.io.server.provider;
 
 
 import com.senpure.base.util.Assert;
-import com.senpure.base.util.Spring;
+import com.senpure.executor.TaskLoopGroup;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,29 +18,31 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class GatewayChannelManager {
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private ChannelManager channelManager;
-    private static AtomicInteger atomicCount = new AtomicInteger(0);
+    private final ChannelManager channelManager;
+    private static final AtomicInteger atomicCount = new AtomicInteger(0);
 
-    private Map<Long, Channel> idChannelMap = new ConcurrentHashMap<>();
+    private final Map<Long, Channel> idChannelMap = new ConcurrentHashMap<>();
 
 
     private final List<FailMessage> failMessages = new ArrayList<>(128);
     private int defaultMessageRetryTimeLimit = 10000;
     private boolean connecting = false;
 
-    private ReadWriteLock connectLock = new ReentrantReadWriteLock();
+    private final ReadWriteLock connectLock = new ReentrantReadWriteLock();
+
+   private  final TaskLoopGroup service ;
 
     /**
      * GatewayChannelManager 的唯一标识
      */
-    private int gatewayChannelKey;
+    private final int gatewayChannelKey;
 
-    private String gatewayKey;
+    private final String gatewayKey;
 
 
-    public GatewayChannelManager(String gatewayKey, int channelPlanSize) {
+    public GatewayChannelManager(String gatewayKey, int channelPlanSize,TaskLoopGroup service ) {
         this.gatewayKey = gatewayKey;
         gatewayChannelKey = atomicCount.incrementAndGet();
         if (channelPlanSize <= 1) {
@@ -48,6 +50,7 @@ public class GatewayChannelManager {
         } else {
             channelManager = new MultipleChannelManager(gatewayKey);
         }
+        this.service= service;
     }
 
 
@@ -63,7 +66,7 @@ public class GatewayChannelManager {
     private void checkFailMessage() {
         synchronized (failMessages) {
             if (failMessages.size() > 0) {
-                ProviderMessageExecutor executor = Spring.getBean(ProviderMessageExecutor.class);
+               TaskLoopGroup executor = service;
                 if (executor != null) {
                     executor.execute(this::sendFailMessage);
                 } else {
@@ -123,16 +126,16 @@ public class GatewayChannelManager {
         }
     }
 
-    public void sendMessage(List<Provider2GatewayMessage> frames) {
+    public void sendMessage(List<ProviderSendMessage> frames) {
 
         sendMessage(frames, 100);
     }
 
-    public void sendMessage(List<Provider2GatewayMessage> frames, int flushValue) {
+    public void sendMessage(List<ProviderSendMessage> frames, int flushValue) {
         Channel channel = channelManager.nextChannel();
         if (channel != null) {
             int temp = 1;
-            for (Provider2GatewayMessage frame : frames) {
+            for (ProviderSendMessage frame : frames) {
                 channel.write(frame);
                 if (temp % flushValue == 0) {
                     channel.flush();
@@ -146,7 +149,7 @@ public class GatewayChannelManager {
         }
     }
 
-    public void sendMessage(Provider2GatewayMessage frame) {
+    public void sendMessage(ProviderSendMessage frame) {
         Channel channel = channelManager.nextChannel();
         if (channel != null) {
             channel.writeAndFlush(frame);
@@ -213,7 +216,7 @@ public class GatewayChannelManager {
     @Override
     public String toString() {
         return "GatewayChannelManager{" +
-                ", connecting=" + connecting +
+                "connecting=" + connecting +
                 ", gatewayChannelKey=" + gatewayChannelKey +
                 ", gatewayKey='" + gatewayKey + '\'' +
                 '}';
@@ -221,11 +224,11 @@ public class GatewayChannelManager {
 
     private static class FailMessage {
         private long startTime;
-        private Provider2GatewayMessage frame;
+        private ProviderSendMessage frame;
 
         private int messageRetryTimeLimit;
 
-        public void setFrame(Provider2GatewayMessage frame) {
+        public void setFrame(ProviderSendMessage frame) {
             this.frame = frame;
         }
 

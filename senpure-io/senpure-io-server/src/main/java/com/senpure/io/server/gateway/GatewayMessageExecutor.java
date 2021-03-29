@@ -11,7 +11,7 @@ import com.senpure.io.server.ServerProperties;
 import com.senpure.io.server.gateway.consumer.handler.ConsumerMessageHandler;
 import com.senpure.io.server.gateway.provider.Provider;
 import com.senpure.io.server.gateway.provider.handler.ProviderMessageHandler;
-import com.senpure.io.server.protocol.message.*;
+import com.senpure.io.server.protocol.message.SCInnerErrorMessage;
 import com.senpure.io.server.support.MessageIdReader;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -41,7 +41,7 @@ public class GatewayMessageExecutor {
 
     public final ConcurrentMap<Long, Channel> userClientChannel = new ConcurrentHashMap<>(32768);
     public final ConcurrentMap<Long, Channel> tokenChannel = new ConcurrentHashMap<>(32768);
-    public final ConcurrentMap<String, ProviderManager> producerManagerMap = new ConcurrentHashMap<>(128);
+    public final ConcurrentMap<String, ProviderManager> providerManagerMap = new ConcurrentHashMap<>(128);
 
     public ConcurrentMap<Integer, ProviderManager> messageHandleMap = new ConcurrentHashMap<>(2048);
     public ConcurrentMap<Integer, HandleMessageManager> handleMessageManagerMap = new ConcurrentHashMap<>(2048);
@@ -69,7 +69,7 @@ public class GatewayMessageExecutor {
     }
 
 
-    public void regProviderMessageHandler(ProviderMessageHandler handler) {
+    public void registerProviderMessageHandler(ProviderMessageHandler handler) {
         ProviderMessageHandler old = p2gHandlerMap.get(handler.handleMessageId());
         if (old != null) {
             Assert.error(handler.handleMessageId() + " -> " + MessageIdReader.read(handler.handleMessageId()) + "  处理程序已经存在"
@@ -78,13 +78,13 @@ public class GatewayMessageExecutor {
         p2gHandlerMap.put(handler.handleMessageId(), handler);
     }
 
-    public void regConsumerMessageHandler(ConsumerMessageHandler handler) {
-        ConsumerMessageHandler old = c2gHandlerMap.get(handler.handleMessageId());
+    public void registerConsumerMessageHandler(ConsumerMessageHandler handler) {
+        ConsumerMessageHandler old = c2gHandlerMap.get(handler.messageId());
         if (old != null) {
-            Assert.error(handler.handleMessageId() + " -> " + MessageIdReader.read(handler.handleMessageId()) + "  处理程序已经存在"
+            Assert.error(handler.messageId() + " -> " + MessageIdReader.read(handler.messageId()) + "  处理程序已经存在"
                     + " 存在 " + old.getClass().getName() + " 注册 " + handler.getClass().getName());
         }
-        c2gHandlerMap.put(handler.handleMessageId(), handler);
+        c2gHandlerMap.put(handler.messageId(), handler);
     }
 
     /**
@@ -127,7 +127,7 @@ public class GatewayMessageExecutor {
     }
 
     //将客户端消息转发给具体的服务器
-    public void execute(final Channel channel, final Client2GatewayMessage message) {
+    public void execute(final Channel channel, final GatewayReceiveConsumerMessage message) {
         long token = ChannelAttributeUtil.getToken(channel);
         message.setToken(token);
         Long userId = ChannelAttributeUtil.getUserId(channel);
@@ -174,15 +174,15 @@ public class GatewayMessageExecutor {
         if (consumerChannel == null) {
             logger.warn("没有找到channel token {}", token);
         } else {
-            Server2GatewayMessage m = new Server2GatewayMessage();
+            GatewayReceiveProviderMessage m = new GatewayReceiveProviderMessage();
             m.setRequestId(requestId);
-            ByteBuf buf = Unpooled.buffer(message.getSerializedSize());
+            ByteBuf buf = Unpooled.buffer(message.serializedSize());
             message.write(buf);
-            byte[] data = new byte[message.getSerializedSize()];
+            byte[] data = new byte[message.serializedSize()];
             buf.readBytes(data);
             m.setToken(token);
             m.setData(data);
-            m.setMessageId(message.getMessageId());
+            m.setMessageId(message.messageId());
             if (consumerChannel.isWritable()) {
                 consumerChannel.writeAndFlush(m);
             }
@@ -195,7 +195,7 @@ public class GatewayMessageExecutor {
         if (consumerChannel  == null) {
             logger.warn("没有找到channel token {}", token);
         } else {
-            Server2GatewayMessage m = new Server2GatewayMessage();
+            GatewayReceiveProviderMessage m = new GatewayReceiveProviderMessage();
             m.setRequestId(0);
             m.setToken(token);
             m.setData(data);
@@ -209,7 +209,7 @@ public class GatewayMessageExecutor {
 
 
     public void sendMessage2Producer(Channel channel, Message message) {
-        Client2GatewayMessage toMessage = createMessage(message);
+        GatewayReceiveConsumerMessage toMessage = createMessage(message);
         if (channel.isWritable()) {
             channel.writeAndFlush(toMessage);
         }
@@ -228,7 +228,7 @@ public class GatewayMessageExecutor {
     }
 
     //处理服务器发过来的消息
-    public void execute(Channel channel, final Server2GatewayMessage message) {
+    public void execute(Channel channel, final GatewayReceiveProviderMessage message) {
         long token = message.getToken();
         service.get(token).execute(() -> {
             try {
@@ -285,7 +285,7 @@ public class GatewayMessageExecutor {
 
 
     private void consumerOffline(Channel channel, Long token, Long userId) {
-        for (Map.Entry<String, ProviderManager> entry : producerManagerMap.entrySet()) {
+        for (Map.Entry<String, ProviderManager> entry : providerManagerMap.entrySet()) {
             ProviderManager providerManager = entry.getValue();
             providerManager.consumerOffline(channel, token, userId);
 
@@ -300,7 +300,7 @@ public class GatewayMessageExecutor {
      * @param userId
      */
     public void consumerUserChange(Channel channel, Long token, Long userId) {
-        for (Map.Entry<String, ProviderManager> entry : producerManagerMap.entrySet()) {
+        for (Map.Entry<String, ProviderManager> entry : providerManagerMap.entrySet()) {
             ProviderManager providerManager = entry.getValue();
             providerManager.consumerUserChange(channel, token, userId, csLoginMessageId);
         }
@@ -322,19 +322,19 @@ public class GatewayMessageExecutor {
         });
     }
 
-    public void readMessage(Message message, Server2GatewayMessage server2GatewayMessage) {
-        ByteBuf buf = Unpooled.buffer(server2GatewayMessage.getData().length);
-        buf.writeBytes(server2GatewayMessage.getData());
+    public void readMessage(Message message, GatewayReceiveProviderMessage gatewayReceiveProviderMessage) {
+        ByteBuf buf = Unpooled.buffer(gatewayReceiveProviderMessage.getData().length);
+        buf.writeBytes(gatewayReceiveProviderMessage.getData());
         message.read(buf, buf.writerIndex());
     }
 
 
-    public Client2GatewayMessage createMessage(Message message) {
-        Client2GatewayMessage toMessage = new Client2GatewayMessage();
-        toMessage.setMessageId(message.getMessageId());
-        ByteBuf buf = Unpooled.buffer(message.getSerializedSize());
+    public GatewayReceiveConsumerMessage createMessage(Message message) {
+        GatewayReceiveConsumerMessage toMessage = new GatewayReceiveConsumerMessage();
+        toMessage.setMessageId(message.messageId());
+        ByteBuf buf = Unpooled.buffer(message.serializedSize());
         message.write(buf);
-        byte[] data = new byte[message.getSerializedSize()];
+        byte[] data = new byte[message.serializedSize()];
         buf.readBytes(data);
         toMessage.setData(data);
         return toMessage;
@@ -342,7 +342,7 @@ public class GatewayMessageExecutor {
 
 
     public void sendMessage(Provider provider, Message message) {
-        Client2GatewayMessage toMessage = createMessage(message);
+        GatewayReceiveConsumerMessage toMessage = createMessage(message);
         provider.sendMessage(toMessage);
     }
 

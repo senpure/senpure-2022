@@ -2,6 +2,7 @@ package com.senpure.io.server.provider;
 
 import com.senpure.base.util.Assert;
 import com.senpure.io.server.ChannelAttributeUtil;
+import com.senpure.io.server.MessageDecoderContext;
 import com.senpure.io.server.ServerProperties;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -19,20 +20,9 @@ import org.slf4j.LoggerFactory;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
-
 public class ProviderServer {
     protected static Logger logger = LoggerFactory.getLogger(ProviderServer.class);
-    private ServerProperties.Provider properties;
 
-    private ChannelFuture channelFuture;
-    private String serverName = "producerServer";
-    private String readableServerName = "producerServer";
-    private boolean setReadableServerName = false;
-    private ProviderMessageExecutor messageExecutor;
-    private int httpPort = 0;
-    private boolean addLoggingHandler = true;
-    private Channel channel;
-    private GatewayManager gatewayManager;
 
 
     private static EventLoopGroup group;
@@ -41,13 +31,27 @@ public class ProviderServer {
 
     private static int serverRefCont = 0;
     private static int firstPort;
+    private ServerProperties.Provider properties;
 
-    public final boolean start(String host, int port) {
+    private ChannelFuture channelFuture;
+    private String serverName = "ProviderServer";
+    private String readableServerName = "ProviderServer";
+    private boolean setReadableServerName = false;
+    private ProviderMessageExecutor messageExecutor;
+    private int httpPort = 0;
+    private boolean addLoggingHandler = true;
+    private Channel channel;
+    private GatewayManager gatewayManager;
+    private MessageDecoderContext decoderContext;
+
+    public final boolean start(String remoteHost, int remotePort) {
+
         Assert.notNull(gatewayManager);
         Assert.notNull(properties);
         Assert.notNull(messageExecutor);
-
+        Assert.notNull(decoderContext);
         // Configure SSL.
+
         if (group == null || group.isShuttingDown() || group.isShutdown()) {
             synchronized (groupLock) {
                 if (group == null || group.isShuttingDown() || group.isShutdown()) {
@@ -71,9 +75,9 @@ public class ProviderServer {
                                 public void initChannel(SocketChannel ch) {
                                     ChannelPipeline p = ch.pipeline();
                                     if (finalSslCtx != null) {
-                                        p.addLast(finalSslCtx.newHandler(ch.alloc(), host, port));
+                                        p.addLast(finalSslCtx.newHandler(ch.alloc(), remoteHost, remotePort));
                                     }
-                                    p.addLast(new ProviderMessageDecoder());
+                                    p.addLast(new ProviderMessageDecoder(decoderContext));
                                     p.addLast(new ProviderMessageEncoder());
                                     if (addLoggingHandler) {
                                         p.addLast(new ProviderLoggingHandler(LogLevel.DEBUG, properties.isInFormat(), properties.isOutFormat()));
@@ -90,9 +94,9 @@ public class ProviderServer {
         }
         // Start the client.
         try {
-            logger.debug("启动{}，网关地址 {}", properties.getReadableName(), host + ":" + port);
-            readableServerName = properties.getReadableName() + "->[" + host + ":" + port + "]";
-            channelFuture = bootstrap.connect(host, port).sync();
+            logger.debug("启动{}，网关地址 {}", properties.getReadableName(), remoteHost + ":" + remotePort);
+            readableServerName = properties.getReadableName() + "->[" + remoteHost + ":" + remotePort + "]";
+            channelFuture = bootstrap.connect(remoteHost, remotePort).sync();
             channel = channelFuture.channel();
             synchronized (groupLock) {
                 serverRefCont++;
@@ -102,7 +106,7 @@ public class ProviderServer {
             int localPort = address.getPort();
             markFirstPort(localPort);
 
-            String gatewayKey = gatewayManager.getGatewayKey(host, port);
+            String gatewayKey = gatewayManager.getGatewayKey(remoteHost, remotePort);
 //            String path;
 //            if (AppEvn.classInJar(AppEvn.getStartClass())) {
 //                path = AppEvn.getClassPath(AppEvn.getStartClass());
@@ -122,9 +126,8 @@ public class ProviderServer {
 
     }
 
-
-    public void setProperties(ServerProperties.Provider properties) {
-        this.properties = properties;
+    public void setDecoderContext(MessageDecoderContext decoderContext) {
+        this.decoderContext = decoderContext;
     }
 
     public Channel getChannel() {
@@ -133,6 +136,54 @@ public class ProviderServer {
 
     public String getReadableServerName() {
         return readableServerName;
+    }
+
+
+    public void setServerName(String serverName) {
+        this.serverName = serverName;
+        if (!setReadableServerName) {
+            readableServerName = serverName;
+        }
+    }
+
+
+    public void setReadableServerName(String readableServerName) {
+        this.readableServerName = readableServerName;
+        setReadableServerName = true;
+    }
+
+    public void setHttpPort(int httpPort) {
+
+        this.httpPort = httpPort;
+    }
+
+    public boolean isAddLoggingHandler() {
+        return addLoggingHandler;
+    }
+
+    public void setAddLoggingHandler(boolean addLoggingHandler) {
+        this.addLoggingHandler = addLoggingHandler;
+    }
+
+    public void setProperties(ServerProperties.Provider properties) {
+        this.properties = properties;
+    }
+
+
+    public void setGatewayManager(GatewayManager gatewayManager) {
+        this.gatewayManager = gatewayManager;
+    }
+
+    public void setMessageExecutor(ProviderMessageExecutor messageExecutor) {
+        this.messageExecutor = messageExecutor;
+    }
+
+
+    private static synchronized void markFirstPort(int port) {
+        if (firstPort > 0) {
+            return;
+        }
+        firstPort = port;
     }
 
     public void destroy() {
@@ -156,60 +207,5 @@ public class ProviderServer {
             }
         }
 
-    }
-
-    public boolean isAddLoggingHandler() {
-        return addLoggingHandler;
-    }
-
-    public void setAddLoggingHandler(boolean addLoggingHandler) {
-        this.addLoggingHandler = addLoggingHandler;
-    }
-
-    public void setGatewayManager(GatewayManager gatewayManager) {
-        this.gatewayManager = gatewayManager;
-    }
-
-
-    public String getServerName() {
-        return serverName;
-    }
-
-
-    public void setMessageExecutor(ProviderMessageExecutor messageExecutor) {
-        this.messageExecutor = messageExecutor;
-    }
-
-
-    public void setServerName(String serverName) {
-        this.serverName = serverName;
-        if (!setReadableServerName) {
-            readableServerName = serverName;
-        }
-    }
-
-
-    public void setReadableServerName(String readableServerName) {
-        this.readableServerName = readableServerName;
-        setReadableServerName = true;
-    }
-
-    public void setHttpPort(int httpPort) {
-
-        this.httpPort = httpPort;
-    }
-
-    private static synchronized void markFirstPort(int port) {
-        if (firstPort > 0) {
-            return;
-        }
-        firstPort = port;
-    }
-
-    public static void main(String[] args) {
-
-        InetSocketAddress address = new InetSocketAddress(8111);
-
-        System.out.println(address.getAddress().getCanonicalHostName());
     }
 }

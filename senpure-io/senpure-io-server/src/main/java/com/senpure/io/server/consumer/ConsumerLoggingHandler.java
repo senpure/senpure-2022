@@ -13,9 +13,9 @@ import io.netty.handler.logging.LoggingHandler;
  */
 public class ConsumerLoggingHandler extends LoggingHandler {
 
-    private boolean outFormat;
+    private final boolean outFormat;
 
-    private boolean inFormat;
+    private final boolean inFormat;
 
     public ConsumerLoggingHandler(LogLevel level,boolean inFormat,boolean outFormat) {
         super(level);

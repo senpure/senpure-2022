@@ -11,14 +11,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class ProviderServerHandler extends SimpleChannelInboundHandler<Gateway2ProviderMessage> {
 
 
-    private ProviderMessageExecutor messageExecutor;
-    private GatewayManager gatewayManager;
+public class ProviderServerHandler extends SimpleChannelInboundHandler<ProviderReceiveMessage> {
 
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
+    private final ProviderMessageExecutor messageExecutor;
+    private final GatewayManager gatewayManager;
+
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public ProviderServerHandler(ProviderMessageExecutor messageExecutor, GatewayManager gatewayManager) {
         this.messageExecutor = messageExecutor;
@@ -26,15 +28,21 @@ public class ProviderServerHandler extends SimpleChannelInboundHandler<Gateway2P
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, Gateway2ProviderMessage msg)  {
+    protected void channelRead0(ChannelHandlerContext ctx, ProviderReceiveMessage msg) {
         messageExecutor.execute(ctx.channel(), msg);
     }
 
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx)  {
+    public void channelInactive(ChannelHandlerContext ctx) {
         logger.info("{} :{} 网关连接断开 ", ChannelAttributeUtil.getRemoteServerKey(ctx.channel()), ctx.channel());
-        gatewayManager.getGatewayChannelServer(ChannelAttributeUtil.getRemoteServerKey(ctx.channel())).removeChannel(ctx.channel());
+        GatewayChannelManager gatewayChannelManager = gatewayManager.getGatewayChannelManager(ChannelAttributeUtil.getRemoteServerKey(ctx.channel()));
+        if (gatewayChannelManager != null) {
+            gatewayChannelManager.removeChannel(ctx.channel());
+        } else {
+            logger.error("{} :{} 网关连接断开 error ", ChannelAttributeUtil.getRemoteServerKey(ctx.channel()), ctx.channel());
+        }
+        // Objects.requireNonNull(gatewayManager.getGatewayChannelServer(ChannelAttributeUtil.getRemoteServerKey(ctx.channel()))).removeChannel(ctx.channel());
     }
 
     @Override
@@ -51,11 +59,8 @@ public class ProviderServerHandler extends SimpleChannelInboundHandler<Gateway2P
             if (channel.isWritable()) {
                 logger.info("维持网关心跳{} : {}", ChannelAttributeUtil.getRemoteServerKey(channel), channel);
                 SCHeartMessage heartMessage = new SCHeartMessage();
-                Provider2GatewayMessage toGateway = new Provider2GatewayMessage();
-                toGateway.setUserIds(new Long[0]);
-                toGateway.setMessage(heartMessage);
-                toGateway.setMessageId(heartMessage.getMessageId());
-                channel.writeAndFlush(toGateway);
+                ProviderSendMessage frame=  gatewayManager.createMessageByToken(0L, heartMessage);
+                channel.writeAndFlush(frame);
             } else {
                 logger.warn("网关心跳失败并且channel不可用{}:{}", ChannelAttributeUtil.getRemoteServerKey(channel), channel);
                 channel.close();

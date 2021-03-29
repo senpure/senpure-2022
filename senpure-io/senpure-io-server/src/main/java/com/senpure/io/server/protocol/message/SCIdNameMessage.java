@@ -1,11 +1,11 @@
 package com.senpure.io.server.protocol.message;
 
-import com.senpure.io.server.protocol.bean.IdName;
 import com.senpure.io.protocol.CompressMessage;
+import com.senpure.io.server.protocol.bean.IdName;
 import io.netty.buffer.ByteBuf;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 数字id与字符串的关联
@@ -31,7 +31,7 @@ public class SCIdNameMessage extends CompressMessage {
      */
     @Override
     public void write(ByteBuf buf) {
-        getSerializedSize();
+        serializedSize();
         for (IdName value : idNames) {
              writeBean(buf, 11, value);
         }
@@ -41,9 +41,9 @@ public class SCIdNameMessage extends CompressMessage {
      * 读取字节缓存
      */
     @Override
-    public void read(ByteBuf buf, int endIndex) {
+    public void read(ByteBuf buf, int maxIndex) {
         while (true) {
-            int tag = readTag(buf, endIndex);
+            int tag = readTag(buf, maxIndex);
             switch (tag) {
                 case 0://end
                     return;
@@ -62,7 +62,7 @@ public class SCIdNameMessage extends CompressMessage {
     private int serializedSize = -1;
 
     @Override
-    public int getSerializedSize() {
+    public int serializedSize() {
         int size = serializedSize;
         if (size != -1) {
             return size;
@@ -89,7 +89,7 @@ public class SCIdNameMessage extends CompressMessage {
     }
 
     @Override
-    public int getMessageId() {
+    public int messageId() {
         return 106;
     }
 

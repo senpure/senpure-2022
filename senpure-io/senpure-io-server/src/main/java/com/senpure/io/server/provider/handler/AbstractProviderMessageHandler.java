@@ -1,68 +1,54 @@
 package com.senpure.io.server.provider.handler;
 
-
 import com.senpure.io.protocol.Message;
-import com.senpure.io.server.provider.GatewayManager;
-import com.senpure.io.server.provider.ProviderMessageHandlerUtil;
+import com.senpure.io.server.MessageDecoder;
+import com.senpure.io.server.MessageDecoderContext;
+import com.senpure.io.server.provider.MessageSender;
+import com.senpure.io.server.provider.ProviderMessageHandlerContext;
+import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 import javax.annotation.Resource;
 
+public abstract class AbstractProviderMessageHandler<T extends Message> implements ProviderMessageHandler<T>, MessageDecoder<T>, InitializingBean {
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-public abstract class AbstractProviderMessageHandler<T extends Message> implements ProviderMessageHandler<T>, InitializingBean {
-    protected Logger logger;
-   // protected Class<T> messageClass;
-   // protected T IdMessage;
     @Resource
-    protected GatewayManager gatewayManager;
-
-    public AbstractProviderMessageHandler() {
-        this.logger = LoggerFactory.getLogger(getClass());
-       // ResolvableType resolvableType = ResolvableType.forClass(getClass());
-      //  messageClass = (Class<T>) resolvableType.getSuperType().getGeneric(0).resolve();
-
-    }
-
-
-
-//    @Override
-//    public T getEmptyMessage() {
-//
-//        try {
-//            return messageClass.newInstance();
-//        } catch (Exception e) {
-//
-//            Assert.error(e.toString());
-//        }
-//        return null;
-//    }
-
-//    @Override
-//    public int handlerId() {
-//        if (IdMessage != null) {
-//            return IdMessage.getMessageId();
-//        }
-//        IdMessage = getEmptyMessage();
-//        return IdMessage.getMessageId();
-//    }
+    protected MessageSender messageSender;
+    @Resource
+    protected ProviderMessageHandlerContext handlerContext;
+    @Resource
+    protected MessageDecoderContext decoderContext;
 
     @Override
     public void afterPropertiesSet() {
-        ProviderMessageHandlerUtil.regMessageHandler(this);
-        logger.info("gatewayManager {}",gatewayManager);
+        handlerContext.registerHandler(this);
+        decoderContext.registerDecoder(this);
     }
 
-
+    /**
+     * 是否直接转发，false 网关会进行一次询问
+     */
     @Override
     public boolean direct() {
         return true;
     }
 
+    /**
+     * 是否向网关注册该handler
+     * 内部请求不要注册到网关
+     */
+    @Override
+    public boolean registerToGateway() {
+        return true;
+    }
 
     @Override
-    public boolean regToGateway() {
-        return true;
+    public T decode(ByteBuf buf, int maxIndex) {
+        T message = newEmptyMessage();
+        message.read(buf, maxIndex);
+        return message;
     }
 }

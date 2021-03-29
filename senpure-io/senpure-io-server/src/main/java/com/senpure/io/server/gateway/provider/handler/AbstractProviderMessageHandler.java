@@ -15,7 +15,7 @@ public abstract class AbstractProviderMessageHandler implements ProviderMessageH
 
     @Override
     public void afterPropertiesSet() {
-        messageExecutor.regProviderMessageHandler(this);
+        messageExecutor.registerProviderMessageHandler(this);
 
     }
 }

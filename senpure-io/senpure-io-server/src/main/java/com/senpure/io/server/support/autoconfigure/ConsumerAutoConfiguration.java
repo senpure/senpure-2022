@@ -3,11 +3,15 @@ package com.senpure.io.server.support.autoconfigure;
 import com.senpure.base.util.Assert;
 import com.senpure.executor.DefaultTaskLoopGroup;
 import com.senpure.executor.TaskLoopGroup;
+import com.senpure.io.server.DefaultMessageDecoderContext;
+import com.senpure.io.server.MessageDecoderContext;
 import com.senpure.io.server.ServerProperties;
 import com.senpure.io.server.consumer.ConsumerMessageExecutor;
-import com.senpure.io.server.consumer.ConsumerMessageHandlerUtil;
+import com.senpure.io.server.consumer.ConsumerMessageHandlerContext;
+import com.senpure.io.server.consumer.DefaultConsumerMessageHandlerContext;
 import com.senpure.io.server.consumer.RemoteServerManager;
 import com.senpure.io.server.consumer.handler.ConsumerMessageHandler;
+import com.senpure.io.server.consumer.remoting.SuccessCallback;
 import com.senpure.io.server.protocol.message.SCHeartMessage;
 import com.senpure.io.server.protocol.message.SCInnerErrorMessage;
 import com.senpure.io.server.support.ConsumerServerStarter;
@@ -33,13 +37,15 @@ import javax.annotation.Resource;
 
 
 public class ConsumerAutoConfiguration {
-    private Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
 
     @Resource
     private ServerProperties serverProperties;
 
     private TaskLoopGroup taskLoopGroup;
+
+
     @PostConstruct
     public void init() {
         check();
@@ -77,6 +83,7 @@ public class ConsumerAutoConfiguration {
         return service;
 
     }
+
     @PreDestroy
     public void destroy() {
         if (taskLoopGroup != null) {
@@ -85,14 +92,28 @@ public class ConsumerAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(MessageDecoderContext.class)
+    public MessageDecoderContext messageDecoderContext() {
+        return new DefaultMessageDecoderContext();
+    }
+
+    @Bean
+    public ConsumerMessageHandlerContext consumerMessageHandlerContext() {
+        ConsumerMessageHandlerContext handlerContext = new DefaultConsumerMessageHandlerContext();
+        SuccessCallback.setHandlerContext(handlerContext);
+
+        return handlerContext;
+    }
+
+    @Bean
     public RemoteServerManager remoteServerManager() {
         return new RemoteServerManager(serverProperties.getConsumer());
     }
 
     @Bean
-    public ConsumerMessageExecutor consumerMessageExecutor() {
+    public ConsumerMessageExecutor consumerMessageExecutor(ConsumerMessageHandlerContext messageDecoderContext) {
 
-        return new ConsumerMessageExecutor(serverProperties.getConsumer());
+        return new ConsumerMessageExecutor(serverProperties.getConsumer(), messageDecoderContext);
     }
 
     @Bean
@@ -106,15 +127,17 @@ public class ConsumerAutoConfiguration {
     }
 
 
+    public static class ConsumerHandlerChecker implements ApplicationRunner {
+        @Resource
+        private ConsumerMessageHandlerContext handlerContext;
 
-    static class ConsumerHandlerChecker implements ApplicationRunner {
         @Override
         public void run(ApplicationArguments args) {
-            ConsumerMessageHandler<?> handler = ConsumerMessageHandlerUtil.getHandler(SCInnerErrorMessage.MESSAGE_ID);
+            ConsumerMessageHandler<?> handler = handlerContext.handler(SCInnerErrorMessage.MESSAGE_ID);
             if (handler == null) {
                 Assert.error("缺少[SCInnerErrorMessage]处理器");
             }
-            handler = ConsumerMessageHandlerUtil.getHandler(SCHeartMessage.MESSAGE_ID);
+            handler = handlerContext.handler(SCHeartMessage.MESSAGE_ID);
             if (handler == null) {
                 Assert.error("缺少[SCHeartMessage]处理器");
             }

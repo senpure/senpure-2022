@@ -9,8 +9,6 @@ package com.senpure.io.protocol;
 public interface Message extends Bean {
     /**
      * 消息唯一标识
-     *
-     * @return
      */
-    int getMessageId();
+    int messageId();
 }

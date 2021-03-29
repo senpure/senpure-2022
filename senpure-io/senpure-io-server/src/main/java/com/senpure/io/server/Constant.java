@@ -33,5 +33,9 @@ public class Constant {
     public static final String BREAK_TYPE_ERROR = "ERROR";
     public static final String BREAK_TYPE_USER_OFFlINE = "USER_OFFLINE";
     public static final String BREAK_TYPE_USER_CHANGE = "USER_CHANGE";
-    public static final String BREAK_TYPE_USER_LEAVE= "USER_LEAVE";
+    public static final String BREAK_TYPE_USER_LEAVE = "USER_LEAVE";
+
+
+    public static final String GATEWAY_METADATA_SC_PORT = "scPort";
+    public static final String GATEWAY_METADATA_CS_PORT = "csPort";
 }

@@ -8,7 +8,10 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * MessageScanner
@@ -50,7 +53,7 @@ public class MessageScanner {
             }
             if (message != null) {
                 IdName idName = new IdName();
-                idName.setId(message.getMessageId());
+                idName.setId(message.messageId());
                 idName.setMessageName(message.getClass().getSimpleName());
                 idNames.add(idName);
             }

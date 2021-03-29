@@ -22,7 +22,7 @@ import java.util.concurrent.ScheduledExecutorService;
 public class EventHelper {
 
 
-    private static Logger logger = LoggerFactory.getLogger(EventHelper.class);
+    private static final Logger logger = LoggerFactory.getLogger(EventHelper.class);
     private static Map<Integer, EventHandler> eventHandlerMap = new HashMap<>();
     private static ScheduledExecutorService service;
 
@@ -32,15 +32,15 @@ public class EventHelper {
     }
 
     public static void regEventHandler(EventHandler eventHandler) {
-        Assert.isNull(eventHandlerMap.get(eventHandler.handlerId()), eventHandler.handlerId() + " -> " + eventHandler.getEmptyEvent().getClass().getName() + "  处理程序已经存在");
+        Assert.isNull(eventHandlerMap.get(eventHandler.eventId()), eventHandler.eventId() + " -> " + eventHandler.newEmptyEvent().getClass().getName() + "  处理程序已经存在");
 
-        eventHandlerMap.put(eventHandler.handlerId(), eventHandler);
+        eventHandlerMap.put(eventHandler.eventId(), eventHandler);
     }
 
     private static Event getEmptyEvent(int eventId) {
         EventHandler eventHandler = eventHandlerMap.get(eventId);
         if (eventHandler != null) {
-            return eventHandler.getEmptyEvent();
+            return eventHandler.newEmptyEvent();
         }
         return null;
     }
@@ -52,8 +52,8 @@ public class EventHelper {
     }
 
     public static byte[] write(Event event) {
-        ByteBuf byteBuf = Unpooled.buffer(CompressBean.computeVar32Size(event.getEventId()) + event.getSerializedSize());
-        CompressBean.writeVar32(byteBuf, event.getEventId());
+        ByteBuf byteBuf = Unpooled.buffer(CompressBean.computeVar32Size(event.eventId()) + event.serializedSize());
+        CompressBean.writeVar32(byteBuf, event.eventId());
         event.write(byteBuf);
         byte[] data = new byte[byteBuf.writerIndex()];
         byteBuf.readBytes(data);
@@ -84,7 +84,7 @@ public class EventHelper {
                 logger.warn("没有找到事件处理器{}", eventId);
                 return null;
             }
-            event = eventHandler.getEmptyEvent();
+            event = eventHandler.newEmptyEvent();
             event.read(byteBuf, byteBuf.writerIndex());
         } catch (Exception e) {
 
@@ -104,9 +104,9 @@ public class EventHelper {
     }
 
     public static byte[] getBytes(Event event) {
-        ByteBuf byteBuf = Unpooled.buffer(event.getSerializedSize());
+        ByteBuf byteBuf = Unpooled.buffer(event.serializedSize());
         event.write(byteBuf);
-        byte[] data = new byte[event.getSerializedSize()];
+        byte[] data = new byte[event.serializedSize()];
         byteBuf.readBytes(data);
         return data;
     }

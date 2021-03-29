@@ -1,5 +1,6 @@
 package com.senpure.io.server.support.autoconfigure;
 
+
 import com.senpure.io.server.provider.handler.*;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -13,11 +14,7 @@ import org.springframework.context.annotation.Bean;
 
 public class ProviderMessageHandlerAutoConfiguration {
 
-//    @Bean
-//    @ConditionalOnProperty(
-//            prefix = "server.io.provider.handler.break-user-gateway",
-//            value = "enable",
-//            matchIfMissing = true)
+
     @Bean
     @ConditionalOnMissingBean(CSBreakUserGatewayMessageHandler.class)
     public CSBreakUserGatewayMessageHandler csBreakUserGatewayMessageHandler() {

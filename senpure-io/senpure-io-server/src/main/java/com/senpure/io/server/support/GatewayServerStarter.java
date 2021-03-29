@@ -1,14 +1,9 @@
 package com.senpure.io.server.support;
 
-import com.senpure.base.util.IDGenerator;
-import com.senpure.executor.DefaultTaskLoopGroup;
-import com.senpure.executor.TaskLoopGroup;
 import com.senpure.io.server.ServerProperties;
-import com.senpure.io.server.gateway.GatewayAndClientServer;
-import com.senpure.io.server.gateway.GatewayAndServerServer;
+import com.senpure.io.server.gateway.GatewayAndConsumerServer;
+import com.senpure.io.server.gateway.GatewayAndProviderServer;
 import com.senpure.io.server.gateway.GatewayMessageExecutor;
-import io.netty.util.concurrent.DefaultThreadFactory;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,12 +17,12 @@ import javax.annotation.PreDestroy;
  */
 public class GatewayServerStarter{
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private ServerProperties properties;
     private GatewayMessageExecutor messageExecutor;
-    private GatewayAndClientServer gatewayAndClientServer;
-    private GatewayAndServerServer gatewayAndServerServer;
+    private GatewayAndConsumerServer gatewayAndConsumerServer;
+    private GatewayAndProviderServer gatewayAndProviderServer;
 
 
     public void start(GatewayMessageExecutor  messageExecutor) {
@@ -41,27 +36,27 @@ public class GatewayServerStarter{
 
 
     private void servers() {
-        GatewayAndClientServer gatewayAndClientServer = new GatewayAndClientServer();
-        gatewayAndClientServer.setMessageExecutor(messageExecutor);
-        gatewayAndClientServer.setProperties(properties.getGateway());
-        if (gatewayAndClientServer.start()) {
-            this.gatewayAndClientServer = gatewayAndClientServer;
+        GatewayAndConsumerServer gatewayAndConsumerServer = new GatewayAndConsumerServer();
+        gatewayAndConsumerServer.setMessageExecutor(messageExecutor);
+        gatewayAndConsumerServer.setProperties(properties.getGateway());
+        if (gatewayAndConsumerServer.start()) {
+            this.gatewayAndConsumerServer = gatewayAndConsumerServer;
         }
-        GatewayAndServerServer gatewayAndServerServer = new GatewayAndServerServer();
-        gatewayAndServerServer.setMessageExecutor(messageExecutor);
-        gatewayAndServerServer.setProperties(properties.getGateway());
-        if (gatewayAndServerServer.start()) {
-            this.gatewayAndServerServer = gatewayAndServerServer;
+        GatewayAndProviderServer gatewayAndProviderServer = new GatewayAndProviderServer();
+        gatewayAndProviderServer.setMessageExecutor(messageExecutor);
+        gatewayAndProviderServer.setProperties(properties.getGateway());
+        if (gatewayAndProviderServer.start()) {
+            this.gatewayAndProviderServer = gatewayAndProviderServer;
         }
     }
 
     @PreDestroy
     public void destroy() {
-        if (gatewayAndClientServer != null) {
-            gatewayAndClientServer.destroy();
+        if (gatewayAndConsumerServer != null) {
+            gatewayAndConsumerServer.destroy();
         }
-        if (gatewayAndServerServer != null) {
-            gatewayAndServerServer.destroy();
+        if (gatewayAndProviderServer != null) {
+            gatewayAndProviderServer.destroy();
         }
         if (messageExecutor != null) {
             messageExecutor.shutdownService();

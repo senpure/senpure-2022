@@ -7,14 +7,13 @@ import io.netty.handler.codec.MessageToByteEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-public class ProviderMessageEncoder extends MessageToByteEncoder<Provider2GatewayMessage> {
-    protected Logger logger = LoggerFactory.getLogger(getClass());
+public class ProviderMessageEncoder extends MessageToByteEncoder<ProviderSendMessage> {
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
 
     @Override
-    protected void encode(ChannelHandlerContext ctx, Provider2GatewayMessage frame, ByteBuf out) throws Exception {
-        int dataLength = frame.getMessage().getSerializedSize();
+    protected void encode(ChannelHandlerContext ctx, ProviderSendMessage frame, ByteBuf out) {
+        int dataLength = frame.getMessage().serializedSize();
         int headLength = CompressBean.computeVar32Size(frame.getRequestId());
         headLength += CompressBean.computeVar32Size(frame.getMessageId());
         headLength += CompressBean.computeVar64Size(frame.getToken());
@@ -35,6 +34,4 @@ public class ProviderMessageEncoder extends MessageToByteEncoder<Provider2Gatewa
         }
         frame.getMessage().write(out);
     }
-
-
 }

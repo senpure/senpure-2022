@@ -1,15 +1,15 @@
 package com.senpure.io.server.gateway.provider.handler;
 
-import com.senpure.io.server.gateway.Server2GatewayMessage;
+import com.senpure.io.server.gateway.GatewayReceiveProviderMessage;
 import com.senpure.io.server.protocol.message.SCIdNameMessage;
 import com.senpure.io.server.support.MessageIdReader;
 import io.netty.channel.Channel;
 
 public class SCIdNameMessageHandler extends AbstractProviderMessageHandler {
     @Override
-    public void execute(Channel channel, Server2GatewayMessage server2GatewayMessage) {
+    public void execute(Channel channel, GatewayReceiveProviderMessage gatewayReceiveProviderMessage) {
         SCIdNameMessage message = new SCIdNameMessage();
-        messageExecutor.readMessage(message, server2GatewayMessage);
+        messageExecutor.readMessage(message, gatewayReceiveProviderMessage);
         MessageIdReader.relation(message.getIdNames());
     }
 
