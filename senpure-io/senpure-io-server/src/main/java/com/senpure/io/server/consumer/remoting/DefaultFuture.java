@@ -26,7 +26,11 @@ public class DefaultFuture implements ResponseFuture {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultFuture.class);
     private static final Map<Integer, DefaultFuture> FUTURES = new ConcurrentHashMap<>();
+    private static ConsumerMessageExecutor messageExecutor;
 
+    public static void setMessageExecutor(ConsumerMessageExecutor messageExecutor) {
+        DefaultFuture.messageExecutor = messageExecutor;
+    }
 
     private final int requestId;
 
@@ -148,11 +152,11 @@ public class DefaultFuture implements ResponseFuture {
                             ConsumerMessage frame = new ConsumerMessage();
                             frame.setRequestId(future.getRequestId());
                             frame.setMessage(errorMessage);
-                            ConsumerMessageExecutor messageExecutor = Spring.getBean(ConsumerMessageExecutor.class);
+                            ConsumerMessageExecutor messageExecutor =DefaultFuture.messageExecutor ;
                             if (messageExecutor != null) {
                                 messageExecutor.execute(future.channel, frame);
                             } else {
-                                logger.warn("没有从spring 容器中找到  ConsumerMessageExecutor");
+                                logger.warn("没有设置ConsumerMessageExecutor");
                             }
 
                         }

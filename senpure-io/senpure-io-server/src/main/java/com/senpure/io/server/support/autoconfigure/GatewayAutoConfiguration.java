@@ -211,7 +211,7 @@ public class GatewayAutoConfiguration {
         public String toString() {
             return "Response{" +
                     "code=" + code +
-                    ", getValue='" + message + '\'' +
+                    ", message='" + message + '\'' +
                     ", serverCenterAndWork=" + serverCenterAndWork +
                     ", validators=" + validators +
                     '}';

@@ -32,7 +32,7 @@ public class PermissionMapperAutoConfiguration {
     public static class PermissionMapperRegistrar implements ImportBeanDefinitionRegistrar {
         private static final String BEAN_NAME = MapperScannerConfigurer.class.getName();
         private static final String SENPURE_MAPPER_PACKAGE = "com.senpure.base.mapper";
-        private Logger logger = LoggerFactory.getLogger(getClass());
+        private final Logger logger = LoggerFactory.getLogger(getClass());
 
         public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
             if (registry.containsBeanDefinition(BEAN_NAME)) {

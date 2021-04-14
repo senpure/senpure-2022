@@ -91,7 +91,7 @@ public class RemoteServerManager {
      *
      * @param message
      */
-    public Response sendSyncMessage(Message message) {
+    public Response sendSyncMessage(Message message)  {
         return sendSyncMessage(message, defaultTimeout);
     }
 
@@ -102,7 +102,7 @@ public class RemoteServerManager {
      * @param message
      * @param timeout 超时毫秒
      */
-    public Response sendSyncMessage(Message message, int timeout) {
+    public Response sendSyncMessage(Message message, int timeout)  {
         ConsumerMessage frame = new ConsumerMessage();
         frame.setRequestId(nextRequestId());
         frame.setMessage(message);

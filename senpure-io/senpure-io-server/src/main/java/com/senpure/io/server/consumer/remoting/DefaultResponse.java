@@ -12,9 +12,9 @@ import io.netty.channel.Channel;
 public class DefaultResponse implements Response {
 
 
-    private Message message;
-    private Message error;
-    private Channel channel;
+    private final Message message;
+    private final Message error;
+    private final Channel channel;
 
     public DefaultResponse(Channel channel,Message message, Message error) {
         this.channel = channel;

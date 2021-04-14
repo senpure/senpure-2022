@@ -2,8 +2,10 @@ package com.senpure.io.server.consumer;
 
 import com.senpure.base.util.Spring;
 import com.senpure.io.server.consumer.remoting.DefaultFuture;
+import com.senpure.io.server.consumer.remoting.DefaultResponse;
 import com.senpure.io.server.consumer.remoting.Response;
 import com.senpure.io.server.consumer.remoting.ResponseCallback;
+import com.senpure.io.server.protocol.message.SCInnerErrorMessage;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,41 +81,51 @@ public class RemoteServerChannelManager {
 
     public Response sendSyncMessage(ConsumerMessage frame, int timeout, int messageRetryTimeLimit) {
         Channel channel = nextChannel();
-        if (channel != null) {
-            DefaultFuture future = new DefaultFuture(frame, channel, timeout);
-            channel.writeAndFlush(frame);
-            return future.get();
-        } else {
-            if (messageRetryTimeLimit > 0) {
-                SyncFail syncFail = new SyncFail();
-                long start = System.currentTimeMillis();
-                FailMessage failMessage = new FailMessage();
-                failMessage.setFrame(frame);
-                failMessage.setStartTime(start);
-                failMessage.setTimeout(timeout);
-                failMessage.setSyncFail(syncFail);
-                failMessage.setMessageRetryTimeLimit(messageRetryTimeLimit);
-                addFailMessage(failMessage);
-                syncFail.lock.lock();
-                try {
-                    while (!syncFail.isDone()) {
-                        syncFail.done.await(messageRetryTimeLimit, TimeUnit.MILLISECONDS);
-                        if (syncFail.isDone() || System.currentTimeMillis() - start > messageRetryTimeLimit) {
-                            break;
+        try {
+            if (channel != null) {
+                DefaultFuture future = new DefaultFuture(frame, channel, timeout);
+                channel.writeAndFlush(frame);
+                return future.get();
+            } else {
+                if (messageRetryTimeLimit > 0) {
+                    SyncFail syncFail = new SyncFail();
+                    long start = System.currentTimeMillis();
+                    FailMessage failMessage = new FailMessage();
+                    failMessage.setFrame(frame);
+                    failMessage.setStartTime(start);
+                    failMessage.setTimeout(timeout);
+                    failMessage.setSyncFail(syncFail);
+                    failMessage.setMessageRetryTimeLimit(messageRetryTimeLimit);
+                    addFailMessage(failMessage);
+                    syncFail.lock.lock();
+                    try {
+                        while (!syncFail.isDone()) {
+                            syncFail.done.await(messageRetryTimeLimit, TimeUnit.MILLISECONDS);
+                            if (syncFail.isDone() || System.currentTimeMillis() - start > messageRetryTimeLimit) {
+                                break;
+                            }
                         }
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    } finally {
+                        syncFail.lock.unlock();
                     }
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                } finally {
-                    syncFail.lock.unlock();
+                    if (!syncFail.isDone()) {
+                        throw new RuntimeException("同步请求重试等待  超时" + messageRetryTimeLimit);
+                    }
+                    return syncFail.future.get();
                 }
-                if (!syncFail.isDone()) {
-                    throw new RuntimeException("同步请求重试等待  超时" + messageRetryTimeLimit);
-                }
-                return syncFail.future.get();
             }
+            throw new RuntimeException(serverKey + " " + host + ":" + port + " 没有可用的channel");
+        } catch (Exception e) {
+            logger.error("error",e);
+            SCInnerErrorMessage errorMessage = new SCInnerErrorMessage();
+            errorMessage.setCode("");
+            errorMessage.setMessage("");
+
+            return new DefaultResponse(channel, null, errorMessage);
+
         }
-        throw new RuntimeException(serverKey + " " + host + ":" + port + " 没有可用的channel");
     }
 
     private void addFailMessage(FailMessage failMessage) {

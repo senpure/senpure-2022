@@ -11,6 +11,7 @@ import com.senpure.io.server.consumer.ConsumerMessageHandlerContext;
 import com.senpure.io.server.consumer.DefaultConsumerMessageHandlerContext;
 import com.senpure.io.server.consumer.RemoteServerManager;
 import com.senpure.io.server.consumer.handler.ConsumerMessageHandler;
+import com.senpure.io.server.consumer.remoting.DefaultFuture;
 import com.senpure.io.server.consumer.remoting.SuccessCallback;
 import com.senpure.io.server.protocol.message.SCHeartMessage;
 import com.senpure.io.server.protocol.message.SCInnerErrorMessage;
@@ -113,7 +114,9 @@ public class ConsumerAutoConfiguration {
     @Bean
     public ConsumerMessageExecutor consumerMessageExecutor(ConsumerMessageHandlerContext messageDecoderContext) {
 
-        return new ConsumerMessageExecutor(serverProperties.getConsumer(), messageDecoderContext);
+        ConsumerMessageExecutor messageExecutor= new ConsumerMessageExecutor(serverProperties.getConsumer(), messageDecoderContext);
+        DefaultFuture.setMessageExecutor(messageExecutor);
+        return messageExecutor;
     }
 
     @Bean

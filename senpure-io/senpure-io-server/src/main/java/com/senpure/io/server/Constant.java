@@ -24,6 +24,11 @@ public class Constant {
      */
     public final static String ERROR_SERVER_ERROR = "SERVER_ERROR ";
 
+    /**
+     * 客户端错误
+     */
+    public final static String ERROR_CLIENT_ERROR = "CLIENT_ERROR ";
+
 
     /**
      * 超时错误
