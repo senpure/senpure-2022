@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 
 
-public class ProviderServerHandler extends SimpleChannelInboundHandler<ProviderReceiveMessage> {
+public class ProviderServerHandler extends SimpleChannelInboundHandler<ProviderReceivedMessage> {
 
 
     private final ProviderMessageExecutor messageExecutor;
@@ -28,7 +28,7 @@ public class ProviderServerHandler extends SimpleChannelInboundHandler<ProviderR
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, ProviderReceiveMessage msg) {
+    protected void channelRead0(ChannelHandlerContext ctx, ProviderReceivedMessage msg) {
         messageExecutor.execute(ctx.channel(), msg);
     }
 

@@ -4,23 +4,30 @@ import com.senpure.io.protocol.Message;
 import com.senpure.io.server.MessageFrame;
 
 /**
- * Gateway2ProducerMessage
- *
  * @author senpure
  * @time 2019-06-26 16:52:09
  */
-public class ProviderReceiveMessage implements MessageFrame {
+public class ProviderReceivedMessage implements MessageFrame {
 
     //请求编号
 
-    private int  requestId;
-    private long token;
-    private long userId;
-    private int messageId;
-    private Message message;
+    protected int messageType;
+    protected int requestId;
+    protected long token;
+    protected long userId;
+    protected int messageId;
+    protected Message message;
 
+    public ProviderReceivedMessage(int messageType) {
+        this.messageType = messageType;
+    }
 
-    public int  getRequestId() {
+    @Override
+    public int messageType() {
+        return messageType;
+    }
+
+    public int getRequestId() {
         return requestId;
     }
 
@@ -59,7 +66,6 @@ public class ProviderReceiveMessage implements MessageFrame {
     public void setMessageId(int messageId) {
         this.messageId = messageId;
     }
-
 
 
 }

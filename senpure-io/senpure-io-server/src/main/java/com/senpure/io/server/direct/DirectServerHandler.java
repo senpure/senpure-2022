@@ -5,7 +5,7 @@ import com.senpure.io.server.ChannelAttributeUtil;
 import com.senpure.io.server.protocol.message.CSBreakUserGatewayMessage;
 import com.senpure.io.server.protocol.message.CSRelationUserGatewayMessage;
 import com.senpure.io.server.provider.ProviderMessageExecutor;
-import com.senpure.io.server.provider.ProviderReceiveMessage;
+import com.senpure.io.server.provider.ProviderReceivedMessage;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.atomic.AtomicLong;
 
 
-public class DirectServerHandler extends SimpleChannelInboundHandler<ProviderReceiveMessage> {
+public class DirectServerHandler extends SimpleChannelInboundHandler<ProviderReceivedMessage> {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -52,7 +52,7 @@ public class DirectServerHandler extends SimpleChannelInboundHandler<ProviderRec
         CSRelationUserGatewayMessage message = new CSRelationUserGatewayMessage();
         message.setToken(token);
         message.setRelationToken(token);
-        ProviderReceiveMessage frame = new ProviderReceiveMessage();
+        ProviderReceivedMessage frame = new ProviderReceivedMessage(1);
         frame.setToken(token);
         frame.setMessageId(message.messageId());
         frame.setMessage(message);
@@ -64,7 +64,7 @@ public class DirectServerHandler extends SimpleChannelInboundHandler<ProviderRec
     public void channelInactive(ChannelHandlerContext ctx) {
         Channel channel = ctx.channel();
         logger.debug("{}断开连接 userId:{} ", channel, ChannelAttributeUtil.getUserId(channel));
-        ProviderReceiveMessage frame = new ProviderReceiveMessage();
+        ProviderReceivedMessage frame = new ProviderReceivedMessage(1);
         CSBreakUserGatewayMessage message = new CSBreakUserGatewayMessage();
         Long token=ChannelAttributeUtil.getToken(channel);
         message.setToken(token);
@@ -93,7 +93,7 @@ public class DirectServerHandler extends SimpleChannelInboundHandler<ProviderRec
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext channelHandlerContext, ProviderReceiveMessage providerReceiveMessage) throws Exception {
-        messageExecutor.execute(channelHandlerContext.channel(),providerReceiveMessage);
+    protected void channelRead0(ChannelHandlerContext channelHandlerContext, ProviderReceivedMessage providerReceivedMessage) throws Exception {
+        messageExecutor.execute(channelHandlerContext.channel(), providerReceivedMessage);
     }
 }

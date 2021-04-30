@@ -2,11 +2,17 @@ package com.senpure.io.server.provider;
 
 import com.senpure.executor.TaskLoopGroup;
 import com.senpure.io.server.Constant;
+import com.senpure.io.server.MessageFrame;
 import com.senpure.io.server.protocol.message.SCInnerErrorMessage;
 import com.senpure.io.server.provider.handler.ProviderMessageHandler;
+import com.senpure.io.server.romote.ResponseFuture;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ProviderMessageExecutor {
     private final Logger logger = LoggerFactory.getLogger(ProviderMessageExecutor.class);
@@ -15,20 +21,22 @@ public class ProviderMessageExecutor {
     private final MessageSender messageSender;
 
     private final ProviderMessageHandlerContext handlerContext;
+    private Map<Integer, ResponseFuture> futureMap = new ConcurrentHashMap<>();
 
     public ProviderMessageExecutor(TaskLoopGroup service, MessageSender messageSender, ProviderMessageHandlerContext handlerContext) {
         this.service = service;
         this.messageSender = messageSender;
         this.handlerContext = handlerContext;
     }
-    @SuppressWarnings({"unchecked","rawtypes"})
-    public void execute(Channel channel, ProviderReceiveMessage frame) {
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private void executeCSMessage(Channel channel, ProviderReceivedMessage frame) {
         long userId = frame.getUserId();
         long id = userId > 0 ? userId : frame.getToken();
         service.get(id).execute(() -> {
             ProviderMessageHandler handler = handlerContext.handler(frame.getMessageId());
             if (handler == null) {
-                logger.warn("没有找到消息处理程序 {} token {} userId:{}", frame.getMessageId(),frame.getToken(), userId);
+                logger.warn("没有找到消息处理程序 {} token {} userId:{}", frame.getMessageId(), frame.getToken(), userId);
 
                 long token = frame.getToken();
                 if (token == 0) {
@@ -61,5 +69,32 @@ public class ProviderMessageExecutor {
 
             }
         });
+    }
+
+    private void executeSCMessage(Channel channel, ProviderReceivedMessage frame) {
+
+        int requestId = frame.requestId;
+        if (requestId > 0) {
+            ResponseFuture future = futureMap.remove(requestId);
+            if (future == null) {
+                logger.warn("远程服务器返回时间过长,服务器已经做了超时处理 {}", frame);
+                return;
+            }
+
+        }
+    }
+
+    public void execute(Channel channel, ProviderReceivedMessage frame) {
+        int messageType = frame.messageType();
+
+        if (messageType == MessageFrame.MESSAGE_TYPE_CS) {
+            executeCSMessage(channel, frame);
+        } else if (messageType == MessageFrame.MESSAGE_TYPE_SC) {
+            executeSCMessage(channel, frame);
+        } else {
+            executeCSMessage(channel, frame);
+        }
+
+
     }
 }

@@ -55,9 +55,9 @@ public class ProviderLoggingHandler extends LoggingHandler {
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
 
         if (this.logger.isEnabled(this.internalLevel)) {
-            if (msg instanceof ProviderReceiveMessage) {
+            if (msg instanceof ProviderReceivedMessage) {
                 if (inFormat) {
-                    ProviderReceiveMessage message = (ProviderReceiveMessage) msg;
+                    ProviderReceivedMessage message = (ProviderReceivedMessage) msg;
                     this.logger.log(this.internalLevel, "{} token:{} userId:{}{}{}",
                             "RECEIVED", message.getToken(), message.getUserId(), "\n", message.getMessage().toString(null));
                     // this.logger.log(this.internalLevel, this.format(ctx, ChannelAttributeUtil.getChannelPlayerStr(ctx.channel()) + " RECEIVED", "\n" + ((Message) msg).toString(null)));

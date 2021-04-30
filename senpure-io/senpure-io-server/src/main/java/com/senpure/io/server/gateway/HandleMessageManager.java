@@ -55,24 +55,7 @@ public class HandleMessageManager {
         if (direct) {
             providerManager.sendMessage(message);
         } else {
-//            ByteBuf buf = Unpooled.buffer(message.getData().length);
-//            buf.writeBytes(message.getData());
-//            String value;
-//            try {
-//               CompressBean.readTag(buf, buf.writerIndex());
-//                value =CompressBean.readString(buf);
-//            } catch (Exception e) {
-//                logger.error("读取询问值出错询问值只能是string 类型 messageId " + message.getMessageId(), e);
-//                // Assert.error("读取询问值出错 询问值只能是string 类型 messageId  " + getValue.getMessageId());
-//                SCInnerErrorMessage errorMessage = new SCInnerErrorMessage();
-//                errorMessage.setCode(Constant.ERROR_SERVER_ERROR);
-//                errorMessage.getArgs().add(String.valueOf(message.getMessageId()));
-//                errorMessage.setMessage("询问值只能是String类型" + MessageIdReader.read(message.getMessageId()));
-//                messageExecutor.sendMessage2Consumer(message.getRequestId(), message.getToken(),errorMessage);
-//                return;
-//            }
 
-          //  String value = "";
             CSAskHandleMessage askHandleMessage = new CSAskHandleMessage();
             askHandleMessage.setFromMessageId(message.getMessageId());
             askHandleMessage.setAskToken(messageExecutor.idGenerator.nextId());

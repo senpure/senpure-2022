@@ -9,7 +9,7 @@ import com.senpure.io.server.Constant;
 import com.senpure.io.server.MessageDecoder;
 import com.senpure.io.server.MessageDecoderContext;
 import com.senpure.io.server.protocol.message.SCInnerErrorMessage;
-import com.senpure.io.server.provider.ProviderReceiveMessage;
+import com.senpure.io.server.provider.ProviderReceivedMessage;
 import com.senpure.io.server.provider.ProviderSendMessage;
 import com.senpure.io.server.support.MessageIdReader;
 import io.netty.buffer.ByteBuf;
@@ -75,7 +75,7 @@ public class DirectMessageDecoder extends ByteToMessageDecoder {
             } else {
                 try {
                     Message message = decoder.decode(in,maxIndex);
-                    ProviderReceiveMessage frame = new ProviderReceiveMessage();
+                    ProviderReceivedMessage frame = new ProviderReceivedMessage(1);
                     frame.setRequestId(requestId);
                     frame.setMessageId(messageId);
                     Channel channel = ctx.channel();
