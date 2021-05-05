@@ -14,7 +14,7 @@ import com.senpure.io.server.consumer.handler.ConsumerMessageHandler;
 import com.senpure.io.server.consumer.remoting.DefaultFuture;
 import com.senpure.io.server.consumer.remoting.SuccessCallback;
 import com.senpure.io.server.protocol.message.SCHeartMessage;
-import com.senpure.io.server.protocol.message.SCInnerErrorMessage;
+import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
 import com.senpure.io.server.support.ConsumerServerStarter;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import org.apache.commons.lang3.StringUtils;
@@ -136,7 +136,7 @@ public class ConsumerAutoConfiguration {
 
         @Override
         public void run(ApplicationArguments args) {
-            ConsumerMessageHandler<?> handler = handlerContext.handler(SCInnerErrorMessage.MESSAGE_ID);
+            ConsumerMessageHandler<?> handler = handlerContext.handler(SCFrameworkErrorMessage.MESSAGE_ID);
             if (handler == null) {
                 Assert.error("缺少[SCInnerErrorMessage]处理器");
             }

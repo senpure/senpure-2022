@@ -7,7 +7,7 @@ import com.senpure.io.server.gateway.provider.ProviderDefaultNextStrategy;
 import com.senpure.io.server.gateway.provider.ProviderNextStrategy;
 import com.senpure.io.server.protocol.message.CSBreakUserGatewayMessage;
 import com.senpure.io.server.protocol.message.CSRelationUserGatewayMessage;
-import com.senpure.io.server.protocol.message.SCInnerErrorMessage;
+import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
 import com.senpure.io.server.support.MessageIdReader;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
@@ -63,7 +63,7 @@ public class ProviderManager {
             provider = nextProvider();
             if (provider == null) {
                 logger.warn("{}没有服务实例可以使用", serverName);
-                SCInnerErrorMessage errorMessage = new SCInnerErrorMessage();
+                SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
                 errorMessage.setCode(Constant.ERROR_NOT_FOUND_SERVER);
                 errorMessage.getArgs().add(String.valueOf(gatewayReceiveConsumerMessage.getMessageId()));
                 errorMessage.setMessage("没有服务器处理" + MessageIdReader.read(gatewayReceiveConsumerMessage.getMessageId()));

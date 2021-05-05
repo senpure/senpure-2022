@@ -98,6 +98,7 @@ message SC MessageForward 118 {
     bytes  data       = 4;
 }
 
+
 #以下是客户端会用到的
 
 //心跳
@@ -108,8 +109,8 @@ message CS Heart 65 {
 message SC Heart 66 {
 }
 
-//服务器内部错误提示
-message SC InnerError 100 {
+//框架错误提示
+message SC FrameworkError 100 {
     String    code;                       //错误码
     String    message;                    //提示内容
     String [] args;                       //参数

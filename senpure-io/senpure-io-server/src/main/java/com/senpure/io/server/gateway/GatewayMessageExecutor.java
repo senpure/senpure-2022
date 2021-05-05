@@ -11,7 +11,7 @@ import com.senpure.io.server.ServerProperties;
 import com.senpure.io.server.gateway.consumer.handler.ConsumerMessageHandler;
 import com.senpure.io.server.gateway.provider.Provider;
 import com.senpure.io.server.gateway.provider.handler.ProviderMessageHandler;
-import com.senpure.io.server.protocol.message.SCInnerErrorMessage;
+import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
 import com.senpure.io.server.support.MessageIdReader;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -136,6 +136,7 @@ public class GatewayMessageExecutor {
         }
         service.get(token).execute(() -> {
             try {
+                logger.debug("new gateway");
                 ConsumerMessageHandler handler = c2gHandlerMap.get(message.getMessageId());
                 if (handler != null) {
                     handler.execute(channel, message);
@@ -147,7 +148,7 @@ public class GatewayMessageExecutor {
                 HandleMessageManager handleMessageManager = handleMessageManagerMap.get(message.getMessageId());
                 if (handleMessageManager == null) {
                     logger.warn("没有找到消息的接收服务器{}", message.getMessageId());
-                    SCInnerErrorMessage errorMessage = new SCInnerErrorMessage();
+                    SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
 
                     errorMessage.setCode(Constant.ERROR_NOT_FOUND_SERVER);
                     errorMessage.getArgs().add(String.valueOf(message.getMessageId()));
@@ -159,7 +160,7 @@ public class GatewayMessageExecutor {
                 handleMessageManager.execute(message);
             } catch (Exception e) {
                 logger.error("转发消息出错 " + message.getMessageId(), e);
-                SCInnerErrorMessage errorMessage = new SCInnerErrorMessage();
+                SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
 
                 errorMessage.setCode(Constant.ERROR_SERVER_ERROR);
                 errorMessage.getArgs().add(String.valueOf(message.getMessageId()));
@@ -227,6 +228,10 @@ public class GatewayMessageExecutor {
         startCheck();
     }
 
+    private  void executeSCMessage()
+    {
+
+    }
     //处理服务器发过来的消息
     public void execute(Channel channel, final GatewayReceiveProviderMessage message) {
         long token = message.getToken();
@@ -385,7 +390,7 @@ public class GatewayMessageExecutor {
                             MessageIdReader.read(waitAskTask.getFromMessageId()), waitAskTask.getValue(),
                             waitAskTask.getAskTimes(), waitAskTask.getAnswerTimes());
                     tokens.add(entry.getKey());
-                    SCInnerErrorMessage errorMessage = new SCInnerErrorMessage();
+                    SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
                     errorMessage.setCode(Constant.ERROR_NOT_HANDLE_VALUE_REQUEST);
                     errorMessage.getArgs().add(String.valueOf(waitAskTask.getFromMessageId()));
                     errorMessage.setMessage(MessageIdReader.read(waitAskTask.getFromMessageId()));

@@ -34,6 +34,16 @@ public class Constant {
      * 超时错误
      */
     public final static String ERROR_TIMEOUT = "TIMEOUT ";
+    /**
+     * 中断错误
+     */
+    public final static String ERROR_INTERRUPTED = "INTERRUPTED";
+
+    /**
+     * 中断错误
+     */
+    public final static String ERROR_CHANNEL_NOT_AVAILABLE = "CHANNEL_NOT_AVAILABLE";
+
 
     public static final String BREAK_TYPE_ERROR = "ERROR";
     public static final String BREAK_TYPE_USER_OFFlINE = "USER_OFFLINE";

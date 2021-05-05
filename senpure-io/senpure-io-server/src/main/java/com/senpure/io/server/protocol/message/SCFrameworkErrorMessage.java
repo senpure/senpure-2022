@@ -3,16 +3,16 @@ package com.senpure.io.server.protocol.message;
 import com.senpure.io.protocol.CompressMessage;
 import io.netty.buffer.ByteBuf;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
 
 /**
- * 服务器内部错误提示
+ * 框架错误提示
  * 
  * @author senpure
- * @time 2020-11-20 17:37:42
+ * @time 2021-5-5 15:28:47
  */
-public class SCInnerErrorMessage extends CompressMessage {
+public class SCFrameworkErrorMessage extends CompressMessage {
 
     public static final int MESSAGE_ID = 100;
     //错误码
@@ -22,7 +22,7 @@ public class SCInnerErrorMessage extends CompressMessage {
     //参数
     private List<String> args = new ArrayList<>(16);
 
-    public void copy(SCInnerErrorMessage source) {
+    public void copy(SCFrameworkErrorMessage source) {
         this.code = source.getCode();
         this.message = source.getMessage();
         this.args.clear();
@@ -53,9 +53,9 @@ public class SCInnerErrorMessage extends CompressMessage {
      * 读取字节缓存
      */
     @Override
-    public void read(ByteBuf buf, int maxIndex) {
+    public void read(ByteBuf buf, int endIndex) {
         while (true) {
-            int tag = readTag(buf, maxIndex);
+            int tag = readTag(buf, endIndex);
             switch (tag) {
                 case 0://end
                     return;
@@ -118,7 +118,7 @@ public class SCInnerErrorMessage extends CompressMessage {
     /**
      * set 错误码
      */
-    public SCInnerErrorMessage setCode(String code) {
+    public SCFrameworkErrorMessage setCode(String code) {
         this.code = code;
         return this;
     }
@@ -135,7 +135,7 @@ public class SCInnerErrorMessage extends CompressMessage {
     /**
      * set 提示内容
      */
-    public SCInnerErrorMessage setMessage(String message) {
+    public SCFrameworkErrorMessage setMessage(String message) {
         this.message = message;
         return this;
     }
@@ -152,7 +152,7 @@ public class SCInnerErrorMessage extends CompressMessage {
      /**
       * set 参数
       */
-    public SCInnerErrorMessage setArgs(List<String> args) {
+    public SCFrameworkErrorMessage setArgs(List<String> args) {
         if (args == null) {
             this.args = new ArrayList<>(16);
             return this;
@@ -162,13 +162,18 @@ public class SCInnerErrorMessage extends CompressMessage {
     }
 
     @Override
+    public int messageType() {
+        return MESSAGE_TYPE_SC;
+    }
+
+    @Override
     public int messageId() {
         return 100;
     }
 
     @Override
     public String toString() {
-        return "SCInnerErrorMessage[100]{"
+        return "SCFrameworkErrorMessage[100]{"
                 + "code=" + code
                 + ",message=" + message
                 + ",args=" + args
@@ -182,7 +187,7 @@ public class SCInnerErrorMessage extends CompressMessage {
         //最长字段长度 7
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("SCInnerErrorMessage").append("[100]").append("{");
+        sb.append("SCFrameworkErrorMessage").append("[100]").append("{");
         //错误码
         sb.append("\n");
         sb.append(indent).append("code    = ").append(code);

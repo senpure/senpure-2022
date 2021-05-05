@@ -1,17 +1,17 @@
 package com.senpure.io.server.protocol.message;
 
-import com.senpure.io.protocol.CompressMessage;
 import com.senpure.io.server.protocol.bean.HandleMessage;
+import com.senpure.io.protocol.CompressMessage;
 import io.netty.buffer.ByteBuf;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * 服务器注册消息处理器到网关
  * 
  * @author senpure
- * @time 2020-11-20 17:37:42
+ * @time 2021-5-5 15:28:47
  */
 public class SCRegServerHandleMessageMessage extends CompressMessage {
 
@@ -64,9 +64,9 @@ public class SCRegServerHandleMessageMessage extends CompressMessage {
      * 读取字节缓存
      */
     @Override
-    public void read(ByteBuf buf, int maxIndex) {
+    public void read(ByteBuf buf, int endIndex) {
         while (true) {
-            int tag = readTag(buf, maxIndex);
+            int tag = readTag(buf, endIndex);
             switch (tag) {
                 case 0://end
                     return;
@@ -197,6 +197,11 @@ public class SCRegServerHandleMessageMessage extends CompressMessage {
         }
         this.messages = messages;
         return this;
+    }
+
+    @Override
+    public int messageType() {
+        return MESSAGE_TYPE_SC;
     }
 
     @Override

@@ -494,8 +494,12 @@ public class ServerProperties {
         /**
          * 没有channel时下一个可用channel重发消息的时间限制
          */
+        @Deprecated
         private int messageRetryTimeLimit = 10000;
-
+        /**
+         * 没有channel时下一个可用channel重发消息的时间限制
+         */
+        private int messageWaitSendTimeout = 10000;
         /**
          * 输出格式化
          */
@@ -666,6 +670,14 @@ public class ServerProperties {
 
         public void setMessageRetryTimeLimit(int messageRetryTimeLimit) {
             this.messageRetryTimeLimit = messageRetryTimeLimit;
+        }
+
+        public int getMessageWaitSendTimeout() {
+            return messageWaitSendTimeout;
+        }
+
+        public void setMessageWaitSendTimeout(int messageWaitSendTimeout) {
+            this.messageWaitSendTimeout = messageWaitSendTimeout;
         }
 
         public MODEL getModel() {

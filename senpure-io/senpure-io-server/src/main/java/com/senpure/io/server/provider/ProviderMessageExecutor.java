@@ -1,17 +1,20 @@
 package com.senpure.io.server.provider;
 
 import com.senpure.executor.TaskLoopGroup;
+import com.senpure.io.protocol.Message;
 import com.senpure.io.server.Constant;
 import com.senpure.io.server.MessageFrame;
-import com.senpure.io.server.protocol.message.SCInnerErrorMessage;
+import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
 import com.senpure.io.server.provider.handler.ProviderMessageHandler;
-import com.senpure.io.server.romote.ResponseFuture;
+import com.senpure.io.server.remoting.DefaultFuture;
+import com.senpure.io.server.remoting.DefaultResponse;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ProviderMessageExecutor {
@@ -21,12 +24,13 @@ public class ProviderMessageExecutor {
     private final MessageSender messageSender;
 
     private final ProviderMessageHandlerContext handlerContext;
-    private Map<Integer, ResponseFuture> futureMap = new ConcurrentHashMap<>();
-
+    private Map<Integer, DefaultFuture> futureMap = new ConcurrentHashMap<>();
+    private final Set<Integer> errorMessageIds = new HashSet<>();
     public ProviderMessageExecutor(TaskLoopGroup service, MessageSender messageSender, ProviderMessageHandlerContext handlerContext) {
         this.service = service;
         this.messageSender = messageSender;
         this.handlerContext = handlerContext;
+        errorMessageIds.add(SCFrameworkErrorMessage.MESSAGE_ID);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -43,11 +47,11 @@ public class ProviderMessageExecutor {
                     logger.error("内部处理handler{} 没有注册到 handlerContext", frame.getMessageId());
                     //  channel.writeAndFlush( scInnerErrorMessage);
                 } else {
-                    SCInnerErrorMessage scInnerErrorMessage = new SCInnerErrorMessage();
-                    scInnerErrorMessage.setCode(Constant.ERROR_NOT_HANDLE_REQUEST);
-                    scInnerErrorMessage.setMessage("服务器没有处理程序:" + frame.getMessageId());
-                    scInnerErrorMessage.getArgs().add(String.valueOf(frame.getMessageId()));
-                    messageSender.sendMessageByToken(token, scInnerErrorMessage);
+                    SCFrameworkErrorMessage scFrameworkErrorMessage = new SCFrameworkErrorMessage();
+                    scFrameworkErrorMessage.setCode(Constant.ERROR_NOT_HANDLE_REQUEST);
+                    scFrameworkErrorMessage.setMessage("服务器没有处理程序:" + frame.getMessageId());
+                    scFrameworkErrorMessage.getArgs().add(String.valueOf(frame.getMessageId()));
+                    messageSender.sendMessageByToken(token, scFrameworkErrorMessage);
                 }
 
             } else {
@@ -56,13 +60,13 @@ public class ProviderMessageExecutor {
                     handler.execute(channel, frame.getToken(), userId, frame.getMessage());
                 } catch (Exception e) {
                     logger.error("执行handler[" + handler.getClass().getName() + "]逻辑出错 ", e);
-                    SCInnerErrorMessage scInnerErrorMessage = new SCInnerErrorMessage();
-                    scInnerErrorMessage.setMessage("服务器执行错误:" + frame.getMessage().getClass().getSimpleName()
+                    SCFrameworkErrorMessage scFrameworkErrorMessage = new SCFrameworkErrorMessage();
+                    scFrameworkErrorMessage.setMessage("服务器执行错误:" + frame.getMessage().getClass().getSimpleName()
                             + "[" + frame.getMessageId() + "]:" +
                             e.getMessage());
-                    scInnerErrorMessage.setCode(Constant.ERROR_SERVER_ERROR);
-                    scInnerErrorMessage.getArgs().add(String.valueOf(frame.getMessageId()));
-                    messageSender.sendMessageByToken(frame.getToken(), scInnerErrorMessage);
+                    scFrameworkErrorMessage.setCode(Constant.ERROR_SERVER_ERROR);
+                    scFrameworkErrorMessage.getArgs().add(String.valueOf(frame.getMessageId()));
+                    messageSender.sendMessageByToken(frame.getToken(), scFrameworkErrorMessage);
                 } finally {
                     MessageSender.REQUEST_ID.remove();
                 }
@@ -75,12 +79,14 @@ public class ProviderMessageExecutor {
 
         int requestId = frame.requestId;
         if (requestId > 0) {
-            ResponseFuture future = futureMap.remove(requestId);
+            DefaultFuture future = futureMap.remove(requestId);
             if (future == null) {
                 logger.warn("远程服务器返回时间过长,服务器已经做了超时处理 {}", frame);
                 return;
             }
-
+            boolean success= !isErrorMessage(frame.message);
+            DefaultResponse response = new DefaultResponse(success, channel, frame.message);
+            future.doReceived(response);
         }
     }
 
@@ -96,5 +102,9 @@ public class ProviderMessageExecutor {
         }
 
 
+    }
+
+    public boolean isErrorMessage(Message message) {
+        return errorMessageIds.contains(message.messageId());
     }
 }

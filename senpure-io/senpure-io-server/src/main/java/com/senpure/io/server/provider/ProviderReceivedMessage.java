@@ -27,6 +27,21 @@ public class ProviderReceivedMessage implements MessageFrame {
         return messageType;
     }
 
+    @Override
+    public int requestId() {
+        return requestId;
+    }
+
+    @Override
+    public int messageId() {
+        return messageId;
+    }
+
+    @Override
+    public Message message() {
+        return message;
+    }
+
     public int getRequestId() {
         return requestId;
     }

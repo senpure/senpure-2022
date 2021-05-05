@@ -1,4 +1,4 @@
-package com.senpure.io.server.romote;
+package com.senpure.io.server.remoting;
 
 import javax.annotation.Nonnull;
 
@@ -11,7 +11,7 @@ public interface ResponseFuture {
     @Nonnull
     Response get(int timeout);
 
-    void setCallback(@Nonnull Callback callback);
+    void setCallback(@Nonnull ResponseCallback callback);
 
     boolean isDone();
 }

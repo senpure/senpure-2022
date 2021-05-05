@@ -7,7 +7,7 @@ public class GatewayReceiveConsumerMessage extends GatewaySendableMessage {
 
 
     public GatewayReceiveConsumerMessage() {
-        super(MESSAGE_TYPE_CS);
+        super(MESSAGE_FROM_CONSUMER,MESSAGE_TYPE_CS);
     }
 
 

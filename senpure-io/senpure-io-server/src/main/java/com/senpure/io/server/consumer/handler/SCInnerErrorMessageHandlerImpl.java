@@ -1,7 +1,7 @@
 package com.senpure.io.server.consumer.handler;
 
 
-import com.senpure.io.server.protocol.message.SCInnerErrorMessage;
+import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
 import io.netty.channel.Channel;
 
 /**
@@ -10,19 +10,19 @@ import io.netty.channel.Channel;
  * @author senpure
  * @time 2019-07-02 17:02:44
  */
-public class SCInnerErrorMessageHandlerImpl extends AbstractConsumerMessageHandler<SCInnerErrorMessage> implements SCInnerErrorMessageHandler {
+public class SCInnerErrorMessageHandlerImpl extends AbstractConsumerMessageHandler<SCFrameworkErrorMessage> implements SCInnerErrorMessageHandler {
     @Override
-    public void execute(Channel channel, SCInnerErrorMessage message) throws Exception {
+    public void execute(Channel channel, SCFrameworkErrorMessage message) throws Exception {
         logger.error(message.toString());
     }
 
     @Override
     public int messageId() {
-        return SCInnerErrorMessage.MESSAGE_ID;
+        return SCFrameworkErrorMessage.MESSAGE_ID;
     }
 
     @Override
-    public SCInnerErrorMessage newEmptyMessage() {
-        return new SCInnerErrorMessage();
+    public SCFrameworkErrorMessage newEmptyMessage() {
+        return new SCFrameworkErrorMessage();
     }
 }

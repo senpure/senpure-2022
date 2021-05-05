@@ -5,7 +5,7 @@ import io.netty.buffer.ByteBuf;
 
 /**
  * @author senpure
- * @time 2020-11-20 17:37:42
+ * @time 2021-5-5 15:28:47
  */
 public class CSAskHandleMessage extends CompressMessage {
 
@@ -43,9 +43,9 @@ public class CSAskHandleMessage extends CompressMessage {
      * 读取字节缓存
      */
     @Override
-    public void read(ByteBuf buf, int maxIndex) {
+    public void read(ByteBuf buf, int endIndex) {
         while (true) {
-            int tag = readTag(buf, maxIndex);
+            int tag = readTag(buf, endIndex);
             switch (tag) {
                 case 0://end
                     return;
@@ -121,6 +121,11 @@ public class CSAskHandleMessage extends CompressMessage {
     public CSAskHandleMessage setData(byte [] data) {
         this.data = data;
         return this;
+    }
+
+    @Override
+    public int messageType() {
+        return MESSAGE_TYPE_CS;
     }
 
     @Override

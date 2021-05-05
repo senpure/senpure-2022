@@ -1,10 +1,9 @@
 package com.senpure.io.server.consumer.remoting;
 
-import com.senpure.base.util.Spring;
 import com.senpure.io.server.Constant;
 import com.senpure.io.server.consumer.ConsumerMessage;
 import com.senpure.io.server.consumer.ConsumerMessageExecutor;
-import com.senpure.io.server.protocol.message.SCInnerErrorMessage;
+import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -145,7 +144,7 @@ public class DefaultFuture implements ResponseFuture {
                             continue;
                         }
                         if (System.currentTimeMillis() - future.getStartTime() > future.getTimeout()) {
-                            SCInnerErrorMessage errorMessage = new SCInnerErrorMessage();
+                            SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
                             errorMessage.setCode(Constant.ERROR_TIMEOUT);
                             errorMessage.setMessage("同步请求超时["+future.messageId+"] :" + future.getTimeout());
                             errorMessage.getArgs().add(String.valueOf(future.getMessageId()));

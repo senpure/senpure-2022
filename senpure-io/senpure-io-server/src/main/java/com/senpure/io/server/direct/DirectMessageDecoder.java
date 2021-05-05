@@ -8,7 +8,7 @@ import com.senpure.io.server.ChannelAttributeUtil;
 import com.senpure.io.server.Constant;
 import com.senpure.io.server.MessageDecoder;
 import com.senpure.io.server.MessageDecoderContext;
-import com.senpure.io.server.protocol.message.SCInnerErrorMessage;
+import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
 import com.senpure.io.server.provider.ProviderReceivedMessage;
 import com.senpure.io.server.provider.ProviderSendMessage;
 import com.senpure.io.server.support.MessageIdReader;
@@ -60,7 +60,7 @@ public class DirectMessageDecoder extends ByteToMessageDecoder {
                 logger.warn("没有找到消息解码程序 messageId {}", messageId);
 
                 Channel channel = ctx.channel();
-                SCInnerErrorMessage errorMessage = new SCInnerErrorMessage();
+                SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
                 errorMessage.setCode(Constant.ERROR_NOT_HANDLE_REQUEST);
                 errorMessage.getArgs().add(String.valueOf(messageId));
                 errorMessage.setMessage("服务器没有处理程序:" + MessageIdReader.read(messageId));

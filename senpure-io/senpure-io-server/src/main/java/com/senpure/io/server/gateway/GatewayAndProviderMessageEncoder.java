@@ -16,6 +16,34 @@ public class GatewayAndProviderMessageEncoder extends MessageToByteEncoder<Gatew
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
 
+
+    @Override
+    protected void encode(ChannelHandlerContext ctx, GatewaySendableMessage msg, ByteBuf out) {
+
+        int messageType = msg.messageType();
+        if (messageType == MessageFrame.MESSAGE_TYPE_CS) {
+            encodeCSMessage(msg, out);
+        } else if (messageType == MessageFrame.MESSAGE_TYPE_SC) {
+            int headLength = 1 + CompressBean.computeVar32Size(msg.getRequestId());
+            headLength += CompressBean.computeVar32Size(msg.getMessageId());
+            headLength += CompressBean.computeVar64Size(msg.getToken());
+            headLength += CompressBean.computeVar64Size(msg.getUserId());
+            Message message = msg.getMessage();
+            int allSize = headLength + message.serializedSize();
+            out.ensureWritable(CompressBean.computeVar32Size(allSize) + allSize);
+            CompressBean.writeVar32(out, allSize);
+            CompressBean.writeVar32(out, msg.messageType());
+            CompressBean.writeVar32(out, msg.getRequestId());
+            CompressBean.writeVar32(out, msg.getMessageId());
+            CompressBean.writeVar64(out, msg.getToken());
+            CompressBean.writeVar64(out, msg.getUserId());
+            message.write(out);
+        } else {
+            encodeCSMessage(msg, out);
+        }
+
+    }
+
     private void encodeCSMessage(GatewaySendableMessage msg, ByteBuf out) {
         int headLength = 1 + CompressBean.computeVar32Size(msg.getRequestId());
         headLength += CompressBean.computeVar32Size(msg.getMessageId());
@@ -30,29 +58,6 @@ public class GatewayAndProviderMessageEncoder extends MessageToByteEncoder<Gatew
         CompressBean.writeVar64(out, msg.getToken());
         CompressBean.writeVar64(out, msg.getUserId());
         out.writeBytes(msg.getData());
-    }
-
-    @Override
-    protected void encode(ChannelHandlerContext ctx, GatewaySendableMessage msg, ByteBuf out) {
-
-        int messageType = msg.messageType();
-        if (messageType == MessageFrame.MESSAGE_TYPE_CS) {
-            encodeCSMessage(msg, out);
-        } else if (messageType == MessageFrame.MESSAGE_TYPE_SC) {
-            int headLength = 1 + CompressBean.computeVar32Size(msg.getRequestId());
-            headLength += CompressBean.computeVar32Size(msg.getMessageId());
-            Message message = msg.getMessage();
-            int allSize = headLength + message.serializedSize();
-            out.ensureWritable(CompressBean.computeVar32Size(allSize) + allSize);
-            CompressBean.writeVar32(out, allSize);
-            CompressBean.writeVar32(out, msg.messageType());
-            CompressBean.writeVar32(out, msg.getRequestId());
-            CompressBean.writeVar32(out, msg.getMessageId());
-            message.write(out);
-        } else {
-            encodeCSMessage(msg, out);
-        }
 
     }
-
 }

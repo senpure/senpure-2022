@@ -31,6 +31,11 @@ public class ${name} extends CompressMessage {
 <#include "compressField.ftl">
 
     @Override
+    public int messageType() {
+        return MESSAGE_TYPE_<#if type="CS">CS<#else>SC</#if>;
+    }
+
+    @Override
     public int messageId() {
         return ${id?c};
     }

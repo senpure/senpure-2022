@@ -5,7 +5,7 @@ import com.senpure.io.server.consumer.remoting.DefaultFuture;
 import com.senpure.io.server.consumer.remoting.DefaultResponse;
 import com.senpure.io.server.consumer.remoting.Response;
 import com.senpure.io.server.consumer.remoting.ResponseCallback;
-import com.senpure.io.server.protocol.message.SCInnerErrorMessage;
+import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,7 +119,7 @@ public class RemoteServerChannelManager {
             throw new RuntimeException(serverKey + " " + host + ":" + port + " 没有可用的channel");
         } catch (Exception e) {
             logger.error("error",e);
-            SCInnerErrorMessage errorMessage = new SCInnerErrorMessage();
+            SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
             errorMessage.setCode("");
             errorMessage.setMessage("");
 

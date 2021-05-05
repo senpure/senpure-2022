@@ -4,6 +4,10 @@ import com.senpure.io.protocol.Message;
 import com.senpure.io.server.MessageFrame;
 
 public class GatewaySendableMessage implements MessageFrame {
+
+    public  static final int MESSAGE_FROM_CONSUMER=1;
+    public  static final int MESSAGE_FROM_GATEWAY=2;
+    protected  int messageFrom;
     protected int messageType;
     protected int requestId;
     protected int messageId;
@@ -14,13 +18,28 @@ public class GatewaySendableMessage implements MessageFrame {
     protected byte[] data;
     protected Message message;
 
-    public GatewaySendableMessage(int messageType) {
+    public GatewaySendableMessage(int messageFrom,int messageType) {
         this.messageType = messageType;
     }
 
     @Override
     public int messageType() {
         return messageType;
+    }
+
+    @Override
+    public int requestId() {
+        return requestId;
+    }
+
+    @Override
+    public int messageId() {
+        return messageId;
+    }
+
+    @Override
+    public Message message() {
+        return message;
     }
 
     public int getRequestId() {
@@ -69,5 +88,9 @@ public class GatewaySendableMessage implements MessageFrame {
 
     public void setMessage(Message message) {
         this.message = message;
+    }
+
+    public int getMessageFrom() {
+        return messageFrom;
     }
 }

@@ -7,7 +7,7 @@ import com.senpure.io.server.consumer.handler.ConsumerMessageHandler;
 import com.senpure.io.server.consumer.remoting.DefaultFuture;
 import com.senpure.io.server.consumer.remoting.DefaultResponse;
 import com.senpure.io.server.consumer.remoting.Response;
-import com.senpure.io.server.protocol.message.SCInnerErrorMessage;
+import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +33,7 @@ public class ConsumerMessageExecutor {
     private final ConsumerMessageHandlerContext handlerContext;
 
     public ConsumerMessageExecutor(ServerProperties.Consumer properties, ConsumerMessageHandlerContext handlerContext) {
-        errorMessageIds.add(SCInnerErrorMessage.MESSAGE_ID);
+        errorMessageIds.add(SCFrameworkErrorMessage.MESSAGE_ID);
         errorMessageIds.add(properties.getScErrorMessageId());
         this.handlerContext = handlerContext;
     }

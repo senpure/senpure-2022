@@ -1,12 +1,13 @@
-package com.senpure.io.server.romote;
+package com.senpure.io.server.remoting;
 
 
-
+import com.senpure.io.protocol.Message;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -22,14 +23,16 @@ public class DefaultFuture implements ResponseFuture {
     private final Channel channel;
     private final Lock lock = new ReentrantLock();
     private final Condition done = lock.newCondition();
-    private final long start = System.currentTimeMillis();
-    private Response response;
-    private Callback callback;
 
-    public DefaultFuture(int timeout, Channel channel, int requestId) {
+    private final Message message;
+    private Response response;
+    private ResponseCallback callback;
+
+    public DefaultFuture(int timeout, Channel channel, int requestId, Message message) {
         this.timeout = timeout;
         this.channel = channel;
         this.requestId = requestId;
+        this.message = message;
 
     }
 
@@ -47,7 +50,7 @@ public class DefaultFuture implements ResponseFuture {
     }
 
     @Override
-    public void setCallback(@Nonnull Callback callback) {
+    public void setCallback(@Nonnull ResponseCallback callback) {
         if (isDone()) {
             invokeCallback(callback);
         } else {
@@ -68,7 +71,7 @@ public class DefaultFuture implements ResponseFuture {
         }
     }
 
-    private void invokeCallback(Callback callback) {
+    private void invokeCallback(ResponseCallback callback) {
 
         if (callback == null) {
             throw new NullPointerException("回调不能为空");
@@ -88,19 +91,35 @@ public class DefaultFuture implements ResponseFuture {
     @Nonnull
     @Override
     public Response get() {
-        return null;
+        return get(timeout);
     }
 
     @Nonnull
     @Override
     public Response get(int timeout) {
-        return null;
+        if (timeout <= 0) {
+            timeout = 500;
+        }
+        if (!isDone()) {
+            lock.lock();
+            try {
+                if (!done.await(timeout, TimeUnit.MILLISECONDS)) {
+                    int messageId = message.messageId();
+                    return FrameworkErrorResponse.timeout(channel, messageId, timeout);
+                }
+            } catch (InterruptedException e) {
+                int messageId = message.messageId();
+                return FrameworkErrorResponse.interrupted(channel, messageId, timeout);
+            } finally {
+                lock.unlock();
+            }
+        }
+        return response;
     }
-
 
 
     @Override
     public boolean isDone() {
-        return false;
+        return response != null;
     }
 }
