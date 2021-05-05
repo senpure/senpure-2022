@@ -4,6 +4,7 @@ import com.senpure.io.server.MessageFrame;
 import io.netty.channel.Channel;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 
 
 /**
@@ -20,12 +21,27 @@ public interface RemoteServer {
     void sendMessage(MessageFrame frame);
 
     /**
+     * 向服务器发送消息
+     *
+     * @param frames 消息列表
+     */
+    void sendMessage(List<MessageFrame> frames);
+
+    /**
      * 使用指定的channel 向服务器发送消息
      *
      * @param channel channel
      * @param frame   消息
      */
     void sendMessage(Channel channel, MessageFrame frame);
+
+    /**
+     * 使用指定的channel 向服务器发送消息
+     *
+     * @param channel channel
+     * @param frames  消息列表
+     */
+    void sendMessage(Channel channel, List<MessageFrame> frames);
 
     /**
      * 向服务器发送消息

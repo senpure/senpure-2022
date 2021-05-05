@@ -1,5 +1,6 @@
 package com.senpure.io.server.remoting;
 
+import com.senpure.base.util.Assert;
 import com.senpure.io.server.Constant;
 import com.senpure.io.server.MessageFrame;
 import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
@@ -31,6 +32,14 @@ public abstract class AbstractRemoteServer implements RemoteServer {
 
     protected ChannelService channelService;
 
+
+    public void verifyWorkable() {
+        Assert.notNull(remoteServerKey);
+        Assert.notNull(remoteHost);
+        Assert.notNull(remotePort);
+        Assert.notNull(futureService);
+        Assert.notNull(channelService);
+    }
 
     protected void addWaitMessage(WaitSendMessage waitSendMessage) {
         synchronized (waitSendMessages) {
@@ -97,6 +106,58 @@ public abstract class AbstractRemoteServer implements RemoteServer {
                     waitSendMessages.addAll(list);
                 }
             }
+        }
+
+    }
+
+    public abstract void checkWaitSendMessage();
+
+    public void addChannel(Channel channel) {
+        channelService.addChannel(channel);
+        checkWaitSendMessage();
+
+    }
+
+    public void removeChannel(Channel channel) {
+        channelService.removeChannel(channel);
+    }
+
+
+    @Override
+    public void sendMessage(List<MessageFrame> frames) {
+        Channel channel = channelService.nextChannel();
+        if (channel != null) {
+            sendMessage(channel, frames, 100);
+        } else {
+            for (MessageFrame frame : frames) {
+                WaitSendMessage waitSendMessage = new WaitSendMessage();
+                waitSendMessage.setFirstSendTime(System.currentTimeMillis());
+                waitSendMessage.setFrame(frame);
+                waitSendMessage.setWaitSendTimeout(waitSendTimeout);
+                addWaitMessage(waitSendMessage);
+            }
+        }
+    }
+
+    @Override
+    public void sendMessage(Channel channel, List<MessageFrame> frames) {
+
+        sendMessage(channel, frames, 100);
+    }
+
+    protected void sendMessage(Channel channel, List<MessageFrame> frames, int flushValue) {
+
+        int temp = 1;
+        for (MessageFrame frame : frames) {
+            channel.write(frame);
+            if (temp % flushValue == 0) {
+                channel.flush();
+                temp = 1;
+            }
+            temp++;
+        }
+        if (temp > 1) {
+            channel.flush();
         }
 
     }

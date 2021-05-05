@@ -7,7 +7,13 @@ import com.senpure.io.server.remoting.ChannelService;
 
 public class RemoteGatewayServer extends AbstractRemoteServer {
 
-    public RemoteGatewayServer(String remoteKey, String remoteHost, String remotePort, ServerProperties.Provider provider, TaskLoopGroup service) {
+    private final TaskLoopGroup service;
+
+    public RemoteGatewayServer(String remoteKey, String remoteHost, String remotePort, ServerProperties.Provider provider,
+                               TaskLoopGroup service) {
+
+
+        this.service = service;
 
         setRemoteServerKey(remoteKey);
         setRemoteHost(remoteHost);
@@ -15,6 +21,24 @@ public class RemoteGatewayServer extends AbstractRemoteServer {
         if (provider.getGatewayChannel() == 1) {
             setChannelService(new ChannelService.SingleChannelService(remoteServerKey));
 
+        } else {
+            setChannelService(new ChannelService.MultipleChannelService(remoteServerKey));
+        }
+
+
+    }
+
+    @Override
+    public void checkWaitSendMessage() {
+        synchronized (waitSendMessages) {
+            if (waitSendMessages.size() > 0) {
+                TaskLoopGroup executor = service;
+                if (executor != null) {
+                    executor.execute(this::sendWaitMessage);
+                } else {
+                    sendWaitMessage();
+                }
+            }
         }
     }
 }
