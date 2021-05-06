@@ -27,7 +27,7 @@ public class GatewayManager implements MessageSender {
 
     private final ConcurrentMap<Long, GatewayRelation> tokenGatewayMap = new ConcurrentHashMap<>();
 
-
+    //private final ConcurrentMap<String, GatewayChannelManager> gatewayChannelMap = new ConcurrentHashMap<>();
 
     public static int getRequestId() {
         return REQUEST_ID.get();
@@ -403,11 +403,9 @@ public class GatewayManager implements MessageSender {
             logger.warn("userId 不能为0");
             return;
         }
-        ProviderSendMessage toGateway = new ProviderSendMessage();
+        ProviderSendMessage toGateway = new ProviderSendMessage(message);
         toGateway.setToken(token);
         toGateway.setUserIds(new Long[]{userId});
-        toGateway.setMessage(message);
-        toGateway.setMessageId(message.messageId());
         toGateway.setRequestId(requestId);
         GatewayRelation gatewayRelation = tokenGatewayMap.get(token);
         if (gatewayRelation != null) {

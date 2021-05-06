@@ -29,15 +29,17 @@ public class GatewayAndConsumerMessageDecoder extends ByteToMessageDecoder {
             this.logger.info("数据不够一个数据包 packageLength ={} ,readableBytes={}", packageLength, in.readableBytes());
             in.resetReaderIndex();
         } else {
+            int messageType = CompressBean.readVar32(in);
             int requestId = CompressBean.readVar32(in);
             int messageId = CompressBean.readVar32(in);
-            int messageLength = packageLength - (CompressBean.computeVar32Size(requestId) + CompressBean.computeVar32Size(messageId));
+            int messageLength = packageLength - (CompressBean.computeVar32Size(messageType)+CompressBean.computeVar32Size(requestId) + CompressBean.computeVar32Size(messageId));
             byte[] data = new byte[messageLength];
             in.readBytes(data);
             GatewayReceiveConsumerMessage transfer = new GatewayReceiveConsumerMessage();
             transfer.setRequestId(requestId);
             transfer.setData(data);
             transfer.setMessageId(messageId);
+
             out.add(transfer);
         }
     }

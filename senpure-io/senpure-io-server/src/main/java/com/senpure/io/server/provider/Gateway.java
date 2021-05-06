@@ -5,16 +5,13 @@ import com.senpure.io.server.ServerProperties;
 import com.senpure.io.server.remoting.AbstractRemoteServer;
 import com.senpure.io.server.remoting.ChannelService;
 
-public class RemoteGatewayServer extends AbstractRemoteServer {
+public class Gateway extends AbstractRemoteServer {
 
     private final TaskLoopGroup service;
 
-    public RemoteGatewayServer(String remoteKey, String remoteHost, String remotePort, ServerProperties.Provider provider,
-                               TaskLoopGroup service) {
-
-
+    public Gateway(String remoteKey, String remoteHost, String remotePort, ServerProperties.Provider provider,
+                   TaskLoopGroup service) {
         this.service = service;
-
         setRemoteServerKey(remoteKey);
         setRemoteHost(remoteHost);
         setRemotePort(remotePort);

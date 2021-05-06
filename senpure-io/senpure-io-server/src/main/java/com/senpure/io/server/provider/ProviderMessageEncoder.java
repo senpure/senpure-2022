@@ -13,9 +13,9 @@ public class ProviderMessageEncoder extends MessageToByteEncoder<ProviderSendMes
 
     @Override
     protected void encode(ChannelHandlerContext ctx, ProviderSendMessage frame, ByteBuf out) {
-        int dataLength = frame.getMessage().serializedSize();
-        int headLength = CompressBean.computeVar32Size(frame.getRequestId());
-        headLength += CompressBean.computeVar32Size(frame.getMessageId());
+        int dataLength = frame.message().serializedSize();
+        int headLength = CompressBean.computeVar32Size(frame.requestId());
+        headLength += CompressBean.computeVar32Size(frame.messageId());
         headLength += CompressBean.computeVar64Size(frame.getToken());
         headLength += CompressBean.computeVar32Size(frame.getUserIds().length);
         for (Long userId : frame.getUserIds()) {
@@ -25,13 +25,13 @@ public class ProviderMessageEncoder extends MessageToByteEncoder<ProviderSendMes
         out.ensureWritable(CompressBean.computeVar32Size(packageLength) + packageLength);
 
         CompressBean.writeVar32(out, packageLength);
-        CompressBean.writeVar32(out, frame.getRequestId());
-        CompressBean.writeVar32(out, frame.getMessageId());
+        CompressBean.writeVar32(out, frame.requestId());
+        CompressBean.writeVar32(out, frame.messageId());
         CompressBean.writeVar64(out, frame.getToken());
         CompressBean.writeVar32(out, frame.getUserIds().length);
         for (Long userId : frame.getUserIds()) {
             CompressBean.writeVar64(out, userId);
         }
-        frame.getMessage().write(out);
+        frame.message().write(out);
     }
 }

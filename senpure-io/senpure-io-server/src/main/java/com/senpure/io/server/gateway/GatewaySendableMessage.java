@@ -5,9 +5,9 @@ import com.senpure.io.server.MessageFrame;
 
 public class GatewaySendableMessage implements MessageFrame {
 
-    public  static final int MESSAGE_FROM_CONSUMER=1;
-    public  static final int MESSAGE_FROM_GATEWAY=2;
-    protected  int messageFrom;
+    public static final int MESSAGE_FROM_CONSUMER = 1;
+    public static final int MESSAGE_FROM_GATEWAY = 2;
+    protected int messageFrom;
     protected int messageType;
     protected int requestId;
     protected int messageId;
@@ -18,7 +18,8 @@ public class GatewaySendableMessage implements MessageFrame {
     protected byte[] data;
     protected Message message;
 
-    public GatewaySendableMessage(int messageFrom,int messageType) {
+    public GatewaySendableMessage(int messageFrom, int messageType) {
+        this.messageFrom = messageFrom;
         this.messageType = messageType;
     }
 
@@ -26,6 +27,7 @@ public class GatewaySendableMessage implements MessageFrame {
     public int messageType() {
         return messageType;
     }
+
 
     @Override
     public int requestId() {

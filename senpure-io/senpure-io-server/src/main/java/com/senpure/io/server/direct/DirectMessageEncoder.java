@@ -10,8 +10,8 @@ public class DirectMessageEncoder extends AbstractMessageEncoder<ProviderSendMes
 
 
     @Override
-    protected void encode(ChannelHandlerContext channelHandlerContext, ProviderSendMessage message, ByteBuf byteBuf) {
+    protected void encode(ChannelHandlerContext channelHandlerContext, ProviderSendMessage frame, ByteBuf byteBuf) {
 
-        encode(byteBuf, message.getRequestId(), message.getMessage());
+        encode(byteBuf, frame.requestId(), frame.message());
     }
 }

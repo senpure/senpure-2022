@@ -12,9 +12,7 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.*;
 
 public abstract class AbstractRemoteServer implements RemoteServer {
 
@@ -31,7 +29,8 @@ public abstract class AbstractRemoteServer implements RemoteServer {
     protected FutureService futureService;
 
     protected ChannelService channelService;
-
+    private boolean connecting = false;
+    private final ReadWriteLock connectLock = new ReentrantReadWriteLock();
 
     public void verifyWorkable() {
         Assert.notNull(remoteServerKey);
@@ -122,7 +121,20 @@ public abstract class AbstractRemoteServer implements RemoteServer {
         channelService.removeChannel(channel);
     }
 
+    public boolean isConnecting() {
+        boolean temp;
+        connectLock.readLock().lock();
+        temp = connecting;
+        connectLock.readLock().unlock();
+        return temp;
+    }
 
+    public void setConnecting(boolean connecting) {
+        connectLock.writeLock().lock();
+        this.connecting = connecting;
+        connectLock.writeLock().unlock();
+
+    }
     @Override
     public void sendMessage(List<MessageFrame> frames) {
         Channel channel = channelService.nextChannel();

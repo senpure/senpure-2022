@@ -136,7 +136,7 @@ public class GatewayMessageExecutor {
         }
         service.get(token).execute(() -> {
             try {
-                logger.debug("new gateway");
+                logger.debug("new gateway=============");
                 ConsumerMessageHandler handler = c2gHandlerMap.get(message.getMessageId());
                 if (handler != null) {
                     handler.execute(channel, message);

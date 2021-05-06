@@ -148,27 +148,23 @@ public interface MessageSender {
     boolean breakToken(Long token, long relationToken);
 
     default ProviderSendMessage createMessage(Long userId, Message message) {
-        ProviderSendMessage frame = new ProviderSendMessage();
+        ProviderSendMessage frame = new ProviderSendMessage(message);
         frame.setUserIds(new Long[]{userId});
-        frame.setMessage(message);
-        frame.setMessageId(message.messageId());
+
         return frame;
     }
 
     default ProviderSendMessage createMessage(Long[] userIds, Message message) {
-        ProviderSendMessage frame = new ProviderSendMessage();
+        ProviderSendMessage frame = new ProviderSendMessage(message);
         frame.setUserIds(userIds);
-        frame.setMessage(message);
-        frame.setMessageId(message.messageId());
+
         return frame;
     }
 
     default ProviderSendMessage createMessageByToken(Long token, Message message) {
-        ProviderSendMessage frame = new ProviderSendMessage();
+        ProviderSendMessage frame = new ProviderSendMessage(message);
         frame.setToken(token);
         frame.setUserIds(new Long[0]);
-        frame.setMessage(message);
-        frame.setMessageId(message.messageId());
         return frame;
     }
 }

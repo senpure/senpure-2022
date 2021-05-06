@@ -65,11 +65,11 @@ public class DirectMessageDecoder extends ByteToMessageDecoder {
                 errorMessage.getArgs().add(String.valueOf(messageId));
                 errorMessage.setMessage("服务器没有处理程序:" + MessageIdReader.read(messageId));
 
-                ProviderSendMessage frame = new ProviderSendMessage();
+                ProviderSendMessage frame = new ProviderSendMessage(errorMessage);
                 frame.setRequestId(requestId);
-                frame.setMessageId(messageId);
+
                 frame.setToken(ChannelAttributeUtil.getToken(channel));
-                frame.setMessage(errorMessage);
+
                 channel.writeAndFlush(frame);
 
             } else {

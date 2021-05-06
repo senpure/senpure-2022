@@ -1,25 +1,21 @@
 package com.senpure.io.server.provider;
 
 import com.senpure.io.protocol.Message;
+import com.senpure.io.server.AbstractMessageFrame;
 
 
-public class ProviderSendMessage {
+public class ProviderSendMessage extends AbstractMessageFrame {
 
-    private int requestId;
+
     private Long[] userIds;
 
     private long token;
-    private int messageId;
 
-    private Message message;
-
-    public int getRequestId() {
-        return requestId;
+    public ProviderSendMessage(Message message) {
+        super(message);
     }
 
-    public void setRequestId(int requestId) {
-        this.requestId = requestId;
-    }
+
 
     public Long[] getUserIds() {
         return userIds;
@@ -37,19 +33,5 @@ public class ProviderSendMessage {
         this.token = token;
     }
 
-    public int getMessageId() {
-        return messageId;
-    }
 
-    public void setMessageId(int messageId) {
-        this.messageId = messageId;
-    }
-
-    public Message getMessage() {
-        return message;
-    }
-
-    public void setMessage(Message message) {
-        this.message = message;
-    }
 }

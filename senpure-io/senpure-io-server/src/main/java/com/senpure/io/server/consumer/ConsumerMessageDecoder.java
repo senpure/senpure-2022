@@ -20,7 +20,7 @@ import java.util.List;
 public class ConsumerMessageDecoder extends ByteToMessageDecoder {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private MessageDecoderContext decoderContext;
+    private final MessageDecoderContext decoderContext;
 
     public ConsumerMessageDecoder(MessageDecoderContext decoderContext) {
         this.decoderContext = decoderContext;
@@ -42,18 +42,19 @@ public class ConsumerMessageDecoder extends ByteToMessageDecoder {
             in.resetReaderIndex();
         } else {
             int maxIndex = in.readerIndex() + packageLength;
+            int messageType = CompressBean.readVar32(in);
             int requestId = CompressBean.readVar32(in);
             int messageId = CompressBean.readVar32(in);
 
             MessageDecoder<?> decoder = decoderContext.decoder(messageId);
             if (decoder == null) {
-                int headSize = CompressBean.computeVar32Size(requestId) + CompressBean.computeVar32Size(messageId);
+                int headSize =CompressBean.computeVar32Size(messageType) + CompressBean.computeVar32Size(requestId) + CompressBean.computeVar32Size(messageId);
                 int messageLength = packageLength - headSize;
                 in.skipBytes(messageLength);
                 logger.warn("没有找到消息解码程序 messageId {}", messageId);
             } else {
                 try {
-                    Message message=  decoder.decode(in, maxIndex);
+                    Message message = decoder.decode(in, maxIndex);
                     ConsumerMessage frame = new ConsumerMessage();
                     frame.setRequestId(requestId);
                     frame.setMessage(message);
@@ -66,8 +67,6 @@ public class ConsumerMessageDecoder extends ByteToMessageDecoder {
             }
         }
     }
-
-
 
 
 }
