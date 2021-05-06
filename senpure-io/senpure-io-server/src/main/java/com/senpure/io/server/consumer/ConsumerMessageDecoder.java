@@ -42,13 +42,15 @@ public class ConsumerMessageDecoder extends ByteToMessageDecoder {
             in.resetReaderIndex();
         } else {
             int maxIndex = in.readerIndex() + packageLength;
-            int messageType = CompressBean.readVar32(in);
+           // int messageType = CompressBean.readVar32(in);
             int requestId = CompressBean.readVar32(in);
             int messageId = CompressBean.readVar32(in);
 
             MessageDecoder<?> decoder = decoderContext.decoder(messageId);
             if (decoder == null) {
-                int headSize =CompressBean.computeVar32Size(messageType) + CompressBean.computeVar32Size(requestId) + CompressBean.computeVar32Size(messageId);
+                int headSize =
+                       // CompressBean.computeVar32Size(messageType) +
+                        CompressBean.computeVar32Size(requestId) + CompressBean.computeVar32Size(messageId);
                 int messageLength = packageLength - headSize;
                 in.skipBytes(messageLength);
                 logger.warn("没有找到消息解码程序 messageId {}", messageId);
