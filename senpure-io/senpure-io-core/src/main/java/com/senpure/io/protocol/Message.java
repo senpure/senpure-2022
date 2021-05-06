@@ -16,7 +16,6 @@ public interface Message extends Bean {
      */
     int messageId();
 
-    default int messageType() {
-        return MESSAGE_TYPE_CS;
-    }
+    int messageType();
+
 }
