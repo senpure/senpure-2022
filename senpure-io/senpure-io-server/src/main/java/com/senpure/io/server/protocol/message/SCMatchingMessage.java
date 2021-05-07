@@ -4,16 +4,18 @@ import com.senpure.io.protocol.CompressMessage;
 import io.netty.buffer.ByteBuf;
 
 /**
- * 断开用户与网关
+ * 加入匹配
  * 
  * @author senpure
  * @time 2021-5-6 19:44:19
  */
-public class SCBreakUserGatewayMessage extends CompressMessage {
+public class SCMatchingMessage extends CompressMessage {
 
-    public static final int MESSAGE_ID = 110;
+    public static final int MESSAGE_ID = 120;
+    private boolean success;
 
-    public void copy(SCBreakUserGatewayMessage source) {
+    public void copy(SCMatchingMessage source) {
+        this.success = source.isSuccess();
     }
 
     /**
@@ -22,6 +24,7 @@ public class SCBreakUserGatewayMessage extends CompressMessage {
     @Override
     public void write(ByteBuf buf) {
         serializedSize();
+        writeBoolean(buf, 8, success);
     }
 
     /**
@@ -34,6 +37,9 @@ public class SCBreakUserGatewayMessage extends CompressMessage {
             switch (tag) {
                 case 0://end
                     return;
+                case 8:// 1 << 3 | 0
+                    success = readBoolean(buf);
+                    break;
                 default://skip
                     skip(buf, tag);
                     break;
@@ -50,10 +56,20 @@ public class SCBreakUserGatewayMessage extends CompressMessage {
             return size;
         }
         size = 0;
+        //tag size 8
+        size += computeBooleanSize(1, success);
         serializedSize = size ;
         return size ;
     }
 
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public SCMatchingMessage setSuccess(boolean success) {
+        this.success = success;
+        return this;
+    }
 
     @Override
     public int messageType() {
@@ -62,20 +78,24 @@ public class SCBreakUserGatewayMessage extends CompressMessage {
 
     @Override
     public int messageId() {
-        return 110;
+        return 120;
     }
 
     @Override
     public String toString() {
-        return "SCBreakUserGatewayMessage[110]{"
+        return "SCMatchingMessage[120]{"
+                + "success=" + success
                 + "}";
     }
 
     @Override
     public String toString(String indent) {
+        //最长字段长度 7
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("SCBreakUserGatewayMessage").append("[110]").append("{");
+        sb.append("SCMatchingMessage").append("[120]").append("{");
+        sb.append("\n");
+        sb.append(indent).append("success = ").append(success);
         sb.append("\n");
         sb.append(indent).append("}");
         return sb.toString();

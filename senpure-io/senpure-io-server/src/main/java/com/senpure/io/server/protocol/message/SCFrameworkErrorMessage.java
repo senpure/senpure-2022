@@ -10,7 +10,7 @@ import java.util.ArrayList;
  * 框架错误提示
  * 
  * @author senpure
- * @time 2021-5-5 15:28:47
+ * @time 2021-5-6 19:44:19
  */
 public class SCFrameworkErrorMessage extends CompressMessage {
 

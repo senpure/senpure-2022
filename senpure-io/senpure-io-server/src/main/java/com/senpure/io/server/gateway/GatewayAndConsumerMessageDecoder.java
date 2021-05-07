@@ -2,7 +2,9 @@ package com.senpure.io.server.gateway;
 
 import com.senpure.base.util.Assert;
 import com.senpure.io.protocol.CompressBean;
+import com.senpure.io.server.ChannelAttributeUtil;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import org.slf4j.Logger;
@@ -35,12 +37,23 @@ public class GatewayAndConsumerMessageDecoder extends ByteToMessageDecoder {
             int messageLength = packageLength - (CompressBean.computeVar32Size(messageType)+CompressBean.computeVar32Size(requestId) + CompressBean.computeVar32Size(messageId));
             byte[] data = new byte[messageLength];
             in.readBytes(data);
-            GatewayReceiveConsumerMessage transfer = new GatewayReceiveConsumerMessage();
-            transfer.setRequestId(requestId);
-            transfer.setData(data);
-            transfer.setMessageId(messageId);
+            GatewayReceiveConsumerMessage frame = new GatewayReceiveConsumerMessage(messageLength,data);
+            frame.setMessageId(messageId);
+            frame.setMessageType(messageType);
+            frame.setRequestId(requestId);
+            Channel channel = ctx.channel();
+            frame.setToken(ChannelAttributeUtil.getToken(channel));
+            Long userId = ChannelAttributeUtil.getUserId(channel);
+            if (userId != null) {
+                frame.setUserId(userId);
+            }
+            out.add(frame);
+           // GatewayReceiveConsumerMessage transfer = new GatewayReceiveConsumerMessage();
+          //  transfer.setRequestId(requestId);
+           // transfer.setData(data);
+           // transfer.setMessageId(messageId);
 
-            out.add(transfer);
+           // out.add(transfer);
         }
     }
 

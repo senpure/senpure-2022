@@ -121,6 +121,10 @@ public abstract class AbstractRemoteServer implements RemoteServer {
         channelService.removeChannel(channel);
     }
 
+    public int getChannelSize() {
+        return channelService.channelSize();
+    }
+
     public boolean isConnecting() {
         boolean temp;
         connectLock.readLock().lock();
@@ -135,6 +139,7 @@ public abstract class AbstractRemoteServer implements RemoteServer {
         connectLock.writeLock().unlock();
 
     }
+
     @Override
     public void sendMessage(List<MessageFrame> frames) {
         Channel channel = channelService.nextChannel();

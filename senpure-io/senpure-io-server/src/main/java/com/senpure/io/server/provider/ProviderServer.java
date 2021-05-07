@@ -106,7 +106,7 @@ public class ProviderServer {
             int localPort = address.getPort();
             markFirstPort(localPort);
 
-            String gatewayKey = gatewayManager.getGatewayKey(remoteHost, remotePort);
+            String gatewayKey = gatewayManager.getRemoteServerKey(remoteHost, remotePort);
 //            String path;
 //            if (AppEvn.classInJar(AppEvn.getStartClass())) {
 //                path = AppEvn.getClassPath(AppEvn.getStartClass());

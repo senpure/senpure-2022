@@ -5,7 +5,6 @@ import com.senpure.io.protocol.CompressBean;
 import com.senpure.io.protocol.Message;
 import com.senpure.io.server.MessageDecoder;
 import com.senpure.io.server.MessageDecoderContext;
-import com.senpure.io.server.MessageFrame;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
@@ -43,60 +42,33 @@ public class ProviderMessageDecoder extends ByteToMessageDecoder {
 
             int maxIndex = in.readerIndex() + packageLength;
             int messageType = CompressBean.readVar32(in);
-            if (messageType == MessageFrame.MESSAGE_TYPE_CS) {
-                decodeCSMessage(in, out, messageType, maxIndex, packageLength);
-            } else if (messageType == MessageFrame.MESSAGE_TYPE_SC) {
-                int requestId = CompressBean.readVar32(in);
-                int messageId = CompressBean.readVar32(in);
-                MessageDecoder<?> decoder = decoderContext.decoder(messageId);
-                Message message = decoder.decode(in, maxIndex);
-                ProviderReceivedMessage frame = new ProviderReceivedMessage(messageType);
-                frame.setRequestId(requestId);
-                frame.setMessageId(messageId);
-                if (message == null) {
-                    int headSize = CompressBean.computeVar32Size(requestId);
-                    headSize += CompressBean.computeVar32Size(messageId);
-                    int messageLen = packageLength - headSize;
-                    in.skipBytes(messageLen);
-                    logger.warn("没有找到消息解码程序{} token:{} userId:{}", 0, messageId, 0);
-                } else {
-                    frame.setMessage(message);
-                }
-                out.add(frame);
+            int requestId = CompressBean.readVar32(in);
+            int messageId = CompressBean.readVar32(in);
+            long channelToken = CompressBean.readVar64(in);
+            long userId = CompressBean.readVar64(in);
+            MessageDecoder<?> decoder = decoderContext.decoder(messageId);
+            Message message = decoder.decode(in, maxIndex);
+            ProviderReceivedMessage frame = new ProviderReceivedMessage(messageType);
+            frame.setRequestId(requestId);
+            frame.setMessageId(messageId);
+            frame.setToken(channelToken);
+            frame.setUserId(userId);
+            if (message == null) {
+                int headLength = CompressBean.computeVar32Size(messageType);
+                headLength += CompressBean.computeVar32Size(requestId);
+                headLength += CompressBean.computeVar32Size(messageId);
+                headLength += CompressBean.computeVar64Size(channelToken);
+                headLength += CompressBean.computeVar64Size(userId);
+                int messageLen = packageLength - headLength;
+                in.skipBytes(messageLen);
+                logger.warn("没有找到消息解码程序{} token:{} userId:{}", channelToken, messageId, userId);
             } else {
-                decodeCSMessage(in, out, messageType, maxIndex, packageLength);
+                frame.setMessage(message);
             }
+            out.add(frame);
         }
 
     }
 
-    private void decodeCSMessage(ByteBuf in, List<Object> out, int messageType, int maxIndex, int packageLength) {
-
-        int requestId = CompressBean.readVar32(in);
-        int messageId = CompressBean.readVar32(in);
-        long channelToken = CompressBean.readVar64(in);
-        long userId = CompressBean.readVar64(in);
-        MessageDecoder<?> decoder = decoderContext.decoder(messageId);
-        Message message = decoder.decode(in, maxIndex);
-        ProviderReceivedMessage frame = new ProviderReceivedMessage(messageType);
-        frame.setRequestId(requestId);
-        frame.setMessageId(messageId);
-        frame.setToken(channelToken);
-        frame.setUserId(userId);
-        if (message == null) {
-            int headSize = CompressBean.computeVar32Size(requestId);
-            headSize += CompressBean.computeVar32Size(messageId);
-
-            headSize += CompressBean.computeVar64Size(channelToken);
-            headSize += CompressBean.computeVar64Size(userId);
-            int messageLen = packageLength - headSize;
-            in.skipBytes(messageLen);
-            logger.warn("没有找到消息解码程序{} token:{} userId:{}", channelToken, messageId, userId);
-        } else {
-
-            frame.setMessage(message);
-        }
-        out.add(frame);
-    }
 
 }

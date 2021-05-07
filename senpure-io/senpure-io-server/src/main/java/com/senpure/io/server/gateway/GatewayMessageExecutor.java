@@ -128,16 +128,17 @@ public class GatewayMessageExecutor {
 
     //将客户端消息转发给具体的服务器
     public void execute(final Channel channel, final GatewayReceiveConsumerMessage message) {
-        long token = ChannelAttributeUtil.getToken(channel);
-        message.setToken(token);
-        Long userId = ChannelAttributeUtil.getUserId(channel);
-        if (userId != null) {
-            message.setUserId(userId);
-        }
+//        long token = ChannelAttributeUtil.getToken(channel);
+//        message.setToken(token);
+//        Long userId = ChannelAttributeUtil.getUserId(channel);
+//        if (userId != null) {
+//            message.setUserId(userId);
+//        }
+        long token = message.token();
         service.get(token).execute(() -> {
             try {
                 logger.debug("new gateway=============");
-                ConsumerMessageHandler handler = c2gHandlerMap.get(message.getMessageId());
+                ConsumerMessageHandler handler = c2gHandlerMap.get(message.messageId());
                 if (handler != null) {
                     handler.execute(channel, message);
                     if (handler.stopForward()) {
@@ -145,27 +146,27 @@ public class GatewayMessageExecutor {
                     }
                 }
                 //转发到具体的子服务器
-                HandleMessageManager handleMessageManager = handleMessageManagerMap.get(message.getMessageId());
+                HandleMessageManager handleMessageManager = handleMessageManagerMap.get(message.messageId());
                 if (handleMessageManager == null) {
-                    logger.warn("没有找到消息的接收服务器{}", message.getMessageId());
+                    logger.warn("没有找到消息的接收服务器{}", message.messageId());
                     SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
 
                     errorMessage.setCode(Constant.ERROR_NOT_FOUND_SERVER);
-                    errorMessage.getArgs().add(String.valueOf(message.getMessageId()));
-                    errorMessage.setMessage("没有服务器处理" + MessageIdReader.read(message.getMessageId()));
-                    sendMessage2Consumer(message.getRequestId(), message.getToken(), errorMessage);
+                    errorMessage.getArgs().add(String.valueOf(message.messageId()));
+                    errorMessage.setMessage("没有服务器处理" + MessageIdReader.read(message.messageId()));
+                    sendMessage2Consumer(message.requestId(), message.token(), errorMessage);
                     return;
                 }
 
                 handleMessageManager.execute(message);
             } catch (Exception e) {
-                logger.error("转发消息出错 " + message.getMessageId(), e);
+                logger.error("转发消息出错 " + message.messageId(), e);
                 SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
 
                 errorMessage.setCode(Constant.ERROR_SERVER_ERROR);
-                errorMessage.getArgs().add(String.valueOf(message.getMessageId()));
-                errorMessage.setMessage(MessageIdReader.read(message.getMessageId()) + "," + e.getMessage());
-                sendMessage2Consumer(message.getRequestId(), message.getToken(), errorMessage);
+                errorMessage.getArgs().add(String.valueOf(message.messageId()));
+                errorMessage.setMessage(MessageIdReader.read(message.messageId()) + "," + e.getMessage());
+                sendMessage2Consumer(message.requestId(), message.token(), errorMessage);
             }
         });
     }
@@ -210,7 +211,7 @@ public class GatewayMessageExecutor {
 
 
     public void sendMessage2Producer(Channel channel, Message message) {
-        GatewayReceiveConsumerMessage toMessage = createMessage(message);
+        GatewaySendProviderMessage toMessage = createMessage(message);
         if (channel.isWritable()) {
             channel.writeAndFlush(toMessage);
         }
@@ -332,22 +333,21 @@ public class GatewayMessageExecutor {
         buf.writeBytes(gatewayReceiveProviderMessage.getData());
         message.read(buf, buf.writerIndex());
     }
+    public GatewayLocalSendProviderMessage createMessage(Message message) {
 
+        return new GatewayLocalSendProviderMessage(message);
+    }
 
-    public GatewayReceiveConsumerMessage createMessage(Message message) {
-        GatewayReceiveConsumerMessage toMessage = new GatewayReceiveConsumerMessage();
-        toMessage.setMessageId(message.messageId());
-        ByteBuf buf = Unpooled.buffer(message.serializedSize());
-        message.write(buf);
-        byte[] data = new byte[message.serializedSize()];
-        buf.readBytes(data);
-        toMessage.setData(data);
-        return toMessage;
+    public GatewayLocalSendProviderMessage createMessage(long token,long userId,Message message) {
+        GatewayLocalSendProviderMessage frame = new GatewayLocalSendProviderMessage(message);
+        frame.setToken(token);
+        frame.setUserId(userId);
+        return frame;
     }
 
 
     public void sendMessage(Provider provider, Message message) {
-        GatewayReceiveConsumerMessage toMessage = createMessage(message);
+        GatewaySendProviderMessage toMessage = createMessage(message);
         provider.sendMessage(toMessage);
     }
 
@@ -395,7 +395,7 @@ public class GatewayMessageExecutor {
                     errorMessage.getArgs().add(String.valueOf(waitAskTask.getFromMessageId()));
                     errorMessage.setMessage(MessageIdReader.read(waitAskTask.getFromMessageId()));
                     errorMessage.getArgs().add(Arrays.toString(waitAskTask.getValue()));
-                    sendMessage2Consumer(waitAskTask.getRequestId(), waitAskTask.getMessage().getToken(), errorMessage);
+                    sendMessage2Consumer(waitAskTask.getRequestId(), waitAskTask.getMessage().token(), errorMessage);
                 }
             }
         }

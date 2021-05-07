@@ -7,12 +7,13 @@ import io.netty.buffer.ByteBuf;
  * @author senpure
  * @time 2021-5-6 19:44:19
  */
-public class Statistic extends CompressBean {
-    //分数0-100
-    private int score;
+public class Consumer extends CompressBean {
+    private long token;
+    private long userId;
 
-    public void copy(Statistic source) {
-        this.score = source.getScore();
+    public void copy(Consumer source) {
+        this.token = source.getToken();
+        this.userId = source.getUserId();
     }
 
     /**
@@ -21,8 +22,8 @@ public class Statistic extends CompressBean {
     @Override
     public void write(ByteBuf buf) {
         serializedSize();
-        //分数0-100
-        writeVar32(buf, 8, score);
+        writeVar64(buf, 8, token);
+        writeVar64(buf, 16, userId);
     }
 
     /**
@@ -35,9 +36,11 @@ public class Statistic extends CompressBean {
             switch (tag) {
                 case 0://end
                     return;
-                //分数0-100
                 case 8:// 1 << 3 | 0
-                    score = readVar32(buf);
+                    token = readVar64(buf);
+                    break;
+                case 16:// 2 << 3 | 0
+                    userId = readVar64(buf);
                     break;
                 default://skip
                     skip(buf, tag);
@@ -55,46 +58,50 @@ public class Statistic extends CompressBean {
             return size;
         }
         size = 0;
-        //分数0-100
         //tag size 8
-        size += computeVar32Size(1, score);
+        size += computeVar64Size(1, token);
+        //tag size 16
+        size += computeVar64Size(1, userId);
         serializedSize = size ;
         return size ;
     }
 
-    /**
-     * get 分数0-100
-     *
-     * @return
-     */
-    public int getScore() {
-        return score;
+    public long getToken() {
+        return token;
     }
 
-    /**
-     * set 分数0-100
-     */
-    public Statistic setScore(int score) {
-        this.score = score;
+    public Consumer setToken(long token) {
+        this.token = token;
+        return this;
+    }
+
+    public long getUserId() {
+        return userId;
+    }
+
+    public Consumer setUserId(long userId) {
+        this.userId = userId;
         return this;
     }
 
     @Override
     public String toString() {
-        return "Statistic{"
-                + "score=" + score
+        return "Consumer{"
+                + "token=" + token
+                + ",userId=" + userId
                 + "}";
     }
 
     @Override
     public String toString(String indent) {
-        //最长字段长度 5
+        //最长字段长度 6
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("Statistic").append("{");
-        //分数0-100
+        sb.append("Consumer").append("{");
         sb.append("\n");
-        sb.append(indent).append("score = ").append(score);
+        sb.append(indent).append("token  = ").append(token);
+        sb.append("\n");
+        sb.append(indent).append("userId = ").append(userId);
         sb.append("\n");
         sb.append(indent).append("}");
         return sb.toString();

@@ -7,7 +7,7 @@ import io.netty.buffer.ByteBuf;
  * 消费者认证
  * 
  * @author senpure
- * @time 2021-5-5 15:28:47
+ * @time 2021-5-6 19:44:19
  */
 public class CSConsumerVerifyMessage extends CompressMessage {
 

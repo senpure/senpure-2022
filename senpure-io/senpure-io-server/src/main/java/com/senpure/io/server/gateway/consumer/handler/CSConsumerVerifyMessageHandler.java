@@ -7,7 +7,7 @@ import io.netty.channel.Channel;
 public class CSConsumerVerifyMessageHandler extends AbstractConsumerMessageHandler {
     @Override
     public void execute(Channel channel, GatewayReceiveConsumerMessage message) {
-        messageExecutor.prepLoginChannels.put(message.getToken(), channel);
+        messageExecutor.prepLoginChannels.put(message.token(), channel);
     }
 
     @Override

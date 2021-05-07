@@ -15,6 +15,11 @@ bean Statistic {
     int score = 1;                        //分数0-100
 }
 
+bean Consumer {
+long token=1;
+long userId=2;
+}
+
 //网关注册处理消息返回
 message CS RegServerHandleMessage 101 {
     boolean success = 1;
@@ -91,13 +96,22 @@ message SC Statistic 116 {
     Statistic statistic = 1;
 }
 
+
+
 message SC MessageForward 118 {
     String serverName = 1;
     String serverKey  = 2;
     int    id         = 3;
     bytes  data       = 4;
 }
-
+//加入匹配
+message CS Matching 119 {
+    Consumer [] consumers=1;
+}
+//加入匹配
+message SC Matching 120 {
+    boolean success = 1;
+}
 
 #以下是客户端会用到的
 

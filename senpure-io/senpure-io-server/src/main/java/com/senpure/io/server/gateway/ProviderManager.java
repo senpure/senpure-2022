@@ -56,8 +56,8 @@ public class ProviderManager {
     }
 
 
-    public void sendMessage(GatewayReceiveConsumerMessage gatewayReceiveConsumerMessage) {
-        ProviderRelation providerRelation = tokenProviderMap.get(gatewayReceiveConsumerMessage.getToken());
+    public void sendMessage(GatewaySendProviderMessage gatewayReceiveConsumerMessage) {
+        ProviderRelation providerRelation = tokenProviderMap.get(gatewayReceiveConsumerMessage.token());
         Provider provider;
         if (providerRelation == null) {
             provider = nextProvider();
@@ -65,9 +65,9 @@ public class ProviderManager {
                 logger.warn("{}没有服务实例可以使用", serverName);
                 SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
                 errorMessage.setCode(Constant.ERROR_NOT_FOUND_SERVER);
-                errorMessage.getArgs().add(String.valueOf(gatewayReceiveConsumerMessage.getMessageId()));
-                errorMessage.setMessage("没有服务器处理" + MessageIdReader.read(gatewayReceiveConsumerMessage.getMessageId()));
-                messageExecutor.sendMessage2Consumer(gatewayReceiveConsumerMessage.getRequestId(), gatewayReceiveConsumerMessage.getToken(), errorMessage);
+                errorMessage.getArgs().add(String.valueOf(gatewayReceiveConsumerMessage.messageId()));
+                errorMessage.setMessage("没有服务器处理" + MessageIdReader.read(gatewayReceiveConsumerMessage.messageId()));
+                messageExecutor.sendMessage2Consumer(gatewayReceiveConsumerMessage.requestId(), gatewayReceiveConsumerMessage.token(), errorMessage);
             } else {
                 relationAndWaitSendMessage(provider, gatewayReceiveConsumerMessage);
             }
@@ -108,7 +108,7 @@ public class ProviderManager {
      */
     private void waitRelationTask(Provider provider,
                                   Long relationToken,
-                                  @Nullable GatewayReceiveConsumerMessage message) {
+                                  @Nullable GatewaySendProviderMessage message) {
         WaitRelationTask waitRelationTask = new WaitRelationTask();
         waitRelationTask.setRelationToken(relationToken);
         waitRelationTask.setMessage(message);
@@ -117,13 +117,13 @@ public class ProviderManager {
         messageExecutor.waitRelationMap.put(relationToken, waitRelationTask);
     }
 
-    public void relationAndWaitSendMessage(Provider provider, GatewayReceiveConsumerMessage frame) {
+    public void relationAndWaitSendMessage(Provider provider, GatewaySendProviderMessage frame) {
         long relationToken = messageExecutor.idGenerator.nextId();
         CSRelationUserGatewayMessage relationUserGatewayMessage = new CSRelationUserGatewayMessage();
-        relationUserGatewayMessage.setToken(frame.getToken());
-        relationUserGatewayMessage.setUserId(frame.getUserId());
+        relationUserGatewayMessage.setToken(frame.token());
+        relationUserGatewayMessage.setUserId(frame.userId());
         relationUserGatewayMessage.setRelationToken(relationToken);
-        GatewayReceiveConsumerMessage toMessage = messageExecutor.createMessage(relationUserGatewayMessage);
+        GatewaySendProviderMessage toMessage = messageExecutor.createMessage(relationUserGatewayMessage);
         waitRelationTask(provider, relationToken, frame);
         provider.sendMessage(toMessage);
     }
@@ -179,7 +179,7 @@ public class ProviderManager {
             CSRelationUserGatewayMessage message = new CSRelationUserGatewayMessage();
             message.setUserId(userId);
             message.setRelationToken(providerRelation.relationToken);
-            GatewayReceiveConsumerMessage toMessage = messageExecutor.createMessage(message);
+            GatewaySendProviderMessage toMessage = messageExecutor.createMessage(message);
             waitRelationTask(providerRelation.provider, providerRelation.relationToken, null);
             providerRelation.provider.sendMessage(toMessage);
         }
@@ -221,11 +221,11 @@ public class ProviderManager {
             breakUserGatewayMessage.setUserId(userId);
             breakUserGatewayMessage.setToken(localRemove ? token : 0);
             breakUserGatewayMessage.setType(type);
-            GatewayReceiveConsumerMessage gatewayReceiveConsumerMessage = messageExecutor.createMessage(breakUserGatewayMessage);
-            gatewayReceiveConsumerMessage.setMessageId(breakUserGatewayMessage.messageId());
-            gatewayReceiveConsumerMessage.setUserId(breakUserGatewayMessage.getUserId());
-            gatewayReceiveConsumerMessage.setToken(breakUserGatewayMessage.getToken());
-            providerRelation.provider.sendMessage(gatewayReceiveConsumerMessage);
+            GatewayLocalSendProviderMessage frame = messageExecutor.createMessage(breakUserGatewayMessage);
+
+            frame.setUserId(breakUserGatewayMessage.getUserId());
+            frame.setToken(breakUserGatewayMessage.getToken());
+            providerRelation.provider.sendMessage(frame);
         } else {
             logger.info("{} 没有对{} 有关联 :token{} userId:{} ",
                     serverName, consumerChannel, token, userId);

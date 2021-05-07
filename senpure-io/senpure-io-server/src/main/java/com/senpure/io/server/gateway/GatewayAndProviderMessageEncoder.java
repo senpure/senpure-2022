@@ -11,54 +11,41 @@ import org.slf4j.LoggerFactory;
 /**
  * 将客户端发到网关的消息，重新编码，发送给具体的服务器
  */
-public class GatewayAndProviderMessageEncoder extends MessageToByteEncoder<GatewaySendableMessage> {
+public class GatewayAndProviderMessageEncoder extends MessageToByteEncoder<GatewaySendProviderMessage> {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
 
     @Override
-    protected void encode(ChannelHandlerContext ctx, GatewaySendableMessage frame, ByteBuf out) {
-        int messageFrom = frame.getMessageFrom();
-        if (messageFrom == GatewaySendableMessage.MESSAGE_FROM_CONSUMER) {
-            encodeRemoteMessage(frame, out);
-        } else if (messageFrom == GatewaySendableMessage.MESSAGE_FROM_GATEWAY) {
-            encodeLocalMessage(frame, out);
-        } else {
-            encodeRemoteMessage(frame, out);
-        }
+    protected void encode(ChannelHandlerContext ctx, GatewaySendProviderMessage frame, ByteBuf out) {
+//        int messageFrom = frame.getMessageFrom();
+//        if (messageFrom == GatewaySendProviderMessage3.MESSAGE_FROM_CONSUMER) {
+//            encodeRemoteMessage(frame, out);
+//        } else if (messageFrom == GatewaySendProviderMessage3.MESSAGE_FROM_GATEWAY) {
+//            encodeLocalMessage(frame, out);
+//        } else {
+//            encodeRemoteMessage(frame, out);
+//        }
+
+        encodeLocalMessage(frame, out);
     }
 
-    private void encodeLocalMessage(GatewaySendableMessage frame, ByteBuf out) {
+    private void encodeLocalMessage(GatewaySendProviderMessage frame, ByteBuf out) {
         int headLength = CompressBean.computeVar32Size(frame.messageType());
         headLength += CompressBean.computeVar32Size(frame.requestId());
-        headLength += CompressBean.computeVar64Size(frame.getToken());
-        headLength += CompressBean.computeVar64Size(frame.getUserId());
-        Message message = frame.getMessage();
-        int allSize = headLength + message.serializedSize();
-        out.ensureWritable(CompressBean.computeVar32Size(allSize) + allSize);
-        CompressBean.writeVar32(out, allSize);
+        headLength += CompressBean.computeVar32Size(frame.messageId());
+        headLength += CompressBean.computeVar64Size(frame.token());
+        headLength += CompressBean.computeVar64Size(frame.userId());
+        Message message = frame.message();
+        int packageLength = headLength + message.serializedSize();
+        out.ensureWritable(CompressBean.computeVar32Size(packageLength) + packageLength);
+        CompressBean.writeVar32(out, packageLength);
         CompressBean.writeVar32(out, frame.messageType());
-        CompressBean.writeVar32(out, frame.getRequestId());
-        CompressBean.writeVar32(out, frame.getMessageId());
-        CompressBean.writeVar64(out, frame.getToken());
-        CompressBean.writeVar64(out, frame.getUserId());
+        CompressBean.writeVar32(out, frame.requestId());
+        CompressBean.writeVar32(out, frame.messageId());
+        CompressBean.writeVar64(out, frame.token());
+        CompressBean.writeVar64(out, frame.userId());
         message.write(out);
     }
 
-    private void encodeRemoteMessage(GatewaySendableMessage frame, ByteBuf out) {
-        int headLength = CompressBean.computeVar32Size(frame.messageType());
-        headLength += CompressBean.computeVar32Size(frame.requestId());
-        headLength += CompressBean.computeVar32Size(frame.getMessageId());
-        headLength += CompressBean.computeVar64Size(frame.getToken());
-        headLength += CompressBean.computeVar64Size(frame.getUserId());
-        int allSize = headLength + frame.getData().length;
-        out.ensureWritable(CompressBean.computeVar32Size(allSize) + allSize);
-        CompressBean.writeVar32(out, allSize);
-        CompressBean.writeVar32(out, frame.messageType());
-        CompressBean.writeVar32(out, frame.getRequestId());
-        CompressBean.writeVar32(out, frame.getMessageId());
-        CompressBean.writeVar64(out, frame.getToken());
-        CompressBean.writeVar64(out, frame.getUserId());
-        out.writeBytes(frame.getData());
 
-    }
 }

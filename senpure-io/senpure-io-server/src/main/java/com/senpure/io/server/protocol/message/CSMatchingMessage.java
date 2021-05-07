@@ -1,6 +1,6 @@
 package com.senpure.io.server.protocol.message;
 
-import com.senpure.io.server.protocol.bean.IdName;
+import com.senpure.io.server.protocol.bean.Consumer;
 import com.senpure.io.protocol.CompressMessage;
 import io.netty.buffer.ByteBuf;
 
@@ -8,21 +8,21 @@ import java.util.List;
 import java.util.ArrayList;
 
 /**
- * 数字id与字符串的关联
+ * 加入匹配
  * 
  * @author senpure
  * @time 2021-5-6 19:44:19
  */
-public class SCIdNameMessage extends CompressMessage {
+public class CSMatchingMessage extends CompressMessage {
 
-    public static final int MESSAGE_ID = 106;
-    private List<IdName> idNames = new ArrayList<>(16);
+    public static final int MESSAGE_ID = 119;
+    private List<Consumer> consumers = new ArrayList<>(16);
 
-    public void copy(SCIdNameMessage source) {
-        this.idNames.clear();
-        for (IdName idName : source.getIdNames()) {
-            IdName tempIdName = new IdName();
-            tempIdName.copy(idName);
+    public void copy(CSMatchingMessage source) {
+        this.consumers.clear();
+        for (Consumer consumer : source.getConsumers()) {
+            Consumer tempConsumer = new Consumer();
+            tempConsumer.copy(consumer);
         }
     }
 
@@ -32,7 +32,7 @@ public class SCIdNameMessage extends CompressMessage {
     @Override
     public void write(ByteBuf buf) {
         serializedSize();
-        for (IdName value : idNames) {
+        for (Consumer value : consumers) {
              writeBean(buf, 11, value);
         }
     }
@@ -48,9 +48,9 @@ public class SCIdNameMessage extends CompressMessage {
                 case 0://end
                     return;
                 case 11:// 1 << 3 | 3
-                    IdName tempIdNamesBean = new IdName();
-                    readBean(buf,tempIdNamesBean);
-                    idNames.add(tempIdNamesBean);
+                    Consumer tempConsumersBean = new Consumer();
+                    readBean(buf,tempConsumersBean);
+                    consumers.add(tempConsumersBean);
                     break;
                 default://skip
                     skip(buf, tag);
@@ -68,54 +68,54 @@ public class SCIdNameMessage extends CompressMessage {
             return size;
         }
         size = 0;
-        for (IdName value : idNames) {
+        for (Consumer value : consumers) {
             size += computeBeanSize(1, value);
         }
         serializedSize = size ;
         return size ;
     }
 
-    public List<IdName> getIdNames() {
-        return idNames;
+    public List<Consumer> getConsumers() {
+        return consumers;
     }
 
-    public SCIdNameMessage setIdNames(List<IdName> idNames) {
-        if (idNames == null) {
-            this.idNames = new ArrayList<>(16);
+    public CSMatchingMessage setConsumers(List<Consumer> consumers) {
+        if (consumers == null) {
+            this.consumers = new ArrayList<>(16);
             return this;
         }
-        this.idNames = idNames;
+        this.consumers = consumers;
         return this;
     }
 
     @Override
     public int messageType() {
-        return MESSAGE_TYPE_SC;
+        return MESSAGE_TYPE_CS;
     }
 
     @Override
     public int messageId() {
-        return 106;
+        return 119;
     }
 
     @Override
     public String toString() {
-        return "SCIdNameMessage[106]{"
-                + "idNames=" + idNames
+        return "CSMatchingMessage[119]{"
+                + "consumers=" + consumers
                 + "}";
     }
 
     @Override
     public String toString(String indent) {
-        //7 + 3 = 10 个空格
-        String nextIndent = "          ";
-        //最长字段长度 7
+        //9 + 3 = 12 个空格
+        String nextIndent = "            ";
+        //最长字段长度 9
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("SCIdNameMessage").append("[106]").append("{");
+        sb.append("CSMatchingMessage").append("[119]").append("{");
         sb.append("\n");
-        sb.append(indent).append("idNames = ");
-        appendBeans(sb,idNames,indent,nextIndent);
+        sb.append(indent).append("consumers = ");
+        appendBeans(sb,consumers,indent,nextIndent);
         sb.append("\n");
         sb.append(indent).append("}");
         return sb.toString();

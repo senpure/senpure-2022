@@ -10,7 +10,7 @@ public class CSHeartMessageHandler extends AbstractConsumerMessageHandler {
     @Override
     public void execute(Channel channel, GatewayReceiveConsumerMessage message) {
         SCHeartMessage heartMessage = new SCHeartMessage();
-        messageExecutor.sendMessage2Consumer(message.getRequestId(), message.getToken(), heartMessage);
+        messageExecutor.sendMessage2Consumer(message.requestId(), message.token(), heartMessage);
     }
 
     @Override

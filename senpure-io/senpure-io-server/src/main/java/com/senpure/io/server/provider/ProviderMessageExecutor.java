@@ -8,6 +8,8 @@ import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
 import com.senpure.io.server.provider.handler.ProviderMessageHandler;
 import com.senpure.io.server.remoting.DefaultFuture;
 import com.senpure.io.server.remoting.DefaultResponse;
+import com.senpure.io.server.remoting.FutureService;
+import com.senpure.io.server.remoting.ResponseFuture;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,14 +19,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ProviderMessageExecutor {
+public class ProviderMessageExecutor implements FutureService {
     private final Logger logger = LoggerFactory.getLogger(ProviderMessageExecutor.class);
     private final TaskLoopGroup service;
 
     private final MessageSender messageSender;
 
     private final ProviderMessageHandlerContext handlerContext;
-    private Map<Integer, DefaultFuture> futureMap = new ConcurrentHashMap<>();
+    private final Map<Integer, DefaultFuture> futureMap = new ConcurrentHashMap<>();
     private final Set<Integer> errorMessageIds = new HashSet<>();
     public ProviderMessageExecutor(TaskLoopGroup service, MessageSender messageSender, ProviderMessageHandlerContext handlerContext) {
         this.service = service;
@@ -74,20 +76,37 @@ public class ProviderMessageExecutor {
             }
         });
     }
-
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private void executeSCMessage(Channel channel, ProviderReceivedMessage frame) {
-
-        int requestId = frame.requestId;
-        if (requestId > 0) {
-            DefaultFuture future = futureMap.remove(requestId);
-            if (future == null) {
-                logger.warn("远程服务器返回时间过长,服务器已经做了超时处理 {}", frame);
-                return;
+        long userId = frame.getUserId();
+        long id = userId > 0 ? userId : frame.getToken();
+        service.get(id).execute(() -> {
+            int requestId = frame.requestId;
+            if (requestId > 0) {
+                DefaultFuture future = futureMap.remove(requestId);
+                if (future == null) {
+                    logger.warn("远程服务器返回时间过长,服务器已经做了超时处理 {}", frame);
+                    return;
+                }
+                boolean success= !isErrorMessage(frame.message);
+                DefaultResponse response = new DefaultResponse(success, channel, frame.message);
+                future.doReceived(response);
             }
-            boolean success= !isErrorMessage(frame.message);
-            DefaultResponse response = new DefaultResponse(success, channel, frame.message);
-            future.doReceived(response);
-        }
+            else {
+                ProviderMessageHandler handler = handlerContext.handler(frame.getMessageId());
+                if (handler == null) {
+                    logger.warn("没有找到消息处理程序{} ", frame.messageId());
+                } else {
+                    try {
+                        handler.execute(channel, frame.getToken(), frame.getUserId(), frame.getMessage());
+                    } catch (Exception e) {
+                        logger.error("执行handler[" + handler.getClass().getName() + "]逻辑出错 ", e);
+                    }
+
+                }
+            }
+        });
+
     }
 
     public void execute(Channel channel, ProviderReceivedMessage frame) {
@@ -107,4 +126,11 @@ public class ProviderMessageExecutor {
     public boolean isErrorMessage(Message message) {
         return errorMessageIds.contains(message.messageId());
     }
+
+    @Override
+    public ResponseFuture future(int timeout, Channel channel, int requestId, Message message) {
+        return new DefaultFuture(timeout, channel, requestId, message);
+    }
+
+
 }

@@ -17,7 +17,7 @@ public class WaitRelationTask {
     private long relationTime;
     private final long maxDelay = 5000;
 
-    private GatewayReceiveConsumerMessage message;
+    private GatewaySendProviderMessage message;
 
     private Provider provider;
 
@@ -44,31 +44,31 @@ public class WaitRelationTask {
 
     public void sendMessage() {
         if (message != null) {
-            providerManager.bind(message.getToken(), relationToken, provider);
+            providerManager.bind(message.token(), relationToken, provider);
             providerManager.sendMessage(message);
         }
 
     }
 
     public long getToken() {
-        return message == null ? 0 : message.getToken();
+        return message == null ? 0 : message.token();
     }
 
     public void sendCancelMessage(GatewayMessageExecutor messageExecutor) {
         CSBreakUserGatewayMessage breakMessage = new CSBreakUserGatewayMessage();
         breakMessage.setRelationToken(relationToken);
-        breakMessage.setToken(message.getToken());
-        breakMessage.setUserId(message.getUserId());
+        breakMessage.setToken(message.token());
+        breakMessage.setUserId(message.userId());
         messageExecutor.sendMessage(provider, breakMessage);
 
     }
 
 
-    public GatewayReceiveConsumerMessage getMessage() {
+    public GatewaySendProviderMessage getMessage() {
         return message;
     }
 
-    public void setMessage(GatewayReceiveConsumerMessage message) {
+    public void setMessage(GatewaySendProviderMessage message) {
         this.message = message;
     }
 

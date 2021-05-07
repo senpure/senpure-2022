@@ -36,9 +36,9 @@ public class ProviderServerHandler extends SimpleChannelInboundHandler<ProviderR
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         logger.info("{} :{} 网关连接断开 ", ChannelAttributeUtil.getRemoteServerKey(ctx.channel()), ctx.channel());
-        GatewayChannelManager gatewayChannelManager = gatewayManager.getGatewayChannelManager(ChannelAttributeUtil.getRemoteServerKey(ctx.channel()));
-        if (gatewayChannelManager != null) {
-            gatewayChannelManager.removeChannel(ctx.channel());
+        Gateway gateway = gatewayManager.getGateway(ChannelAttributeUtil.getRemoteServerKey(ctx.channel()));
+        if (gateway != null) {
+            gateway.removeChannel(ctx.channel());
         } else {
             logger.error("{} :{} 网关连接断开 error ", ChannelAttributeUtil.getRemoteServerKey(ctx.channel()), ctx.channel());
         }

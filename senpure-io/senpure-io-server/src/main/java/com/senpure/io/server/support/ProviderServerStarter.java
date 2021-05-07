@@ -13,6 +13,7 @@ import com.senpure.io.server.protocol.message.SCRegServerHandleMessageMessage;
 import com.senpure.io.server.provider.*;
 import com.senpure.io.server.provider.handler.ProviderAskMessageHandler;
 import com.senpure.io.server.provider.handler.ProviderMessageHandler;
+import com.senpure.io.server.remoting.ChannelService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,7 +70,7 @@ public class ProviderServerStarter implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         List<Integer> ids = handlerContext.registerMessageIds();
 
-        logger.debug("ids {}",ids.size());
+        logger.debug("ids {}", ids.size());
         List<HandleMessage> handleMessages = new ArrayList<>();
 
         for (Integer id : ids) {
@@ -94,26 +95,26 @@ public class ProviderServerStarter implements ApplicationRunner {
                 MessageIdReader.relation(id, message.getClass().getSimpleName());
             }
         }
-        ServerProperties.Provider provider = properties.getProvider();
+        ServerProperties.Provider providerProperties = properties.getProvider();
         List<IdName> idNames = null;
-        if (StringUtils.isNoneEmpty(provider.getIdNamesPackage())) {
-            idNames = MessageScanner.scan(provider.getIdNamesPackage());
+        if (StringUtils.isNoneEmpty(providerProperties.getIdNamesPackage())) {
+            idNames = MessageScanner.scan(providerProperties.getIdNamesPackage());
 
         }
-        ServerProperties.Gateway gateway = new ServerProperties.Gateway();
+        ServerProperties.Gateway gatewayProperties = new ServerProperties.Gateway();
         List<IdName> finalIdNames = idNames;
         service.scheduleWithFixedDelay(() -> {
             try {
-                boolean log=false;
+                boolean log = false;
                 long now = System.currentTimeMillis();
                 if (now - lastLogTime >= 60000) {
                     lastLogTime = now;
-                    log=true;
+                    log = true;
 
                 }
-                List<ServiceInstance> serviceInstances = discoveryClient.getInstances(provider.getGatewayName());
+                List<ServiceInstance> serviceInstances = discoveryClient.getInstances(providerProperties.getGatewayName());
                 if (log) {
-                    logger.debug("{} 实例数量 {}",provider.getGatewayName(),serviceInstances.size());
+                    logger.debug("{} 实例数量 {}", providerProperties.getGatewayName(), serviceInstances.size());
                     gatewayManager.report();
                 }
                 for (ServiceInstance instance : serviceInstances) {
@@ -123,84 +124,99 @@ public class ProviderServerStarter implements ApplicationRunner {
                     int port;
                     if (portStr == null) {
                         useDefault = true;
-                        port = gateway.getScPort();
+                        port = gatewayProperties.getScPort();
                     } else {
                         port = Integer.parseInt(portStr);
                     }
-                    String gatewayKey = gatewayManager.getGatewayKey(instance.getHost(), port);
-                    GatewayChannelManager gatewayChannelManager = gatewayManager.getGatewayChannelManager(gatewayKey);
-                    if (gatewayChannelManager == null) {
-                        gatewayChannelManager = new GatewayChannelManager(gatewayKey, provider.getGatewayChannel(),service);
-                        gatewayChannelManager = gatewayManager.addGatewayChannelManager(gatewayChannelManager);
+                    String gatewayKey = gatewayManager.getRemoteServerKey(instance.getHost(), port);
+                    Gateway gateway = gatewayManager.getGateway(gatewayKey);
+                    if (gateway == null) {
+                        gateway = new Gateway(service);
+                        if (providerProperties.getGatewayChannel() <= 1) {
+                            gateway.setChannelService(new ChannelService.SingleChannelService(gatewayKey));
+                        } else {
+                            gateway.setChannelService(new ChannelService.MultipleChannelService(gatewayKey));
+                        }
+                        gateway.setFutureService(messageExecutor);
+                        gateway.setRemoteHost(instance.getHost());
+                        gateway.setRemotePort(String.valueOf(port));
+                        gateway.setRemoteServerKey(gatewayKey);
+                        gateway.verifyWorkable();
+                        gateway = gatewayManager.addGateway(gateway);
                     }
-                    if (gatewayChannelManager.isConnecting()) {
+
+                    if (gateway.isConnecting()) {
                         continue;
                     }
-                    if (gatewayChannelManager.getChannelSize() < provider.getGatewayChannel()) {
+                    if (gateway.getChannelSize() < providerProperties.getGatewayChannel()) {
                         Long lastFailTime = failGatewayMap.get(gatewayKey);
                         boolean start = false;
                         if (lastFailTime == null) {
                             start = true;
                         } else {
-                            if (now - lastFailTime >= provider.getConnectFailInterval()) {
+                            if (now - lastFailTime >= providerProperties.getConnectFailInterval()) {
                                 start = true;
                             }
                         }
                         if (start) {
                             if (useDefault) {
-                                logger.info("网关 [{}] {} {} 没有 没有配置sc socket端口,使用默认端口 {}", provider.getGatewayName(), instance.getHost(), instance.getUri(), gateway.getScPort());
+                                logger.info("网关 [{}] {} {} 没有 没有配置sc socket端口,使用默认端口 {}", providerProperties.getGatewayName(), instance.getHost(), instance.getUri(), gatewayProperties.getScPort());
                             }
-                            gatewayChannelManager.setConnecting(true);
+                            gateway.setConnecting(true);
                             ProviderServer providerServer = new ProviderServer();
                             providerServer.setGatewayManager(gatewayManager);
-                            providerServer.setProperties(provider);
+                            providerServer.setProperties(providerProperties);
                             providerServer.setMessageExecutor(messageExecutor);
                             providerServer.setDecoderContext(decoderContext);
 
                             providerServer.setServerName(properties.getName());
                             providerServer.setHttpPort(httpPort);
-                            providerServer.setReadableServerName(provider.getReadableName());
+                            providerServer.setReadableServerName(providerProperties.getReadableName());
                             if (providerServer.start(instance.getHost(), port)) {
                                 servers.add(providerServer);
-                                registerProvider(providerServer, handleMessages);
-                                if (gatewayChannelManager.getChannelSize() == 0) {
-                                    gatewayChannelManager.setDefaultMessageRetryTimeLimit(provider.getMessageRetryTimeLimit());
+                                registerProvider(providerServer,gateway, handleMessages);
+                                if (gateway.getChannelSize() == 0) {
+                                    gateway.setWaitSendTimeout(providerProperties.getMessageWaitSendTimeout());
                                     if (finalIdNames != null && finalIdNames.size() > 0) {
                                         registerIdNames(providerServer, finalIdNames);
                                     }
                                 }
                                 //认证
-                                gatewayChannelManager.addChannel(providerServer.getChannel());
+                                gateway.addChannel(providerServer.getChannel());
 
                             } else {
-                                logger.warn("{}  socket {}:{} 连接失败",provider.getGatewayName(),instance.getHost(),port);
+                                logger.warn("{}  socket {}:{} 连接失败", providerProperties.getGatewayName(), instance.getHost(), port);
                                 failGatewayMap.put(gatewayKey, now);
                             }
-                            gatewayChannelManager.setConnecting(false);
+                            gateway.setConnecting(false);
                         }
                     }
                 }
             } catch (Exception e) {
-                logger.error("",e);
+                logger.error("", e);
             }
 
         }, 2000, 50, TimeUnit.MILLISECONDS);
     }
 
-    public void registerProvider(ProviderServer server, List<HandleMessage> handleMessages) {
+    public void registerProvider(ProviderServer server,Gateway gateway, List<HandleMessage> handleMessages) {
         SCRegServerHandleMessageMessage message = new SCRegServerHandleMessageMessage();
         message.setServerName(properties.getName());
         message.setReadableServerName(server.getReadableServerName());
         message.setServerKey(ChannelAttributeUtil.getLocalServerKey(server.getChannel()));
         message.setMessages(handleMessages);
-        ProviderSendMessage frame = gatewayManager.createMessageByToken(0L,message);
+        ProviderSendMessage frame = gatewayManager.createMessageByToken(0L, message);
 
 
         logger.debug("向{}注册服务", ChannelAttributeUtil.getRemoteServerKey(server.getChannel()));
         for (HandleMessage handleMessage : handleMessages) {
             logger.debug(handleMessage.toString());
         }
-        server.getChannel().writeAndFlush(frame);
+
+        gateway.sendMessage(server.getChannel(),frame);
+
+
+       // server.getChannel().writeAndFlush(frame);
     }
 
     public void registerIdNames(ProviderServer server, List<IdName> idNames) {

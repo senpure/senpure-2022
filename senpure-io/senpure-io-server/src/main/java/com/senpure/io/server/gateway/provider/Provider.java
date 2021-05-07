@@ -2,9 +2,7 @@ package com.senpure.io.server.gateway.provider;
 
 
 import com.senpure.io.server.ChannelAttributeUtil;
-import com.senpure.io.server.gateway.GatewayReceiveConsumerMessage;
-import com.senpure.io.server.remoting.Response;
-import com.senpure.io.server.remoting.ResponseCallback;
+import com.senpure.io.server.gateway.GatewaySendProviderMessage;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +28,7 @@ public class Provider {
     private final AtomicInteger consumerCount = new AtomicInteger();
 
 
-    public void sendMessage(GatewayReceiveConsumerMessage message) {
+    public void sendMessage(GatewaySendProviderMessage message) {
         Channel channel = nextChannel();
         if (channel == null) {
             logger.warn("{} 没有可用得channel", serverKey);

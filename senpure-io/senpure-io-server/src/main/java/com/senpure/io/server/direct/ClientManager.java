@@ -4,6 +4,7 @@ import com.senpure.io.protocol.Message;
 import com.senpure.io.server.ChannelAttributeUtil;
 import com.senpure.io.server.provider.MessageSender;
 import com.senpure.io.server.provider.ProviderSendMessage;
+import com.senpure.io.server.remoting.ResponseCallback;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +48,11 @@ public class ClientManager implements MessageSender {
             logger.warn("userId {} channel is null ", userId);
 
         }
+    }
+
+    @Override
+    public void sendMessage(Long userId, Message message, ResponseCallback callback) {
+
     }
 
     /**

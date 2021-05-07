@@ -51,24 +51,24 @@ public class HandleMessageManager {
         }
     }
 
-    public void execute(GatewayReceiveConsumerMessage message) {
+    public void execute(GatewaySendProviderMessage message) {
         if (direct) {
             providerManager.sendMessage(message);
         } else {
 
             CSAskHandleMessage askHandleMessage = new CSAskHandleMessage();
-            askHandleMessage.setFromMessageId(message.getMessageId());
+            askHandleMessage.setFromMessageId(message.messageId());
             askHandleMessage.setAskToken(messageExecutor.idGenerator.nextId());
-            askHandleMessage.setData(message.getData());
+          //  askHandleMessage.setData(message.getData());
 
-            GatewayReceiveConsumerMessage frame = messageExecutor.createMessage(askHandleMessage);
+            GatewaySendProviderMessage frame = messageExecutor.createMessage(askHandleMessage);
 
 
             WaitAskTask waitAskTask = new WaitAskTask(messageExecutor.getGateway().getAskMaxDelay());
             waitAskTask.setAskToken(askHandleMessage.getAskToken());
-            waitAskTask.setRequestId(message.getRequestId());
+            waitAskTask.setRequestId(message.requestId());
             waitAskTask.setFromMessageId(askHandleMessage.getFromMessageId());
-            waitAskTask.setValue(message.getData());
+            //waitAskTask.setValue(message.getData());
 
             int askTimes = 0;
             for (ProviderManager serverManager : providerManagers) {

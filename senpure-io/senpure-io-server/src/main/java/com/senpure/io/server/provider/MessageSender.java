@@ -1,6 +1,7 @@
 package com.senpure.io.server.provider;
 
 import com.senpure.io.protocol.Message;
+import com.senpure.io.server.remoting.ResponseCallback;
 import io.netty.util.concurrent.FastThreadLocal;
 
 import java.util.List;
@@ -24,12 +25,20 @@ public interface MessageSender {
     void sendMessage(Long userId, Message message);
 
     /**
+     * 向用户发送异步回调消息
+     * @param userId 用户唯一标识
+     * @param message 消息
+     * @param callback 回调函数
+     */
+    void sendMessage(Long userId, Message message, ResponseCallback callback);
+    /**
      * 向用户发送消息
      *
      * @param token   用户本次临时唯一标识
      * @param message 消息
      */
     void sendMessageByToken(Long token, Message message);
+
 
     /**
      * 响应用户消息
@@ -74,6 +83,8 @@ public interface MessageSender {
 
     void sendMessageByToken(List<Long> tokens, Message message);
 
+
+
     /**
      * 将消息发送给所有的consumer
      *
@@ -97,6 +108,8 @@ public interface MessageSender {
      */
 
     void dispatchMessage(String serverName, String serverKey, Message message);
+
+
 
     void sendKickOffMessage(Long userId);
 
