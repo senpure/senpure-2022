@@ -4,6 +4,7 @@ import com.senpure.io.protocol.Message;
 import com.senpure.io.server.ChannelAttributeUtil;
 import com.senpure.io.server.provider.MessageSender;
 import com.senpure.io.server.provider.ProviderSendMessage;
+import com.senpure.io.server.remoting.AbstractMultipleServerManger;
 import com.senpure.io.server.remoting.ResponseCallback;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
@@ -13,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ClientManager implements MessageSender {
+public class ClientManager extends AbstractMultipleServerManger<ProviderSendMessage> implements MessageSender   {
 
     private final Map<Long, ClientRelation> userChannelMap = new ConcurrentHashMap<>();
     private final Map<Long, ClientRelation> tokenChannelMap = new ConcurrentHashMap<>();
@@ -52,6 +53,11 @@ public class ClientManager implements MessageSender {
 
     @Override
     public void sendMessage(Long userId, Message message, ResponseCallback callback) {
+
+    }
+
+    @Override
+    public void sendMessage(Long userId, Message message, ResponseCallback callback, int timeout) {
 
     }
 
@@ -372,6 +378,16 @@ public class ClientManager implements MessageSender {
             }
         }
         return false;
+    }
+
+    @Override
+    protected ProviderSendMessage createMessage(Message message) {
+        return null;
+    }
+
+    @Override
+    protected ProviderSendMessage createMessage(Message message, int requestId) {
+        return null;
     }
 
     private static class ClientRelation {

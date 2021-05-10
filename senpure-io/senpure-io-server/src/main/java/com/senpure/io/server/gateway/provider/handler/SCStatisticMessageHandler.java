@@ -2,8 +2,8 @@ package com.senpure.io.server.gateway.provider.handler;
 
 import com.senpure.io.server.ChannelAttributeUtil;
 import com.senpure.io.server.gateway.GatewayReceiveProviderMessage;
-import com.senpure.io.server.gateway.ProviderManager;
 import com.senpure.io.server.gateway.provider.Provider;
+import com.senpure.io.server.gateway.provider.ProviderManager;
 import com.senpure.io.server.protocol.message.SCStatisticMessage;
 import io.netty.channel.Channel;
 
@@ -17,7 +17,7 @@ public class SCStatisticMessageHandler  extends AbstractProviderMessageHandler{
         String producerName = ChannelAttributeUtil.getRemoteServerName(channel);
         ProviderManager providerManager =   messageExecutor.providerManagerMap.get(producerName);
         if (providerManager != null) {
-            Provider provider = providerManager.getProducer(producerKey);
+            Provider provider = providerManager.getProvider(producerKey);
             if (provider != null) {
                 provider.updateScore(message.getStatistic().getScore());
             } else {
@@ -31,7 +31,7 @@ public class SCStatisticMessageHandler  extends AbstractProviderMessageHandler{
     }
 
     @Override
-    public int handleMessageId() {
+    public int messageId() {
         return SCStatisticMessage.MESSAGE_ID;
     }
 }

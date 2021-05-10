@@ -9,13 +9,12 @@ public class CSMatchingMessageHandler  extends  AbstractProviderMessageHandler{
     @Override
     public void execute(Channel channel, GatewayReceiveProviderMessage gatewayReceiveProviderMessage) {
 
-
         SCMatchingMessage message = new SCMatchingMessage();
         messageExecutor.sendMessage2Producer(channel, message);
     }
 
     @Override
-    public int handleMessageId() {
+    public int messageId() {
         return CSMatchingMessage.MESSAGE_ID;
     }
 }

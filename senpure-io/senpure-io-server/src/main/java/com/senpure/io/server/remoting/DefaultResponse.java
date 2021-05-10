@@ -37,4 +37,13 @@ public class DefaultResponse implements Response {
     public Channel getChannel() {
         return channel;
     }
+
+    @Override
+    public String toString() {
+        return "DefaultResponse{" +
+                "success=" + success +
+                ", channel=" + channel +
+                ", message=" + message +
+                '}';
+    }
 }

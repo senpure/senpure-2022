@@ -2,9 +2,9 @@ package com.senpure.io.server.gateway.provider.handler;
 
 import com.senpure.io.server.ChannelAttributeUtil;
 import com.senpure.io.server.gateway.GatewayReceiveProviderMessage;
-import com.senpure.io.server.gateway.ProviderManager;
 import com.senpure.io.server.gateway.WaitAskTask;
 import com.senpure.io.server.gateway.provider.Provider;
+import com.senpure.io.server.gateway.provider.ProviderManager;
 import com.senpure.io.server.protocol.message.SCAskHandleMessage;
 import com.senpure.io.server.support.MessageIdReader;
 import io.netty.channel.Channel;
@@ -23,7 +23,7 @@ public class SCAskHandleMessageHandler extends AbstractProviderMessageHandler {
                         MessageIdReader.read(waitAskTask.getFromMessageId()), message.getAskValue());
                 ProviderManager providerManager = messageExecutor.providerManagerMap.get(serverName);
                 for (Provider useProvider : providerManager.getUseProviders()) {
-                    if (useProvider.getServerKey().equalsIgnoreCase(serverKey)) {
+                    if (useProvider.getRemoteServerKey().equalsIgnoreCase(serverKey)) {
                         waitAskTask.answer(providerManager, useProvider, true);
                         return;
                     }
@@ -40,7 +40,7 @@ public class SCAskHandleMessageHandler extends AbstractProviderMessageHandler {
     }
 
     @Override
-    public int handleMessageId() {
+    public int messageId() {
         return SCAskHandleMessage.MESSAGE_ID;
     }
 }

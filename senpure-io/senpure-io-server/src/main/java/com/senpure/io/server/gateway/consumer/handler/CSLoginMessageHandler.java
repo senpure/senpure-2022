@@ -9,7 +9,7 @@ public class CSLoginMessageHandler extends CSConsumerVerifyMessageHandler {
     }
 
     @Override
-    public boolean stopForward() {
+    public boolean stopProvider() {
         return false;
     }
 }

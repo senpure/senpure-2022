@@ -7,6 +7,7 @@ import io.netty.channel.Channel;
 public class CSConsumerVerifyMessageHandler extends AbstractConsumerMessageHandler {
     @Override
     public void execute(Channel channel, GatewayReceiveConsumerMessage message) {
+        logger.debug("{} 准备登录 ", message.token());
         messageExecutor.prepLoginChannels.put(message.token(), channel);
     }
 
@@ -16,7 +17,7 @@ public class CSConsumerVerifyMessageHandler extends AbstractConsumerMessageHandl
     }
 
     @Override
-    public boolean stopForward() {
+    public boolean stopProvider() {
         return false;
     }
 }

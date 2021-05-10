@@ -2,7 +2,7 @@ package com.senpure.io.server.gateway.provider.handler;
 
 import com.senpure.io.server.ChannelAttributeUtil;
 import com.senpure.io.server.gateway.GatewayReceiveProviderMessage;
-import com.senpure.io.server.gateway.ProviderManager;
+import com.senpure.io.server.gateway.provider.ProviderManager;
 import com.senpure.io.server.protocol.message.SCConsumerVerifyMessage;
 import io.netty.channel.Channel;
 
@@ -39,12 +39,12 @@ public class SCConsumerVerifyMessageHandler extends AbstractProviderMessageHandl
 
 
     @Override
-    public int handleMessageId() {
+    public int messageId() {
         return SCConsumerVerifyMessage.MESSAGE_ID;
     }
 
     @Override
-    public boolean stopResponse() {
+    public boolean stopConsumer() {
         return false;
     }
 }

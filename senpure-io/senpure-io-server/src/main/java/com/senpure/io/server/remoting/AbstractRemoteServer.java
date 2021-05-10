@@ -1,6 +1,7 @@
 package com.senpure.io.server.remoting;
 
 import com.senpure.base.util.Assert;
+import com.senpure.executor.TaskLoopGroup;
 import com.senpure.io.server.Constant;
 import com.senpure.io.server.MessageFrame;
 import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
@@ -20,8 +21,6 @@ public abstract class AbstractRemoteServer implements RemoteServer {
     protected int timeout = 500;
     protected int waitSendTimeout = 10000;
 
-    protected String remoteHost;
-    protected String remotePort;
     protected String remoteServerKey;
 
     protected final List<WaitSendMessage> waitSendMessages = new ArrayList<>();
@@ -31,13 +30,33 @@ public abstract class AbstractRemoteServer implements RemoteServer {
     protected ChannelService channelService;
     private boolean connecting = false;
     private final ReadWriteLock connectLock = new ReentrantReadWriteLock();
+    private TaskLoopGroup service;
+
+    public AbstractRemoteServer() {
+    }
+
+    public AbstractRemoteServer(TaskLoopGroup service) {
+        this.service = service;
+    }
+
 
     public void verifyWorkable() {
         Assert.notNull(remoteServerKey);
-        Assert.notNull(remoteHost);
-        Assert.notNull(remotePort);
         Assert.notNull(futureService);
         Assert.notNull(channelService);
+    }
+
+    public void checkWaitSendMessage() {
+        synchronized (waitSendMessages) {
+            if (waitSendMessages.size() > 0) {
+                TaskLoopGroup executor = service;
+                if (executor != null) {
+                    executor.execute(this::sendWaitMessage);
+                } else {
+                    sendWaitMessage();
+                }
+            }
+        }
     }
 
     protected void addWaitMessage(WaitSendMessage waitSendMessage) {
@@ -109,7 +128,6 @@ public abstract class AbstractRemoteServer implements RemoteServer {
 
     }
 
-    public abstract void checkWaitSendMessage();
 
     public void addChannel(Channel channel) {
         channelService.addChannel(channel);
@@ -117,8 +135,8 @@ public abstract class AbstractRemoteServer implements RemoteServer {
 
     }
 
-    public void removeChannel(Channel channel) {
-        channelService.removeChannel(channel);
+    public boolean removeChannel(Channel channel) {
+       return   channelService.removeChannel(channel);
     }
 
     public int getChannelSize() {
@@ -290,8 +308,7 @@ public abstract class AbstractRemoteServer implements RemoteServer {
             errorMessage.setCode(Constant.ERROR_CHANNEL_NOT_AVAILABLE);
             errorMessage.setMessage(remoteServerKey + "没有可用的channel");
             errorMessage.getArgs().add(remoteServerKey);
-            errorMessage.getArgs().add(remoteHost);
-            errorMessage.getArgs().add(remotePort);
+
             return new FrameworkErrorResponse(EmptyChannel.EMPTY_CHANNEL, errorMessage);
         }
 
@@ -324,21 +341,9 @@ public abstract class AbstractRemoteServer implements RemoteServer {
         this.waitSendTimeout = waitSendTimeout;
     }
 
-    public String getRemoteHost() {
-        return remoteHost;
-    }
 
-    public void setRemoteHost(String remoteHost) {
-        this.remoteHost = remoteHost;
-    }
 
-    public String getRemotePort() {
-        return remotePort;
-    }
 
-    public void setRemotePort(String remotePort) {
-        this.remotePort = remotePort;
-    }
 
     public String getRemoteServerKey() {
         return remoteServerKey;

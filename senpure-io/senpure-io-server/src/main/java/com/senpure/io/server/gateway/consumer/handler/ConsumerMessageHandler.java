@@ -9,7 +9,7 @@ public interface ConsumerMessageHandler {
 
     int messageId();
 
-    default boolean stopForward() {
+    default boolean stopProvider() {
         return true;
     }
 }

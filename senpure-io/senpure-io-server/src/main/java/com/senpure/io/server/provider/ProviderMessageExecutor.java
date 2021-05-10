@@ -6,10 +6,7 @@ import com.senpure.io.server.Constant;
 import com.senpure.io.server.MessageFrame;
 import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
 import com.senpure.io.server.provider.handler.ProviderMessageHandler;
-import com.senpure.io.server.remoting.DefaultFuture;
-import com.senpure.io.server.remoting.DefaultResponse;
-import com.senpure.io.server.remoting.FutureService;
-import com.senpure.io.server.remoting.ResponseFuture;
+import com.senpure.io.server.remoting.*;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +25,7 @@ public class ProviderMessageExecutor implements FutureService {
     private final ProviderMessageHandlerContext handlerContext;
     private final Map<Integer, DefaultFuture> futureMap = new ConcurrentHashMap<>();
     private final Set<Integer> errorMessageIds = new HashSet<>();
+
     public ProviderMessageExecutor(TaskLoopGroup service, MessageSender messageSender, ProviderMessageHandlerContext handlerContext) {
         this.service = service;
         this.messageSender = messageSender;
@@ -58,7 +56,8 @@ public class ProviderMessageExecutor implements FutureService {
 
             } else {
                 try {
-                    MessageSender.REQUEST_ID.set(frame.getRequestId());
+
+                    RemoteServerManager.REQUEST_ID.set(frame.getRequestId());
                     handler.execute(channel, frame.getToken(), userId, frame.getMessage());
                 } catch (Exception e) {
                     logger.error("执行handler[" + handler.getClass().getName() + "]逻辑出错 ", e);
@@ -70,12 +69,13 @@ public class ProviderMessageExecutor implements FutureService {
                     scFrameworkErrorMessage.getArgs().add(String.valueOf(frame.getMessageId()));
                     messageSender.sendMessageByToken(frame.getToken(), scFrameworkErrorMessage);
                 } finally {
-                    MessageSender.REQUEST_ID.remove();
+                    RemoteServerManager.REQUEST_ID.remove();
                 }
 
             }
         });
     }
+
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void executeSCMessage(Channel channel, ProviderReceivedMessage frame) {
         long userId = frame.getUserId();
@@ -88,11 +88,10 @@ public class ProviderMessageExecutor implements FutureService {
                     logger.warn("远程服务器返回时间过长,服务器已经做了超时处理 {}", frame);
                     return;
                 }
-                boolean success= !isErrorMessage(frame.message);
+                boolean success = !isErrorMessage(frame.message);
                 DefaultResponse response = new DefaultResponse(success, channel, frame.message);
                 future.doReceived(response);
-            }
-            else {
+            } else {
                 ProviderMessageHandler handler = handlerContext.handler(frame.getMessageId());
                 if (handler == null) {
                     logger.warn("没有找到消息处理程序{} ", frame.messageId());
@@ -129,7 +128,9 @@ public class ProviderMessageExecutor implements FutureService {
 
     @Override
     public ResponseFuture future(int timeout, Channel channel, int requestId, Message message) {
-        return new DefaultFuture(timeout, channel, requestId, message);
+        DefaultFuture future = new DefaultFuture(timeout, channel, requestId, message);
+        futureMap.put(requestId, future);
+        return future;
     }
 
 

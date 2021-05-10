@@ -7,11 +7,17 @@ import com.senpure.executor.TaskLoopGroup;
 import com.senpure.io.protocol.Message;
 import com.senpure.io.server.ChannelAttributeUtil;
 import com.senpure.io.server.Constant;
+import com.senpure.io.server.MessageFrame;
 import com.senpure.io.server.ServerProperties;
 import com.senpure.io.server.gateway.consumer.handler.ConsumerMessageHandler;
 import com.senpure.io.server.gateway.provider.Provider;
+import com.senpure.io.server.gateway.provider.ProviderManager;
 import com.senpure.io.server.gateway.provider.handler.ProviderMessageHandler;
 import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
+import com.senpure.io.server.remoting.DefaultFuture;
+import com.senpure.io.server.remoting.DefaultResponse;
+import com.senpure.io.server.remoting.FutureService;
+import com.senpure.io.server.remoting.ResponseFuture;
 import com.senpure.io.server.support.MessageIdReader;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -26,10 +32,10 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 
-public class GatewayMessageExecutor {
+public class GatewayMessageExecutor implements FutureService {
     protected static Logger logger = LoggerFactory.getLogger(GatewayMessageExecutor.class);
 
-
+    private final Map<Integer, DefaultFuture> futureMap = new ConcurrentHashMap<>();
     private final TaskLoopGroup service;
     private int serviceRefCount = 0;
     private int csLoginMessageId = 0;
@@ -70,12 +76,12 @@ public class GatewayMessageExecutor {
 
 
     public void registerProviderMessageHandler(ProviderMessageHandler handler) {
-        ProviderMessageHandler old = p2gHandlerMap.get(handler.handleMessageId());
+        ProviderMessageHandler old = p2gHandlerMap.get(handler.messageId());
         if (old != null) {
-            Assert.error(handler.handleMessageId() + " -> " + MessageIdReader.read(handler.handleMessageId()) + "  处理程序已经存在"
+            Assert.error(handler.messageId() + " -> " + MessageIdReader.read(handler.messageId()) + "  处理程序已经存在"
                     + " 存在 " + old.getClass().getName() + " 注册 " + handler.getClass().getName());
         }
-        p2gHandlerMap.put(handler.handleMessageId(), handler);
+        p2gHandlerMap.put(handler.messageId(), handler);
     }
 
     public void registerConsumerMessageHandler(ConsumerMessageHandler handler) {
@@ -141,7 +147,7 @@ public class GatewayMessageExecutor {
                 ConsumerMessageHandler handler = c2gHandlerMap.get(message.messageId());
                 if (handler != null) {
                     handler.execute(channel, message);
-                    if (handler.stopForward()) {
+                    if (handler.stopProvider()) {
                         return;
                     }
                 }
@@ -176,15 +182,27 @@ public class GatewayMessageExecutor {
         if (consumerChannel == null) {
             logger.warn("没有找到channel token {}", token);
         } else {
-            GatewayReceiveProviderMessage m = new GatewayReceiveProviderMessage();
-            m.setRequestId(requestId);
-            ByteBuf buf = Unpooled.buffer(message.serializedSize());
-            message.write(buf);
-            byte[] data = new byte[message.serializedSize()];
-            buf.readBytes(data);
+            GatewayLocalSendConsumerMessage frame = new GatewayLocalSendConsumerMessage(message);
+
+            frame.setRequestId(requestId);
+            frame.setToken(token);
+
+            if (consumerChannel.isWritable()) {
+                consumerChannel.writeAndFlush(frame);
+            }
+
+        }
+    }
+
+    public void sendMessage2Consumer(Long token, int messageId, byte[] data) {
+        Channel consumerChannel = tokenChannel.get(token);
+        if (consumerChannel == null) {
+            logger.warn("没有找到channel token {}", token);
+        } else {
+            GatewayReceiveProviderMessage m = new GatewayReceiveProviderMessage(data.length, data);
+            m.setRequestId(0);
             m.setToken(token);
-            m.setData(data);
-            m.setMessageId(message.messageId());
+            m.setMessageId(messageId);
             if (consumerChannel.isWritable()) {
                 consumerChannel.writeAndFlush(m);
             }
@@ -192,32 +210,24 @@ public class GatewayMessageExecutor {
         }
     }
 
-    public void sendMessage2Consumer(Long token, int messageId, byte[] data) {
-        Channel consumerChannel  = tokenChannel.get(token);
-        if (consumerChannel  == null) {
-            logger.warn("没有找到channel token {}", token);
-        } else {
-            GatewayReceiveProviderMessage m = new GatewayReceiveProviderMessage();
-            m.setRequestId(0);
-            m.setToken(token);
-            m.setData(data);
-            m.setMessageId(messageId);
-            if (consumerChannel .isWritable()) {
-                consumerChannel .writeAndFlush(m);
-            }
 
+    public void responseMessage2Producer(int requestId, Channel channel, Message message) {
+        GatewayLocalSendProviderMessage frame = createMessage(message);
+        frame.setRequestId(requestId);
+        if (channel.isWritable()) {
+            channel.writeAndFlush(frame);
         }
     }
 
-
     public void sendMessage2Producer(Channel channel, Message message) {
-        GatewaySendProviderMessage toMessage = createMessage(message);
+        GatewayLocalSendProviderMessage toMessage = createMessage(message);
         if (channel.isWritable()) {
             channel.writeAndFlush(toMessage);
         }
 
 
     }
+
     public void init() {
         if (init) {
             logger.warn("messageExecutor 已经初始化");
@@ -229,10 +239,10 @@ public class GatewayMessageExecutor {
         startCheck();
     }
 
-    private  void executeSCMessage()
-    {
+    private void executeSCMessage() {
 
     }
+
     //处理服务器发过来的消息
     public void execute(Channel channel, final GatewayReceiveProviderMessage message) {
         long token = message.getToken();
@@ -241,7 +251,7 @@ public class GatewayMessageExecutor {
                 ProviderMessageHandler handler = p2gHandlerMap.get(message.getMessageId());
                 if (handler != null) {
                     handler.execute(channel, message);
-                    if (handler.stopResponse()) {
+                    if (handler.stopConsumer()) {
                         return;
                     }
                 }
@@ -333,12 +343,13 @@ public class GatewayMessageExecutor {
         buf.writeBytes(gatewayReceiveProviderMessage.getData());
         message.read(buf, buf.writerIndex());
     }
+
     public GatewayLocalSendProviderMessage createMessage(Message message) {
 
         return new GatewayLocalSendProviderMessage(message);
     }
 
-    public GatewayLocalSendProviderMessage createMessage(long token,long userId,Message message) {
+    public GatewayLocalSendProviderMessage createMessage(long token, long userId, Message message) {
         GatewayLocalSendProviderMessage frame = new GatewayLocalSendProviderMessage(message);
         frame.setToken(token);
         frame.setUserId(userId);
@@ -350,9 +361,6 @@ public class GatewayMessageExecutor {
         GatewaySendProviderMessage toMessage = createMessage(message);
         provider.sendMessage(toMessage);
     }
-
-
-
 
 
     private void checkWaitRelationTask() {
@@ -415,6 +423,13 @@ public class GatewayMessageExecutor {
         service.shutdownGracefully();
     }
 
+    public IDGenerator getIdGenerator() {
+        return idGenerator;
+    }
+
+    public TaskLoopGroup getService() {
+        return service;
+    }
 
     public int getCsLoginMessageId() {
         return csLoginMessageId;
@@ -441,7 +456,27 @@ public class GatewayMessageExecutor {
     }
 
 
-    public static void main(String[] args) {
+    @Override
+    public ResponseFuture future(int timeout, Channel channel, int requestId, Message message) {
+        DefaultFuture future = new DefaultFuture(timeout, channel, requestId, message);
+        futureMap.put(requestId, future);
+        return future;
+    }
 
+    public void receive(Channel channel, int requestId, MessageFrame frame) {
+        DefaultFuture future = futureMap.remove(requestId);
+        if (future != null) {
+            boolean success = !isErrorMessage(frame);
+            DefaultResponse response = new DefaultResponse(success, channel, frame.message());
+            future.doReceived(response);
+
+        } else {
+            logger.warn("远程服务器返回时间过长,服务器已经做了超时处理 {} {}", requestId, frame);
+        }
+
+    }
+
+    public boolean isErrorMessage(MessageFrame frame) {
+        return frame.messageId() == SCFrameworkErrorMessage.MESSAGE_ID;
     }
 }

@@ -8,12 +8,14 @@ import com.senpure.io.server.MessageDecoderContext;
 import com.senpure.io.server.ServerProperties;
 import com.senpure.io.server.protocol.bean.HandleMessage;
 import com.senpure.io.server.protocol.bean.IdName;
+import com.senpure.io.server.protocol.message.CSMatchingMessage;
 import com.senpure.io.server.protocol.message.SCIdNameMessage;
 import com.senpure.io.server.protocol.message.SCRegServerHandleMessageMessage;
 import com.senpure.io.server.provider.*;
 import com.senpure.io.server.provider.handler.ProviderAskMessageHandler;
 import com.senpure.io.server.provider.handler.ProviderMessageHandler;
 import com.senpure.io.server.remoting.ChannelService;
+import com.senpure.io.server.remoting.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -138,8 +140,6 @@ public class ProviderServerStarter implements ApplicationRunner {
                             gateway.setChannelService(new ChannelService.MultipleChannelService(gatewayKey));
                         }
                         gateway.setFutureService(messageExecutor);
-                        gateway.setRemoteHost(instance.getHost());
-                        gateway.setRemotePort(String.valueOf(port));
                         gateway.setRemoteServerKey(gatewayKey);
                         gateway.verifyWorkable();
                         gateway = gatewayManager.addGateway(gateway);
@@ -174,7 +174,7 @@ public class ProviderServerStarter implements ApplicationRunner {
                             providerServer.setReadableServerName(providerProperties.getReadableName());
                             if (providerServer.start(instance.getHost(), port)) {
                                 servers.add(providerServer);
-                                registerProvider(providerServer,gateway, handleMessages);
+                                registerProvider(providerServer, gateway, handleMessages);
                                 if (gateway.getChannelSize() == 0) {
                                     gateway.setWaitSendTimeout(providerProperties.getMessageWaitSendTimeout());
                                     if (finalIdNames != null && finalIdNames.size() > 0) {
@@ -199,7 +199,7 @@ public class ProviderServerStarter implements ApplicationRunner {
         }, 2000, 50, TimeUnit.MILLISECONDS);
     }
 
-    public void registerProvider(ProviderServer server,Gateway gateway, List<HandleMessage> handleMessages) {
+    public void registerProvider(ProviderServer server, Gateway gateway, List<HandleMessage> handleMessages) {
         SCRegServerHandleMessageMessage message = new SCRegServerHandleMessageMessage();
         message.setServerName(properties.getName());
         message.setReadableServerName(server.getReadableServerName());
@@ -213,10 +213,16 @@ public class ProviderServerStarter implements ApplicationRunner {
             logger.debug(handleMessage.toString());
         }
 
-        gateway.sendMessage(server.getChannel(),frame);
+        gateway.sendMessage(server.getChannel(), frame);
 
+        CSMatchingMessage matchingMessage = new CSMatchingMessage();
+        Response response = gatewayManager.sendSyncMessage(gateway, matchingMessage);
 
-       // server.getChannel().writeAndFlush(frame);
+        if (response.isSuccess()) {
+            logger.info("=========Sync Message");
+        }
+
+        // server.getChannel().writeAndFlush(frame);
     }
 
     public void registerIdNames(ProviderServer server, List<IdName> idNames) {

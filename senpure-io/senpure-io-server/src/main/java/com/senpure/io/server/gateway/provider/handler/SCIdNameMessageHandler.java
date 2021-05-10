@@ -14,7 +14,7 @@ public class SCIdNameMessageHandler extends AbstractProviderMessageHandler {
     }
 
     @Override
-    public int handleMessageId() {
+    public int messageId() {
         return SCIdNameMessage.MESSAGE_ID;
     }
 }

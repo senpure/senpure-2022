@@ -27,7 +27,7 @@ public class SCKickOffMessageHandler extends  AbstractProviderMessageHandler{
     }
 
     @Override
-    public int handleMessageId() {
+    public int messageId() {
         return SCKickOffMessage.MESSAGE_ID;
     }
 }

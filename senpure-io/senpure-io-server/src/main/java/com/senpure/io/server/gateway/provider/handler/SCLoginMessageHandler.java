@@ -4,12 +4,12 @@ public class SCLoginMessageHandler extends  SCConsumerVerifyMessageHandler {
 
 
     @Override
-    public int handleMessageId() {
+    public int messageId() {
         return messageExecutor.getScLoginMessageId();
     }
 
     @Override
-    public boolean stopResponse() {
+    public boolean stopConsumer() {
         return false;
     }
 }

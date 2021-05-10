@@ -3,11 +3,12 @@ package com.senpure.io.server.gateway.provider.handler;
 import com.senpure.io.server.ChannelAttributeUtil;
 import com.senpure.io.server.gateway.GatewayReceiveProviderMessage;
 import com.senpure.io.server.gateway.HandleMessageManager;
-import com.senpure.io.server.gateway.ProviderManager;
 import com.senpure.io.server.gateway.provider.Provider;
+import com.senpure.io.server.gateway.provider.ProviderManager;
 import com.senpure.io.server.protocol.bean.HandleMessage;
 import com.senpure.io.server.protocol.message.CSRegServerHandleMessageMessage;
 import com.senpure.io.server.protocol.message.SCRegServerHandleMessageMessage;
+import com.senpure.io.server.remoting.ChannelService;
 import com.senpure.io.server.support.MessageIdReader;
 import io.netty.channel.Channel;
 
@@ -83,9 +84,16 @@ public class SCRegServerHandleMessageMessageHandler extends AbstractProviderMess
                     break;
                 }
             }
-            Provider provider = providerManager.getProducer(serverKey);
+            Provider provider = providerManager.getProvider(serverKey);
+            if (provider == null) {
+                provider = new Provider(messageExecutor.getService());
+                provider.setChannelService(new ChannelService.MultipleChannelService(serverKey));
+                provider.setRemoteServerKey(serverKey);
+                provider.setFutureService(messageExecutor);
+                provider.verifyWorkable();
+                provider = providerManager.addProvider(provider);
+            }
             provider.addChannel(channel);
-            providerManager.checkChannelServer(serverKey, provider);
             ConcurrentMap<Integer, HandleMessageManager> handleMessageManagerMap = messageExecutor.handleMessageManagerMap;
             for (HandleMessage handleMessage : handleMessages) {
                 HandleMessageManager handleMessageManager = handleMessageManagerMap.get(handleMessage.getHandleMessageId());
@@ -112,7 +120,7 @@ public class SCRegServerHandleMessageMessageHandler extends AbstractProviderMess
     }
 
     @Override
-    public int handleMessageId() {
+    public int messageId() {
         return SCRegServerHandleMessageMessage.MESSAGE_ID;
     }
 

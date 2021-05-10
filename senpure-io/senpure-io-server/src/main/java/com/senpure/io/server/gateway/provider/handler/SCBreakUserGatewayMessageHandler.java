@@ -2,7 +2,7 @@ package com.senpure.io.server.gateway.provider.handler;
 
 import com.senpure.io.server.ChannelAttributeUtil;
 import com.senpure.io.server.gateway.GatewayReceiveProviderMessage;
-import com.senpure.io.server.gateway.ProviderManager;
+import com.senpure.io.server.gateway.provider.ProviderManager;
 import com.senpure.io.server.protocol.message.SCBreakUserGatewayMessage;
 import io.netty.channel.Channel;
 
@@ -34,7 +34,7 @@ public class SCBreakUserGatewayMessageHandler extends AbstractProviderMessageHan
     }
 
     @Override
-    public int handleMessageId() {
+    public int messageId() {
         return SCBreakUserGatewayMessage.MESSAGE_ID;
     }
 }

@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public interface ChannelService {
     void addChannel(Channel channel);
 
-    void removeChannel(Channel channel);
+    boolean removeChannel(Channel channel);
 
     Channel nextChannel();
 
@@ -37,10 +37,12 @@ public interface ChannelService {
         }
 
         @Override
-        public void removeChannel(Channel channel) {
-            if (this.channel.equals(channel)) {
+        public boolean removeChannel(Channel channel) {
+            if (this.channel == channel) {
                 this.channel = null;
+                return true;
             }
+            return false;
         }
 
         @Override
@@ -74,8 +76,8 @@ public interface ChannelService {
         }
 
         @Override
-        public void removeChannel(Channel channel) {
-            channels.remove(channel);
+        public boolean removeChannel(Channel channel) {
+            return channels.remove(channel);
         }
 
         @Override

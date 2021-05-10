@@ -16,13 +16,13 @@ public class GatewayAndConsumerMessageEncoder extends MessageToByteEncoder<Gatew
 
     @Override
     protected void encode(ChannelHandlerContext ctx, GatewayReceiveProviderMessage msg, ByteBuf out) {
-        int headlength = CompressBean.computeVar32Size(msg.getRequestId());
+        int headlength = CompressBean.computeVar32Size(msg.requestId());
         headlength += CompressBean.computeVar32Size(msg.getMessageId());
         int packageLength = headlength + msg.getData().length;
         out.ensureWritable(CompressBean.computeVar32Size(packageLength) + packageLength);
 
         CompressBean.writeVar32(out, packageLength);
-        CompressBean.writeVar32(out, msg.getRequestId());
+        CompressBean.writeVar32(out, msg.requestId());
         CompressBean.writeVar32(out, msg.getMessageId());
         out.writeBytes(msg.getData());
     }

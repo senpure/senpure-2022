@@ -32,8 +32,8 @@ public class ProviderLoggingHandler extends LoggingHandler {
             if (msg instanceof ProviderSendMessage) {
                 if (outFormat) {
                     ProviderSendMessage frame = (ProviderSendMessage) msg;
-                    this.logger.log(this.internalLevel, "{} token:{} userIds:{}{}{}",
-                            "WRITE", frame.getToken(), Arrays.toString(frame.getUserIds()), "\n", frame.message().toString(null));
+                    this.logger.log(this.internalLevel, "requestId:{} {} token:{} userIds:{}{}{}",
+                            "WRITE",frame.requestId(), frame.getToken(), Arrays.toString(frame.getUserIds()), "\n", frame.message().toString(null));
                     //this.logger.log(this.internalLevel, this.format(ctx, ChannelAttributeUtil.getChannelPlayerStr(ctx.channel())+" WRITE", "\n"+((Message) msg).toString(null)));
                 } else {
                     this.logger.log(this.internalLevel, "{} {}",

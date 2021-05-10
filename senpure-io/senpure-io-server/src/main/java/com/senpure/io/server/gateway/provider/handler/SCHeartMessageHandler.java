@@ -11,7 +11,7 @@ public class SCHeartMessageHandler extends AbstractProviderMessageHandler {
     }
 
     @Override
-    public int handleMessageId() {
+    public int messageId() {
         return SCHeartMessage.MESSAGE_ID;
     }
 }

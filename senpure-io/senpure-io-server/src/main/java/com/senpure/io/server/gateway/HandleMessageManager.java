@@ -2,6 +2,7 @@ package com.senpure.io.server.gateway;
 
 import com.senpure.base.util.Assert;
 import com.senpure.io.server.gateway.provider.Provider;
+import com.senpure.io.server.gateway.provider.ProviderManager;
 import com.senpure.io.server.protocol.message.CSAskHandleMessage;
 import com.senpure.io.server.support.MessageIdReader;
 import org.slf4j.Logger;

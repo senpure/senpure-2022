@@ -53,4 +53,12 @@ public class FrameworkErrorResponse implements Response {
     public Channel getChannel() {
         return channel;
     }
+
+    @Override
+    public String toString() {
+        return "FrameworkErrorResponse{" +
+                "channel=" + channel +
+                ", message=" + message +
+                '}';
+    }
 }

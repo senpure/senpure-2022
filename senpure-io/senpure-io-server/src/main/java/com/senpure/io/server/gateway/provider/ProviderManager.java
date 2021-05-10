@@ -1,49 +1,69 @@
-package com.senpure.io.server.gateway;
+package com.senpure.io.server.gateway.provider;
 
-
+import com.senpure.io.protocol.Message;
 import com.senpure.io.server.Constant;
-import com.senpure.io.server.gateway.provider.Provider;
-import com.senpure.io.server.gateway.provider.ProviderDefaultNextStrategy;
-import com.senpure.io.server.gateway.provider.ProviderNextStrategy;
+import com.senpure.io.server.gateway.GatewayLocalSendProviderMessage;
+import com.senpure.io.server.gateway.GatewayMessageExecutor;
+import com.senpure.io.server.gateway.GatewaySendProviderMessage;
 import com.senpure.io.server.protocol.message.CSBreakUserGatewayMessage;
 import com.senpure.io.server.protocol.message.CSRelationUserGatewayMessage;
 import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
+import com.senpure.io.server.remoting.AbstractMultipleServerManger;
 import com.senpure.io.server.support.MessageIdReader;
 import io.netty.channel.Channel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-/**
- * 网关管理一个服务的多个实例 每个实例可能含有多个管道channel
- * 一个服务对应一个 producerManager
- */
-public class ProviderManager {
-
-
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final GatewayMessageExecutor messageExecutor;
-
+public class ProviderManager extends AbstractMultipleServerManger<GatewayLocalSendProviderMessage> {
+    private final List<Provider> useProviders = new ArrayList<>();
+    private final ConcurrentMap<Long, ProviderRelation> tokenProviderMap = new ConcurrentHashMap<>();
     private ProviderNextStrategy nextStrategy = new ProviderDefaultNextStrategy();
+    private final List<Provider> prepStopOldInstance = new ArrayList<>();
+    private final Map<Integer, Boolean> handleIdsMap = new HashMap<>();
+    private final GatewayMessageExecutor messageExecutor;
+    private String serverName;
 
     public ProviderManager(GatewayMessageExecutor messageExecutor) {
         this.messageExecutor = messageExecutor;
     }
 
+    @Override
+    public GatewayLocalSendProviderMessage createMessage(Message message) {
+        return new GatewayLocalSendProviderMessage(message);
+    }
 
-    private final ConcurrentMap<Long, ProviderRelation> tokenProviderMap = new ConcurrentHashMap<>();
+    @Override
+    public GatewayLocalSendProviderMessage createMessage(Message message, int requestId) {
+        GatewayLocalSendProviderMessage frame = new GatewayLocalSendProviderMessage(message);
+        frame.setRequestId(requestId);
+        return frame;
+    }
 
-    private final List<Provider> useProviders = new ArrayList<>();
 
-    private final List<Provider> prepStopOldInstance = new ArrayList<>();
-    private final Map<Integer, Boolean> handleIdsMap = new HashMap<>();
+    @Nullable
+    public Provider getProvider(String providerKey) {
+        for (Provider provider : useProviders) {
+            if (provider.getRemoteServerKey().equals(providerKey)) {
+                return provider;
+            }
+        }
+        return null;
+    }
 
-    private String serverName;
-
+    @Nonnull
+    public synchronized Provider addProvider(Provider provider) {
+        for (Provider temp : useProviders) {
+            if (temp.getRemoteServerKey().equals(provider.getRemoteServerKey())) {
+                return temp;
+            }
+        }
+        useProviders.add(provider);
+        return provider;
+    }
 
     public void bind(Long token, Long relationToken, Provider provider) {
         ProviderRelation providerRelation = new ProviderRelation();
@@ -56,8 +76,8 @@ public class ProviderManager {
     }
 
 
-    public void sendMessage(GatewaySendProviderMessage gatewayReceiveConsumerMessage) {
-        ProviderRelation providerRelation = tokenProviderMap.get(gatewayReceiveConsumerMessage.token());
+    public void sendMessage(GatewaySendProviderMessage frame) {
+        ProviderRelation providerRelation = tokenProviderMap.get(frame.token());
         Provider provider;
         if (providerRelation == null) {
             provider = nextProvider();
@@ -65,19 +85,46 @@ public class ProviderManager {
                 logger.warn("{}没有服务实例可以使用", serverName);
                 SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
                 errorMessage.setCode(Constant.ERROR_NOT_FOUND_SERVER);
-                errorMessage.getArgs().add(String.valueOf(gatewayReceiveConsumerMessage.messageId()));
-                errorMessage.setMessage("没有服务器处理" + MessageIdReader.read(gatewayReceiveConsumerMessage.messageId()));
-                messageExecutor.sendMessage2Consumer(gatewayReceiveConsumerMessage.requestId(), gatewayReceiveConsumerMessage.token(), errorMessage);
+                errorMessage.getArgs().add(String.valueOf(frame.messageId()));
+                errorMessage.setMessage("没有服务器处理" + MessageIdReader.read(frame.messageId()));
+                messageExecutor.sendMessage2Consumer(frame.requestId(), frame.token(), errorMessage);
             } else {
-                relationAndWaitSendMessage(provider, gatewayReceiveConsumerMessage);
+
+                relationAndWaitSendMessage(provider, frame);
             }
 
         } else {
-            providerRelation.provider.sendMessage(gatewayReceiveConsumerMessage);
+            providerRelation.provider.sendMessage(frame);
 
         }
     }
 
+    public void relationAndWaitSendMessage(Provider provider, GatewaySendProviderMessage frame) {
+
+        long relationToken = messageExecutor.getIdGenerator().nextId();
+        CSRelationUserGatewayMessage relationUserGatewayMessage = new CSRelationUserGatewayMessage();
+        relationUserGatewayMessage.setToken(frame.token());
+        relationUserGatewayMessage.setUserId(frame.userId());
+        relationUserGatewayMessage.setRelationToken(relationToken);
+
+        sendMessage(provider, relationUserGatewayMessage, response -> {
+            if (response.isSuccess()) {
+                logger.debug("success {} {}", frame.token(), relationToken);
+                bind(frame.token(), relationToken, provider);
+                provider.sendMessage(frame);
+//                CSBreakUserGatewayMessage breakUserGatewayMessage = new CSBreakUserGatewayMessage();
+//                breakUserGatewayMessage.setToken(message.getToken());
+//                breakUserGatewayMessage.setUserId(message.getUserId());
+//                breakUserGatewayMessage.setRelationToken(message.getRelationToken());
+            } else {
+
+                logger.debug("error {} {} {}", frame.token(), relationToken,response.getMessage());
+            }
+        }, 5000);
+        // GatewaySendProviderMessage toMessage = messageExecutor.createMessage(relationUserGatewayMessage);
+        // waitRelationTask(provider, relationToken, frame);
+        // provider.sendMessage(toMessage);
+    }
 
     public void sendMessage2Consumer(@Nullable String serverKey, int messageId, byte[] data) {
         if (serverKey != null) {
@@ -85,7 +132,7 @@ public class ProviderManager {
                 Long userToken = entry.getKey();
                 ProviderRelation providerRelation = entry.getValue();
                 Provider provider = providerRelation.provider;
-                if (provider.getServerKey().equals(serverKey)) {
+                if (provider.getRemoteServerKey().equals(serverKey)) {
                     messageExecutor.sendMessage2Consumer(userToken, messageId, data);
                     break;
                 }
@@ -101,33 +148,6 @@ public class ProviderManager {
 
     }
 
-    /**
-     * @param provider provider
-     * @param relationToken relationToken
-     * @param message 可以为空
-     */
-    private void waitRelationTask(Provider provider,
-                                  Long relationToken,
-                                  @Nullable GatewaySendProviderMessage message) {
-        WaitRelationTask waitRelationTask = new WaitRelationTask();
-        waitRelationTask.setRelationToken(relationToken);
-        waitRelationTask.setMessage(message);
-        waitRelationTask.setProvider(provider);
-        waitRelationTask.setProviderManager(this);
-        messageExecutor.waitRelationMap.put(relationToken, waitRelationTask);
-    }
-
-    public void relationAndWaitSendMessage(Provider provider, GatewaySendProviderMessage frame) {
-        long relationToken = messageExecutor.idGenerator.nextId();
-        CSRelationUserGatewayMessage relationUserGatewayMessage = new CSRelationUserGatewayMessage();
-        relationUserGatewayMessage.setToken(frame.token());
-        relationUserGatewayMessage.setUserId(frame.userId());
-        relationUserGatewayMessage.setRelationToken(relationToken);
-        GatewaySendProviderMessage toMessage = messageExecutor.createMessage(relationUserGatewayMessage);
-        waitRelationTask(provider, relationToken, frame);
-        provider.sendMessage(toMessage);
-    }
-
     protected Provider nextProvider() {
         int size = useProviders.size();
         switch (size) {
@@ -141,7 +161,18 @@ public class ProviderManager {
 
     }
 
+    public void markHandleId(int messageId) {
+        handleIdsMap.put(messageId, true);
+    }
 
+    public List<Integer> getHandleIds() {
+        return new ArrayList<>(handleIdsMap.keySet());
+    }
+
+
+    public boolean handleId(int messageId) {
+        return handleIdsMap.get(messageId) != null;
+    }
     public synchronized void prepStopOldInstance() {
         prepStopOldInstance.addAll(useProviders);
         useProviders.clear();
@@ -162,7 +193,7 @@ public class ProviderManager {
         while (iterator.hasNext()) {
             Provider provider = iterator.next();
             if (provider.offline(channel)) {
-                if (!provider.isActive()) {
+                if (provider.getChannelSize()==0) {
                     iterator.remove();
                     clearRelation(provider);
                 }
@@ -175,12 +206,12 @@ public class ProviderManager {
     public void afterUserAuthorize(long channelToken, long userId) {
         ProviderRelation providerRelation = tokenProviderMap.get(channelToken);
         if (providerRelation != null) {
-            logger.info("对 {} --> {} 进行userId关联", serverName, providerRelation.provider.getServerKey());
+            logger.info("对 {} --> {} 进行userId关联", serverName, providerRelation.provider.getRemoteServerKey());
             CSRelationUserGatewayMessage message = new CSRelationUserGatewayMessage();
             message.setUserId(userId);
             message.setRelationToken(providerRelation.relationToken);
             GatewaySendProviderMessage toMessage = messageExecutor.createMessage(message);
-            waitRelationTask(providerRelation.provider, providerRelation.relationToken, null);
+            //waitRelationTask(providerRelation.provider, providerRelation.relationToken, null);
             providerRelation.provider.sendMessage(toMessage);
         }
     }
@@ -215,7 +246,7 @@ public class ProviderManager {
                 providerRelation.provider.getStatistic().consumerDecr();
             }
             logger.info("{} {} 取消 对{} :token{} userId:{}的 关联  {}",
-                    serverName, providerRelation.provider.getServerKey(), consumerChannel, token, userId, localRemove ? "移除" : "不移除");
+                    serverName, providerRelation.provider.getRemoteServerKey(), consumerChannel, token, userId, localRemove ? "移除" : "不移除");
             CSBreakUserGatewayMessage breakUserGatewayMessage = new CSBreakUserGatewayMessage();
             breakUserGatewayMessage.setRelationToken(providerRelation.relationToken);
             breakUserGatewayMessage.setUserId(userId);
@@ -235,7 +266,7 @@ public class ProviderManager {
 
 
     private void clearRelation(Provider serverChannelManager) {
-        logger.warn("{} {} 全部channel已经下线 清空关联列表", serverName, serverChannelManager.getServerKey());
+        logger.warn("{} {} 全部channel已经下线 清空关联列表", serverName, serverChannelManager.getRemoteServerKey());
         List<Long> tokens = new ArrayList<>();
         for (Map.Entry<Long, ProviderRelation> entry : tokenProviderMap.entrySet()) {
             if (serverChannelManager == entry.getValue().provider) {
@@ -243,77 +274,29 @@ public class ProviderManager {
             }
         }
         for (Long token : tokens) {
-            logger.info("{} 取消关联 {} {} ", token, serverName, serverChannelManager.getServerKey());
+            logger.info("{} 取消关联 {} {} ", token, serverName, serverChannelManager.getRemoteServerKey());
             tokenProviderMap.remove(token);
         }
-    }
-
-    public String getServerName() {
-        return serverName;
-    }
-
-    public void setServerName(String serverName) {
-        this.serverName = serverName;
-    }
-
-
-    public Provider getProducer(String producerKey) {
-        for (Provider provider : useProviders) {
-            if (provider.getServerKey().equals(producerKey)) {
-                return provider;
-            }
-        }
-        Provider manager = new Provider();
-        manager.setServerKey(producerKey);
-        return manager;
-
-    }
-
-    public List<Provider> getUseProviders() {
-        return useProviders;
-    }
-
-    public synchronized void checkChannelServer(String serverKey, Provider channelManager) {
-        for (Provider manager : useProviders) {
-            if (manager.getServerKey().equals(serverKey)) {
-                return;
-            }
-        }
-        useProviders.add(channelManager);
-    }
-
-    public void markHandleId(int messageId) {
-        handleIdsMap.put(messageId, true);
-    }
-
-    public List<Integer> getHandleIds() {
-        return new ArrayList<>(handleIdsMap.keySet());
-    }
-
-
-    public boolean handleId(int messageId) {
-        return handleIdsMap.get(messageId) != null;
     }
 
     public void setNextStrategy(ProviderNextStrategy nextStrategy) {
         this.nextStrategy = nextStrategy;
     }
 
-    static class ProviderRelation {
-        Provider provider;
-        Long relationToken;
+    public void setServerName(String serverName) {
+        this.serverName = serverName;
     }
 
-    public static void main(String[] args) {
+    public String getServerName() {
+        return serverName;
+    }
 
-        ConcurrentHashMap<Integer, String> map = new ConcurrentHashMap<>();
+    public List<Provider> getUseProviders() {
+        return useProviders;
+    }
 
-        Integer key = 1;
-        String s = map.putIfAbsent(key, "2");
-        System.out.println(map.get(key));
-        System.out.println(s);
-        s = map.putIfAbsent(key, "3");
-        System.out.println(map.get(key));
-        System.out.println(s);
+    private static class ProviderRelation {
+        Provider provider;
+        Long relationToken;
     }
 }

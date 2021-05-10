@@ -1,20 +1,52 @@
 package com.senpure.io.server.gateway;
 
 
+import com.senpure.base.util.Assert;
+import com.senpure.io.protocol.Message;
 import com.senpure.io.server.support.MessageIdReader;
+import io.netty.buffer.ByteBuf;
 
 import java.util.Arrays;
 
 
-public class GatewayReceiveProviderMessage {
+public class GatewayReceiveProviderMessage implements GatewaySendConsumerMessage, Message {
 
     private Long[] userIds;
 
-    private int  requestId;
+    private int requestId;
     private long token;
     private int messageId;
 
     private byte[] data;
+
+    private final int messageLength;
+    private int messageType;
+
+    public GatewayReceiveProviderMessage(int messageLength, byte[] data) {
+        this.messageLength = messageLength;
+        this.data = data;
+
+    }
+
+    @Override
+    public int messageType() {
+        return messageType;
+    }
+
+    @Override
+    public int requestId() {
+        return requestId;
+    }
+
+    @Override
+    public int messageId() {
+        return messageId;
+    }
+
+    @Override
+    public Message message() {
+        return this;
+    }
 
 
     public int getMessageId() {
@@ -50,9 +82,8 @@ public class GatewayReceiveProviderMessage {
         this.token = token;
     }
 
-
-    public int getRequestId() {
-        return requestId;
+    public void setMessageType(int messageType) {
+        this.messageType = messageType;
     }
 
     public void setRequestId(int requestId) {
@@ -67,6 +98,29 @@ public class GatewayReceiveProviderMessage {
                 ", userIds=" + Arrays.toString(userIds) +
                 ", dataLen=" + (data == null ? 0 : data.length) +
                 '}';
+    }
+
+
+    @Override
+    public void write(ByteBuf buf) {
+
+        buf.writeBytes(data);
+    }
+
+    @Override
+    public void read(ByteBuf buf, int maxIndex) {
+
+        Assert.error("not allow");
+    }
+
+    @Override
+    public String toString(String indent) {
+        return null;
+    }
+
+    @Override
+    public int serializedSize() {
+        return messageLength;
     }
 
 

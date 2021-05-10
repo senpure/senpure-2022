@@ -8,9 +8,9 @@ public interface ProviderMessageHandler {
 
     void execute(Channel channel, GatewayReceiveProviderMessage gatewayReceiveProviderMessage);
 
-    int handleMessageId();
+    int messageId();
 
-    default boolean stopResponse() {
+    default boolean stopConsumer() {
         return true;
     }
 

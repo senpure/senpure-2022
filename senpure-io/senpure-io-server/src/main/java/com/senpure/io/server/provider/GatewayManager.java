@@ -5,11 +5,10 @@ import com.senpure.io.server.MessageFrame;
 import com.senpure.io.server.protocol.message.SCBreakUserGatewayMessage;
 import com.senpure.io.server.protocol.message.SCKickOffMessage;
 import com.senpure.io.server.protocol.message.SCMessageForwardMessage;
+import com.senpure.io.server.remoting.AbstractMultipleServerManger;
 import com.senpure.io.server.remoting.ResponseCallback;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -19,31 +18,40 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
-public class GatewayManager implements MessageSender {
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+public class GatewayManager extends AbstractMultipleServerManger<ProviderSendMessage> implements MessageSender {
+
     private final ConcurrentMap<String, Gateway> gatewayMap = new ConcurrentHashMap<>();
     private final ConcurrentMap<Long, GatewayRelation> userGatewayMap = new ConcurrentHashMap<>();
 
     private final ConcurrentMap<Long, GatewayRelation> tokenGatewayMap = new ConcurrentHashMap<>();
-    private final AtomicInteger atomicRequestId = new AtomicInteger(1);
-    public static int getRequestId() {
-        return REQUEST_ID.get();
-    }
+
 
     public String getRemoteServerKey(String host, int port) {
         return host + ":" + port;
     }
 
-    private int nextRequestId() {
-        int requestId = atomicRequestId.getAndIncrement();
-        if (requestId == 0) {
-            return nextRequestId();
-        }
-        return requestId;
+    @Override
+    public  ProviderSendMessage createMessage(Message message) {
+
+
+        return createMessage(0L, message);
     }
+
+    @Override
+    public  ProviderSendMessage createMessage(Message message, int requestId) {
+        ProviderSendMessage frame = createMessage(0L, message);
+        frame.setRequestId(requestId);
+
+        return frame;
+    }
+
+    @Override
+    public  int requestId() {
+        return REQUEST_ID.get();
+    }
+
     @Nonnull
     public Gateway getGateway(String gatewayKey, Function<String, Gateway> mappingFunction) {
         return gatewayMap.computeIfAbsent(gatewayKey, mappingFunction);
@@ -53,6 +61,7 @@ public class GatewayManager implements MessageSender {
     public Gateway getGateway(String gatewayKey) {
         return gatewayMap.get(gatewayKey);
     }
+
     @Nonnull
     public Gateway addGateway(@Nonnull Gateway gateway) {
 
@@ -107,7 +116,18 @@ public class GatewayManager implements MessageSender {
         ProviderSendMessage frame = createMessage(userId, message);
         GatewayRelation gatewayRelation = userGatewayMap.get(userId);
         if (gatewayRelation != null) {
-            gatewayRelation.gateway.sendMessage(frame,callback);
+            gatewayRelation.gateway.sendMessage(frame, callback);
+        } else {
+            logger.warn("userId {} 不存在 GatewayRelation", userId);
+        }
+    }
+
+    @Override
+    public void sendMessage(Long userId, Message message, ResponseCallback callback, int timeout) {
+        ProviderSendMessage frame = createMessage(userId, message);
+        GatewayRelation gatewayRelation = userGatewayMap.get(userId);
+        if (gatewayRelation != null) {
+            gatewayRelation.gateway.sendMessage(frame, callback, timeout);
         } else {
             logger.warn("userId {} 不存在 GatewayRelation", userId);
         }
@@ -120,7 +140,7 @@ public class GatewayManager implements MessageSender {
 
     @Override
     public void respondMessage(Long userId, Message message) {
-        respondMessage(userId, message, getRequestId());
+        respondMessage(userId, message, requestId());
     }
 
     @Override
@@ -137,7 +157,7 @@ public class GatewayManager implements MessageSender {
 
     @Override
     public void respondMessageByToken(Long token, Message message) {
-        respondMessageByToken(token, message, getRequestId());
+        respondMessageByToken(token, message, requestId());
     }
 
     @Override
@@ -287,7 +307,7 @@ public class GatewayManager implements MessageSender {
 
     @Override
     public void respondMessageByTokenAndRelationUser(Long token, Long userId, Message message) {
-        respondMessageByTokenAndRelationUser(token, userId, message, getRequestId());
+        respondMessageByTokenAndRelationUser(token, userId, message, requestId());
     }
 
     @Override
@@ -312,7 +332,7 @@ public class GatewayManager implements MessageSender {
 
     @Override
     public void sendMessageByTokenAndRelationUser(Long token, Long userId, Message message) {
-        respondMessageByTokenAndRelationUser(token, userId, message, getRequestId());
+        respondMessageByTokenAndRelationUser(token, userId, message, requestId());
     }
 
     @Override

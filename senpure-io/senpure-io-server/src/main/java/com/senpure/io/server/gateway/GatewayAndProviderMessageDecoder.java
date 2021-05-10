@@ -53,11 +53,13 @@ public class GatewayAndProviderMessageDecoder extends ByteToMessageDecoder {
             byte[] data = new byte[messageLength];
             in.readBytes(data);
 
-            GatewayReceiveProviderMessage frame = new GatewayReceiveProviderMessage();
+            GatewayReceiveProviderMessage frame = new GatewayReceiveProviderMessage(messageLength,data);
             frame.setRequestId(requestId);
             frame.setMessageId(messageId);
-            frame.setData(data);
             frame.setToken(token);
+
+          //  frame.setData(data);
+           // frame.setToken(token);
             frame.setUserIds(userIds);
 
             out.add(frame);

@@ -2,6 +2,7 @@ package com.senpure.io.server.gateway;
 
 
 import com.senpure.io.server.ChannelAttributeUtil;
+import com.senpure.io.server.gateway.provider.ProviderManager;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
