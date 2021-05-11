@@ -100,13 +100,11 @@ public class ProviderManager extends AbstractMultipleServerManger<GatewayLocalSe
     }
 
     public void relationAndWaitSendMessage(Provider provider, GatewaySendProviderMessage frame) {
-
         long relationToken = messageExecutor.getIdGenerator().nextId();
         CSRelationUserGatewayMessage relationUserGatewayMessage = new CSRelationUserGatewayMessage();
         relationUserGatewayMessage.setToken(frame.token());
         relationUserGatewayMessage.setUserId(frame.userId());
         relationUserGatewayMessage.setRelationToken(relationToken);
-
         sendMessage(provider, relationUserGatewayMessage, response -> {
             if (response.isSuccess()) {
                 logger.debug("success {} {}", frame.token(), relationToken);
@@ -121,9 +119,7 @@ public class ProviderManager extends AbstractMultipleServerManger<GatewayLocalSe
                 logger.debug("error {} {} {}", frame.token(), relationToken,response.getMessage());
             }
         }, 5000);
-        // GatewaySendProviderMessage toMessage = messageExecutor.createMessage(relationUserGatewayMessage);
-        // waitRelationTask(provider, relationToken, frame);
-        // provider.sendMessage(toMessage);
+
     }
 
     public void sendMessage2Consumer(@Nullable String serverKey, int messageId, byte[] data) {

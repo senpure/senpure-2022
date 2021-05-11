@@ -6,7 +6,8 @@ import io.netty.channel.Channel;
 
 public interface FutureService {
 
-    ResponseFuture future(int timeout, Channel channel, int requestId, Message message);
+    ResponseFuture future( Channel channel, int requestId, Message message,int timeout);
+
 
 
 }

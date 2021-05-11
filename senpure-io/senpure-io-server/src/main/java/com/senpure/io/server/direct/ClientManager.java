@@ -2,9 +2,10 @@ package com.senpure.io.server.direct;
 
 import com.senpure.io.protocol.Message;
 import com.senpure.io.server.ChannelAttributeUtil;
+import com.senpure.io.server.gateway.consumer.Consumer;
 import com.senpure.io.server.provider.MessageSender;
 import com.senpure.io.server.provider.ProviderSendMessage;
-import com.senpure.io.server.remoting.AbstractMultipleServerManger;
+import com.senpure.io.server.remoting.AbstractServerManager;
 import com.senpure.io.server.remoting.ResponseCallback;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
@@ -14,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ClientManager extends AbstractMultipleServerManger<ProviderSendMessage> implements MessageSender   {
+public class ClientManager extends AbstractServerManager<ProviderSendMessage> implements MessageSender {
 
     private final Map<Long, ClientRelation> userChannelMap = new ConcurrentHashMap<>();
     private final Map<Long, ClientRelation> tokenChannelMap = new ConcurrentHashMap<>();
@@ -22,10 +23,10 @@ public class ClientManager extends AbstractMultipleServerManger<ProviderSendMess
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public static int getRequestId() {
-        return REQUEST_ID.get();
-    }
 
+
+
+    private Consumer consumer = new Consumer();
 
     public void addChannel(String key, Channel channel) {
 
@@ -41,7 +42,7 @@ public class ClientManager extends AbstractMultipleServerManger<ProviderSendMess
     @Override
     public void sendMessage(Long userId, Message message) {
 
-       ClientRelation clientRelation= userChannelMap.get(userId);
+        ClientRelation clientRelation = userChannelMap.get(userId);
         if (clientRelation != null) {
             clientRelation.channel.writeAndFlush(createMessage(userId, message));
         } else {
@@ -53,12 +54,26 @@ public class ClientManager extends AbstractMultipleServerManger<ProviderSendMess
 
     @Override
     public void sendMessage(Long userId, Message message, ResponseCallback callback) {
+        ClientRelation clientRelation = userChannelMap.get(userId);
+        if (clientRelation != null) {
+            consumer.sendMessage(clientRelation.channel, createMessage(userId, message), callback);
+        } else {
 
+            logger.warn("userId {} channel is null ", userId);
+
+        }
     }
 
     @Override
     public void sendMessage(Long userId, Message message, ResponseCallback callback, int timeout) {
+        ClientRelation clientRelation = userChannelMap.get(userId);
+        if (clientRelation != null) {
+            consumer.sendMessage(clientRelation.channel, createMessage(userId, message), callback, timeout);
+        } else {
 
+            logger.warn("userId {} channel is null ", userId);
+
+        }
     }
 
     /**
@@ -70,8 +85,8 @@ public class ClientManager extends AbstractMultipleServerManger<ProviderSendMess
     @Override
     public void sendMessageByToken(Long token, Message message) {
         ClientRelation clientRelation = tokenChannelMap.get(token);
-        if (clientRelation  != null) {
-            clientRelation . channel.writeAndFlush(createMessageByToken(token, message));
+        if (clientRelation != null) {
+            clientRelation.channel.writeAndFlush(createMessageByToken(token, message));
         } else {
             logger.warn("token  {} channel is null ", token);
 
@@ -87,7 +102,7 @@ public class ClientManager extends AbstractMultipleServerManger<ProviderSendMess
     @Override
     public void respondMessage(Long userId, Message message) {
 
-        respondMessage(userId, message, getRequestId());
+        respondMessage(userId, message, requestId());
     }
 
     /**
@@ -100,7 +115,7 @@ public class ClientManager extends AbstractMultipleServerManger<ProviderSendMess
     @Override
     public void respondMessage(Long userId, Message message, int requestId) {
 
-       ClientRelation relation = userChannelMap.get(userId);
+        ClientRelation relation = userChannelMap.get(userId);
         if (relation != null) {
             ProviderSendMessage frame = createMessage(userId, message);
             frame.setRequestId(requestId);
@@ -120,7 +135,7 @@ public class ClientManager extends AbstractMultipleServerManger<ProviderSendMess
      */
     @Override
     public void respondMessageByToken(Long token, Message message) {
-        respondMessageByToken(token, message, getRequestId());
+        respondMessageByToken(token, message, requestId());
     }
 
     /**
@@ -132,7 +147,7 @@ public class ClientManager extends AbstractMultipleServerManger<ProviderSendMess
      */
     @Override
     public void respondMessageByToken(Long token, Message message, int requestId) {
-      ClientRelation relation = tokenChannelMap.get(token);
+        ClientRelation relation = tokenChannelMap.get(token);
         if (relation != null) {
             ProviderSendMessage frame = createMessageByToken(token, message);
             frame.setRequestId(requestId);
@@ -146,11 +161,11 @@ public class ClientManager extends AbstractMultipleServerManger<ProviderSendMess
 
     @Override
     public void sendMessage(Long userId, List<Message> messages) {
-        ClientRelation relation  = userChannelMap.get(userId);
+        ClientRelation relation = userChannelMap.get(userId);
         if (relation != null) {
             for (Message message : messages) {
                 ProviderSendMessage frame = createMessage(userId, message);
-                relation. channel.writeAndFlush(frame);
+                relation.channel.writeAndFlush(frame);
             }
 
         } else {
@@ -162,7 +177,7 @@ public class ClientManager extends AbstractMultipleServerManger<ProviderSendMess
 
     @Override
     public void sendMessageByToken(Long token, List<Message> messages) {
-        ClientRelation relation  = tokenChannelMap.get(token);
+        ClientRelation relation = tokenChannelMap.get(token);
         if (relation != null) {
             for (Message message : messages) {
                 ProviderSendMessage frame = createMessageByToken(token, message);
@@ -229,7 +244,7 @@ public class ClientManager extends AbstractMultipleServerManger<ProviderSendMess
 
     @Override
     public void sendKickOffMessage(Long userId) {
-        ClientRelation relation  = userChannelMap.get(userId);
+        ClientRelation relation = userChannelMap.get(userId);
         if (relation != null) {
 
             relation.channel.close();
@@ -243,9 +258,9 @@ public class ClientManager extends AbstractMultipleServerManger<ProviderSendMess
 
     @Override
     public void sendKickOffMessageByToken(Long token) {
-       // logger.warn("direct sendKickOffMessageByToken ignore");
+        // logger.warn("direct sendKickOffMessageByToken ignore");
 
-        ClientRelation relation  = tokenChannelMap.get(token);
+        ClientRelation relation = tokenChannelMap.get(token);
         if (relation != null) {
 
             relation.channel.close();
@@ -282,19 +297,19 @@ public class ClientManager extends AbstractMultipleServerManger<ProviderSendMess
     @Override
     public void respondMessageByTokenAndRelationUser(Long token, Long userId, Message message) {
 
-        respondMessageByTokenAndRelationUser(token, userId, message, getRequestId());
+        respondMessageByTokenAndRelationUser(token, userId, message, requestId());
 
     }
 
     @Override
     public void respondMessageByTokenAndRelationUser(Long token, Long userId, Message message, int requestId) {
-       ClientRelation  relation = tokenChannelMap.get(token);
+        ClientRelation relation = tokenChannelMap.get(token);
         if (relation != null) {
             userChannelMap.put(userId, relation);
             ChannelAttributeUtil.setUserId(relation.channel, userId);
             ProviderSendMessage frame = createMessage(userId, message);
             frame.setRequestId(requestId);
-           relation. channel.writeAndFlush(frame);
+            relation.channel.writeAndFlush(frame);
         } else {
             logger.warn("token  {} channel is null ", token);
 
@@ -320,9 +335,9 @@ public class ClientManager extends AbstractMultipleServerManger<ProviderSendMess
         Channel channel = keyChannelMap.get(gatewayKey);
         if (channel != null) {
             ClientRelation clientRelation = new ClientRelation();
-            clientRelation.relationToken=relationToken;
+            clientRelation.relationToken = relationToken;
             clientRelation.channel = channel;
-            clientRelation.key=gatewayKey;
+            clientRelation.key = gatewayKey;
             userChannelMap.put(userId, clientRelation);
         } else {
 
@@ -343,9 +358,9 @@ public class ClientManager extends AbstractMultipleServerManger<ProviderSendMess
         Channel channel = keyChannelMap.get(gatewayKey);
         if (channel != null) {
             ClientRelation clientRelation = new ClientRelation();
-            clientRelation.relationToken=relationToken;
+            clientRelation.relationToken = relationToken;
             clientRelation.channel = channel;
-            clientRelation.key=gatewayKey;
+            clientRelation.key = gatewayKey;
             tokenChannelMap.put(token, clientRelation);
         } else {
 
@@ -359,9 +374,9 @@ public class ClientManager extends AbstractMultipleServerManger<ProviderSendMess
         ClientRelation relation = userChannelMap.get(userId);
         if (relation != null) {
             if (relation.relationToken == relationToken) {
-                logger.debug("{} 取消关联user {}", relation.key,userId);
+                logger.debug("{} 取消关联user {}", relation.key, userId);
                 userChannelMap.remove(userId);
-                return  true;
+                return true;
             }
         }
         return false;
@@ -372,9 +387,9 @@ public class ClientManager extends AbstractMultipleServerManger<ProviderSendMess
         ClientRelation relation = tokenChannelMap.get(token);
         if (relation != null) {
             if (relation.relationToken == relationToken) {
-                logger.debug("{} 取消关联token {}", relation.key,token);
+                logger.debug("{} 取消关联token {}", relation.key, token);
                 tokenChannelMap.remove(token);
-                return  true;
+                return true;
             }
         }
         return false;
@@ -382,13 +397,17 @@ public class ClientManager extends AbstractMultipleServerManger<ProviderSendMess
 
     @Override
     protected ProviderSendMessage createMessage(Message message) {
-        return null;
+        return createMessage(0L, message);
     }
 
     @Override
     protected ProviderSendMessage createMessage(Message message, int requestId) {
-        return null;
+        ProviderSendMessage frame = createMessage(0L, message);
+        frame.setRequestId(requestId);
+
+        return frame;
     }
+
 
     private static class ClientRelation {
         String key;

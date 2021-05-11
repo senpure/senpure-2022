@@ -6,27 +6,15 @@ import io.netty.channel.Channel;
 import javax.annotation.Nonnull;
 import java.util.List;
 
-
-/**
- * 一个具体的服务实例
- * 可能有多个channel
- */
-public interface RemoteServer extends MultipleServer {
+public interface MultipleServer {
 
     /**
-     * 向服务器发送消息
+     * 使用指定的channel 向服务器发送消息
      *
-     * @param frame 消息
+     * @param channel channel
+     * @param frame   消息
      */
-    void sendMessage(MessageFrame frame);
-
-    /**
-     * 向服务器发送消息
-     *
-     * @param frames 消息列表
-     */
-    void sendMessage(List<MessageFrame> frames);
-
+    void sendMessage(Channel channel, MessageFrame frame);
 
 
     /**
@@ -38,34 +26,24 @@ public interface RemoteServer extends MultipleServer {
     void sendMessage(Channel channel, List<MessageFrame> frames);
 
     /**
-     * 向服务器发送消息
+     * 使用指定的channel 向服务器发送消息
      *
+     * @param channel  channel
      * @param frame    消息
      * @param callback 回调
      */
-    void sendMessage(MessageFrame frame, ResponseCallback callback);
-
+    void sendMessage(Channel channel, MessageFrame frame, ResponseCallback callback);
 
 
     /**
-     * 向服务器发送消息
+     * 使用指定的channel 向服务器发送消息
      *
+     * @param channel  channel
      * @param frame    消息
      * @param callback 回调
      * @param timeout  超时毫秒
      */
-    void sendMessage(MessageFrame frame, ResponseCallback callback, int timeout);
-
-
-
-    /**
-     * 向服务器发送同步消息
-     *
-     * @param frame 消息
-     * @return Response
-     */
-    @Nonnull
-    Response sendSyncMessage(MessageFrame frame);
+    void sendMessage(Channel channel, MessageFrame frame, ResponseCallback callback, int timeout);
 
     /**
      * 使用指定的channel 向服务器发送同步消息
@@ -78,14 +56,13 @@ public interface RemoteServer extends MultipleServer {
     Response sendSyncMessage(Channel channel, MessageFrame frame);
 
     /**
-     * 向服务器发送同步消息
+     * 使用指定的channel 向服务器发送同步消息
      *
+     * @param channel channel
      * @param frame   消息
      * @param timeout 超时毫秒
      * @return {@code Response}
      */
     @Nonnull
-    Response sendSyncMessage(MessageFrame frame, int timeout);
-
-
+    Response sendSyncMessage(Channel channel, MessageFrame frame, int timeout);
 }

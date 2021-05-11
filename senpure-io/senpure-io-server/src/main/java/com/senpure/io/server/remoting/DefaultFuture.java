@@ -27,12 +27,15 @@ public class DefaultFuture implements ResponseFuture {
     private final Message message;
     private Response response;
     private ResponseCallback callback;
+    private final long sendTime;
 
-    public DefaultFuture(int timeout, Channel channel, int requestId, Message message) {
-        this.timeout = timeout;
+    public DefaultFuture(Channel channel, int requestId, Message message, int timeout) {
+
         this.channel = channel;
         this.requestId = requestId;
         this.message = message;
+        this.timeout = timeout;
+        this.sendTime = System.currentTimeMillis();
 
     }
 
@@ -121,5 +124,25 @@ public class DefaultFuture implements ResponseFuture {
     @Override
     public boolean isDone() {
         return response != null;
+    }
+
+    public long getSendTime() {
+        return sendTime;
+    }
+
+    public int getTimeout() {
+        return timeout;
+    }
+
+    public Channel getChannel() {
+        return channel;
+    }
+
+    public int getRequestId() {
+        return requestId;
+    }
+
+    public Message getMessage() {
+        return message;
     }
 }

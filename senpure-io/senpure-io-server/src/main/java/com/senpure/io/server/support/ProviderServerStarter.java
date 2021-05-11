@@ -176,7 +176,7 @@ public class ProviderServerStarter implements ApplicationRunner {
                                 servers.add(providerServer);
                                 registerProvider(providerServer, gateway, handleMessages);
                                 if (gateway.getChannelSize() == 0) {
-                                    gateway.setWaitSendTimeout(providerProperties.getMessageWaitSendTimeout());
+                                    gateway.setDefaultWaitSendTimeout(providerProperties.getMessageWaitSendTimeout());
                                     if (finalIdNames != null && finalIdNames.size() > 0) {
                                         registerIdNames(providerServer, finalIdNames);
                                     }

@@ -1,36 +1,24 @@
 package com.senpure.io.server.provider;
 
 import com.senpure.executor.TaskLoopGroup;
-import com.senpure.io.protocol.Message;
+
 import com.senpure.io.server.Constant;
 import com.senpure.io.server.MessageFrame;
 import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
 import com.senpure.io.server.provider.handler.ProviderMessageHandler;
 import com.senpure.io.server.remoting.*;
 import io.netty.channel.Channel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-public class ProviderMessageExecutor implements FutureService {
-    private final Logger logger = LoggerFactory.getLogger(ProviderMessageExecutor.class);
-    private final TaskLoopGroup service;
+public class ProviderMessageExecutor extends  AbstractMessageExecutor{
 
     private final MessageSender messageSender;
-
     private final ProviderMessageHandlerContext handlerContext;
-    private final Map<Integer, DefaultFuture> futureMap = new ConcurrentHashMap<>();
-    private final Set<Integer> errorMessageIds = new HashSet<>();
 
     public ProviderMessageExecutor(TaskLoopGroup service, MessageSender messageSender, ProviderMessageHandlerContext handlerContext) {
-        this.service = service;
+        super(service);
         this.messageSender = messageSender;
         this.handlerContext = handlerContext;
-        errorMessageIds.add(SCFrameworkErrorMessage.MESSAGE_ID);
+
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -83,14 +71,7 @@ public class ProviderMessageExecutor implements FutureService {
         service.get(id).execute(() -> {
             int requestId = frame.requestId;
             if (requestId > 0) {
-                DefaultFuture future = futureMap.remove(requestId);
-                if (future == null) {
-                    logger.warn("远程服务器返回时间过长,服务器已经做了超时处理 {}", frame);
-                    return;
-                }
-                boolean success = !isErrorMessage(frame.message);
-                DefaultResponse response = new DefaultResponse(success, channel, frame.message);
-                future.doReceived(response);
+                receive(channel,requestId, frame.message());
             } else {
                 ProviderMessageHandler handler = handlerContext.handler(frame.getMessageId());
                 if (handler == null) {
@@ -122,16 +103,9 @@ public class ProviderMessageExecutor implements FutureService {
 
     }
 
-    public boolean isErrorMessage(Message message) {
-        return errorMessageIds.contains(message.messageId());
-    }
 
-    @Override
-    public ResponseFuture future(int timeout, Channel channel, int requestId, Message message) {
-        DefaultFuture future = new DefaultFuture(timeout, channel, requestId, message);
-        futureMap.put(requestId, future);
-        return future;
-    }
+
+
 
 
 }

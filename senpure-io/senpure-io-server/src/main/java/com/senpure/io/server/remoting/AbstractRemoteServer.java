@@ -6,8 +6,6 @@ import com.senpure.io.server.Constant;
 import com.senpure.io.server.MessageFrame;
 import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
 import io.netty.channel.Channel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -15,11 +13,10 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.*;
 
-public abstract class AbstractRemoteServer implements RemoteServer {
+public abstract class AbstractRemoteServer extends AbstractMultipleServer implements RemoteServer {
 
-    protected Logger logger = LoggerFactory.getLogger(getClass());
-    protected int timeout = 500;
-    protected int waitSendTimeout = 10000;
+
+    protected int defaultWaitSendTimeout = 10000;
 
     protected String remoteServerKey;
 
@@ -40,6 +37,7 @@ public abstract class AbstractRemoteServer implements RemoteServer {
     }
 
 
+    @Override
     public void verifyWorkable() {
         Assert.notNull(remoteServerKey);
         Assert.notNull(futureService);
@@ -91,14 +89,14 @@ public abstract class AbstractRemoteServer implements RemoteServer {
                         logger.info("重新发送消息{}", failMessage.frame);
                         channel.write(failMessage.frame);
                     } else if (failMessage.callback != null) {//异步回调
-                        ResponseFuture future = futureService.future(failMessage.timeout, channel, failMessage.frame.requestId(), failMessage.frame.message());
+                        ResponseFuture future = futureService.future(channel, failMessage.frame.requestId(), failMessage.frame.message(), failMessage.timeout);
                         future.setCallback(failMessage.callback);
                         logger.info("重新发送异步回调消息{}", failMessage.frame);
                         channel.write(failMessage.frame);
 
                     } else if (failMessage.synchronizer != null) {//同步回调
                         logger.info("重新发送同步回调消息{}", failMessage.frame);
-                        ResponseFuture future = futureService.future(failMessage.timeout, channel, failMessage.frame.requestId(), failMessage.frame.message());
+                        ResponseFuture future = futureService.future(channel, failMessage.frame.requestId(), failMessage.frame.message(), failMessage.timeout);
                         channel.write(failMessage.frame);
                         Synchronizer synchronizer = failMessage.synchronizer;
                         try {
@@ -136,7 +134,7 @@ public abstract class AbstractRemoteServer implements RemoteServer {
     }
 
     public boolean removeChannel(Channel channel) {
-       return   channelService.removeChannel(channel);
+        return channelService.removeChannel(channel);
     }
 
     public int getChannelSize() {
@@ -162,40 +160,21 @@ public abstract class AbstractRemoteServer implements RemoteServer {
     public void sendMessage(List<MessageFrame> frames) {
         Channel channel = channelService.nextChannel();
         if (channel != null) {
-            sendMessage(channel, frames, 100);
+            sendMessage(channel, frames, defaultFlushFrames);
         } else {
             for (MessageFrame frame : frames) {
                 WaitSendMessage waitSendMessage = new WaitSendMessage();
                 waitSendMessage.setFirstSendTime(System.currentTimeMillis());
                 waitSendMessage.setFrame(frame);
-                waitSendMessage.setWaitSendTimeout(waitSendTimeout);
+                waitSendMessage.setWaitSendTimeout(defaultWaitSendTimeout);
                 addWaitMessage(waitSendMessage);
             }
         }
     }
 
-    @Override
-    public void sendMessage(Channel channel, List<MessageFrame> frames) {
 
-        sendMessage(channel, frames, 100);
-    }
 
-    protected void sendMessage(Channel channel, List<MessageFrame> frames, int flushValue) {
 
-        int temp = 1;
-        for (MessageFrame frame : frames) {
-            channel.write(frame);
-            if (temp % flushValue == 0) {
-                channel.flush();
-                temp = 1;
-            }
-            temp++;
-        }
-        if (temp > 1) {
-            channel.flush();
-        }
-
-    }
 
     @Override
     public void sendMessage(MessageFrame frame) {
@@ -206,29 +185,19 @@ public abstract class AbstractRemoteServer implements RemoteServer {
             WaitSendMessage waitSendMessage = new WaitSendMessage();
             waitSendMessage.setFirstSendTime(System.currentTimeMillis());
             waitSendMessage.setFrame(frame);
-            waitSendMessage.setWaitSendTimeout(waitSendTimeout);
+            waitSendMessage.setWaitSendTimeout(defaultWaitSendTimeout);
             addWaitMessage(waitSendMessage);
         }
     }
 
-    @Override
-    public void sendMessage(Channel channel, MessageFrame frame) {
 
-        channel.writeAndFlush(frame);
-
-    }
 
     @Override
     public void sendMessage(MessageFrame frame, ResponseCallback callback) {
 
-        sendMessage(frame, callback, timeout);
+        sendMessage(frame, callback, defaultTimeout);
     }
 
-    @Override
-    public void sendMessage(Channel channel, MessageFrame frame, ResponseCallback callback) {
-
-        sendMessage(channel, frame, callback, timeout);
-    }
 
     @Override
     public void sendMessage(MessageFrame frame, ResponseCallback callback, int timeout) {
@@ -242,37 +211,25 @@ public abstract class AbstractRemoteServer implements RemoteServer {
             waitSendMessage.setFirstSendTime(System.currentTimeMillis());
             waitSendMessage.setFrame(frame);
             waitSendMessage.setTimeout(timeout);
-            waitSendMessage.setWaitSendTimeout(waitSendTimeout);
+            waitSendMessage.setWaitSendTimeout(defaultWaitSendTimeout);
             waitSendMessage.setCallback(callback);
             addWaitMessage(waitSendMessage);
         }
     }
 
-    @Override
-    public void sendMessage(Channel channel, MessageFrame frame, ResponseCallback callback, int timeout) {
 
-        ResponseFuture future = futureService.future(timeout, channel, frame.requestId(), frame.message());
-        future.setCallback(callback);
-        channel.writeAndFlush(frame);
-
-    }
 
     @Nonnull
     @Override
     public Response sendSyncMessage(MessageFrame frame) {
-        return sendSyncMessage(frame, timeout);
+        return sendSyncMessage(frame, defaultTimeout);
     }
 
-    @Nonnull
-    @Override
-    public Response sendSyncMessage(Channel channel, MessageFrame frame) {
-        return sendSyncMessage(channel, frame, timeout);
-    }
 
     @Nonnull
     @Override
     public Response sendSyncMessage(MessageFrame frame, int timeout) {
-        return sendSyncMessage(frame, timeout, waitSendTimeout);
+        return sendSyncMessage(frame, timeout, defaultWaitSendTimeout);
     }
 
     @Nonnull
@@ -314,35 +271,16 @@ public abstract class AbstractRemoteServer implements RemoteServer {
 
     }
 
-    @Nonnull
-    @Override
-    public Response sendSyncMessage(Channel channel, MessageFrame frame, int timeout) {
-        ResponseFuture future = futureService.future(timeout, channel, frame.requestId(), frame.message());
-        if (channel.isWritable()) {
-            channel.writeAndFlush(frame);
-        }
-        return future.get(timeout);
+
+
+
+    public int getDefaultWaitSendTimeout() {
+        return defaultWaitSendTimeout;
     }
 
-
-    public int getTimeout() {
-        return timeout;
+    public void setDefaultWaitSendTimeout(int defaultWaitSendTimeout) {
+        this.defaultWaitSendTimeout = defaultWaitSendTimeout;
     }
-
-    public void setTimeout(int timeout) {
-        this.timeout = timeout;
-    }
-
-    public int getWaitSendTimeout() {
-        return waitSendTimeout;
-    }
-
-    public void setWaitSendTimeout(int waitSendTimeout) {
-        this.waitSendTimeout = waitSendTimeout;
-    }
-
-
-
 
 
     public String getRemoteServerKey() {

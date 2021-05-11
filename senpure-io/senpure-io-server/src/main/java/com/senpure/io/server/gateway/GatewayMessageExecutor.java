@@ -7,24 +7,18 @@ import com.senpure.executor.TaskLoopGroup;
 import com.senpure.io.protocol.Message;
 import com.senpure.io.server.ChannelAttributeUtil;
 import com.senpure.io.server.Constant;
-import com.senpure.io.server.MessageFrame;
 import com.senpure.io.server.ServerProperties;
 import com.senpure.io.server.gateway.consumer.handler.ConsumerMessageHandler;
 import com.senpure.io.server.gateway.provider.Provider;
 import com.senpure.io.server.gateway.provider.ProviderManager;
 import com.senpure.io.server.gateway.provider.handler.ProviderMessageHandler;
 import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
-import com.senpure.io.server.remoting.DefaultFuture;
-import com.senpure.io.server.remoting.DefaultResponse;
-import com.senpure.io.server.remoting.FutureService;
-import com.senpure.io.server.remoting.ResponseFuture;
+import com.senpure.io.server.remoting.AbstractMessageExecutor;
 import com.senpure.io.server.support.MessageIdReader;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.util.concurrent.DefaultThreadFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,12 +26,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 
-public class GatewayMessageExecutor implements FutureService {
-    protected static Logger logger = LoggerFactory.getLogger(GatewayMessageExecutor.class);
+public class GatewayMessageExecutor extends AbstractMessageExecutor {
 
-    private final Map<Integer, DefaultFuture> futureMap = new ConcurrentHashMap<>();
-    private final TaskLoopGroup service;
-    private int serviceRefCount = 0;
     private int csLoginMessageId = 0;
 
     private ServerProperties.Gateway gateway;
@@ -66,8 +56,10 @@ public class GatewayMessageExecutor implements FutureService {
                 new DefaultThreadFactory("gateway-executor")), new IDGenerator(0, 0));
     }
 
+
     public GatewayMessageExecutor(TaskLoopGroup service, IDGenerator idGenerator) {
-        this.service = service;
+
+        super(service);
         this.idGenerator = idGenerator;
         // init();
         // startCheck();
@@ -91,33 +83,6 @@ public class GatewayMessageExecutor implements FutureService {
                     + " 存在 " + old.getClass().getName() + " 注册 " + handler.getClass().getName());
         }
         c2gHandlerMap.put(handler.messageId(), handler);
-    }
-
-    /**
-     * 引用计数+1
-     */
-    public void retainService() {
-        serviceRefCount++;
-    }
-
-    public void releaseService() {
-        serviceRefCount--;
-
-    }
-
-    public void releaseAndTryShutdownService() {
-        serviceRefCount--;
-        if (serviceRefCount <= 0) {
-            service.shutdownGracefully();
-        }
-    }
-
-    public void shutdownService() {
-        if (serviceRefCount <= 0) {
-            service.shutdownGracefully();
-        } else {
-            logger.warn("service 持有引用{}，请先释放后关闭", serviceRefCount);
-        }
     }
 
 
@@ -239,9 +204,6 @@ public class GatewayMessageExecutor implements FutureService {
         startCheck();
     }
 
-    private void executeSCMessage() {
-
-    }
 
     //处理服务器发过来的消息
     public void execute(Channel channel, final GatewayReceiveProviderMessage message) {
@@ -294,6 +256,7 @@ public class GatewayMessageExecutor implements FutureService {
             }
         });
     }
+
 
     public void execute(Runnable runnable) {
         service.execute(runnable);
@@ -363,25 +326,6 @@ public class GatewayMessageExecutor implements FutureService {
     }
 
 
-    private void checkWaitRelationTask() {
-        List<Long> tokens = new ArrayList<>();
-        for (Map.Entry<Long, WaitRelationTask> entry : waitRelationMap.entrySet()) {
-            WaitRelationTask task = entry.getValue();
-            if (task.check()) {
-                tokens.add(entry.getKey());
-                service.get(task.getToken()).execute(task::sendMessage);
-            } else {
-                if (task.cancel()) {
-                    tokens.add(entry.getKey());
-                    service.get(task.getToken()).execute(() -> task.sendCancelMessage(this));
-                }
-            }
-        }
-        for (Long token : tokens) {
-            waitRelationMap.remove(token);
-        }
-    }
-
     private void checkWaitAskTask() {
         List<Long> tokens = new ArrayList<>();
         long now = System.currentTimeMillis();
@@ -414,14 +358,12 @@ public class GatewayMessageExecutor implements FutureService {
 
     private void startCheck() {
         service.scheduleWithFixedDelay(() -> {
-            checkWaitRelationTask();
+            checkTimeoutFuture();
             checkWaitAskTask();
         }, 0, 10, TimeUnit.MILLISECONDS);
     }
 
-    public void destroy() {
-        service.shutdownGracefully();
-    }
+
 
     public IDGenerator getIdGenerator() {
         return idGenerator;
@@ -456,27 +398,4 @@ public class GatewayMessageExecutor implements FutureService {
     }
 
 
-    @Override
-    public ResponseFuture future(int timeout, Channel channel, int requestId, Message message) {
-        DefaultFuture future = new DefaultFuture(timeout, channel, requestId, message);
-        futureMap.put(requestId, future);
-        return future;
-    }
-
-    public void receive(Channel channel, int requestId, MessageFrame frame) {
-        DefaultFuture future = futureMap.remove(requestId);
-        if (future != null) {
-            boolean success = !isErrorMessage(frame);
-            DefaultResponse response = new DefaultResponse(success, channel, frame.message());
-            future.doReceived(response);
-
-        } else {
-            logger.warn("远程服务器返回时间过长,服务器已经做了超时处理 {} {}", requestId, frame);
-        }
-
-    }
-
-    public boolean isErrorMessage(MessageFrame frame) {
-        return frame.messageId() == SCFrameworkErrorMessage.MESSAGE_ID;
-    }
 }
