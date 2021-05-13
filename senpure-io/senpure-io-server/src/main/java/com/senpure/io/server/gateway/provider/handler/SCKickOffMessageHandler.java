@@ -7,9 +7,9 @@ import io.netty.channel.Channel;
 
 public class SCKickOffMessageHandler extends  AbstractProviderMessageHandler{
     @Override
-    public void execute(Channel channel, GatewayReceiveProviderMessage gatewayReceiveProviderMessage) {
+    public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
         SCKickOffMessage message = new SCKickOffMessage();
-        messageExecutor.readMessage(message, gatewayReceiveProviderMessage);
+        messageExecutor.readMessage(message, frame);
         long tempUserId = message.getUserId();
         Channel userChannel = null;
         if (tempUserId > 0) {

@@ -1,4 +1,4 @@
-package com.senpure.io.server.direct;
+package com.senpure.io.server.provider.consumer;
 
 
 import com.senpure.io.server.ChannelAttributeUtil;
@@ -16,20 +16,20 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.atomic.AtomicLong;
 
 
-public class DirectServerHandler extends SimpleChannelInboundHandler<ProviderReceivedMessage> {
+public class ConsumerServerHandler extends SimpleChannelInboundHandler<ProviderReceivedMessage> {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private  final ProviderMessageExecutor messageExecutor;
 
-    private  final ClientManager clientManager;
+    private  final ConsumerManager consumerManager;
     //  private SourceOffline sourceOffline;
 
   private  final static   AtomicLong ID = new AtomicLong(1);
 
-    public DirectServerHandler(ProviderMessageExecutor messageExecutor, ClientManager clientManager) {
+    public ConsumerServerHandler(ProviderMessageExecutor messageExecutor, ConsumerManager consumerManager) {
         this.messageExecutor = messageExecutor;
-        this.clientManager = clientManager;
+        this.consumerManager = consumerManager;
     }
 
 
@@ -47,7 +47,7 @@ public class DirectServerHandler extends SimpleChannelInboundHandler<ProviderRec
         ChannelAttributeUtil.setToken(channel, token);
         String key = String.valueOf(token);
         ChannelAttributeUtil.setRemoteServerKey(channel, key);
-        clientManager.addChannel(key,channel);
+        consumerManager.addChannel(key,channel);
 
         CSRelationUserGatewayMessage message = new CSRelationUserGatewayMessage();
         message.setToken(token);

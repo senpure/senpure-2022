@@ -17,8 +17,11 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ProviderManager extends AbstractMultipleServerManger<GatewayLocalSendProviderMessage> {
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
     private final List<Provider> useProviders = new ArrayList<>();
     private final ConcurrentMap<Long, ProviderRelation> tokenProviderMap = new ConcurrentHashMap<>();
     private ProviderNextStrategy nextStrategy = new ProviderDefaultNextStrategy();
@@ -46,22 +49,33 @@ public class ProviderManager extends AbstractMultipleServerManger<GatewayLocalSe
 
     @Nullable
     public Provider getProvider(String providerKey) {
-        for (Provider provider : useProviders) {
-            if (provider.getRemoteServerKey().equals(providerKey)) {
-                return provider;
+        lock.readLock().lock();
+        try {
+            for (Provider provider : useProviders) {
+                if (provider.getRemoteServerKey().equals(providerKey)) {
+                    return provider;
+                }
             }
+        } finally {
+            lock.readLock().unlock();
         }
+
         return null;
     }
 
     @Nonnull
-    public synchronized Provider addProvider(Provider provider) {
-        for (Provider temp : useProviders) {
-            if (temp.getRemoteServerKey().equals(provider.getRemoteServerKey())) {
-                return temp;
+    public  Provider addProvider(Provider provider) {
+        lock.writeLock().lock();
+        try {
+            for (Provider temp : useProviders) {
+                if (temp.getRemoteServerKey().equals(provider.getRemoteServerKey())) {
+                    return temp;
+                }
             }
+            useProviders.add(provider);
+        } finally {
+            lock.writeLock().unlock();
         }
-        useProviders.add(provider);
         return provider;
     }
 
@@ -82,11 +96,11 @@ public class ProviderManager extends AbstractMultipleServerManger<GatewayLocalSe
         if (providerRelation == null) {
             provider = nextProvider();
             if (provider == null) {
-                logger.warn("{}没有服务实例可以使用", serverName);
+                logger.warn("{} 没有服务实例可以使用", serverName);
                 SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
-                errorMessage.setCode(Constant.ERROR_NOT_FOUND_SERVER);
+                errorMessage.setCode(Constant.ERROR_NOT_FOUND_PROVIDER);
                 errorMessage.getArgs().add(String.valueOf(frame.messageId()));
-                errorMessage.setMessage("没有服务器处理" + MessageIdReader.read(frame.messageId()));
+                errorMessage.setMessage("没有服务器处理 " + MessageIdReader.read(frame.messageId()));
                 messageExecutor.sendMessage2Consumer(frame.requestId(), frame.token(), errorMessage);
             } else {
 
@@ -116,7 +130,7 @@ public class ProviderManager extends AbstractMultipleServerManger<GatewayLocalSe
 //                breakUserGatewayMessage.setRelationToken(message.getRelationToken());
             } else {
 
-                logger.debug("error {} {} {}", frame.token(), relationToken,response.getMessage());
+                logger.debug("error {} {} {}", frame.token(), relationToken, response.getMessage());
             }
         }, 5000);
 
@@ -145,14 +159,19 @@ public class ProviderManager extends AbstractMultipleServerManger<GatewayLocalSe
     }
 
     protected Provider nextProvider() {
-        int size = useProviders.size();
-        switch (size) {
-            case 0:
-                return null;
-            case 1:
-                return useProviders.get(0);
-            default:
-                return nextStrategy.next(useProviders);
+        lock.readLock().lock();
+        try {
+            int size = useProviders.size();
+            switch (size) {
+                case 0:
+                    return null;
+                case 1:
+                    return useProviders.get(0);
+                default:
+                    return nextStrategy.next(useProviders);
+            }
+        } finally {
+            lock.readLock().unlock();
         }
 
     }
@@ -169,9 +188,15 @@ public class ProviderManager extends AbstractMultipleServerManger<GatewayLocalSe
     public boolean handleId(int messageId) {
         return handleIdsMap.get(messageId) != null;
     }
-    public synchronized void prepStopOldInstance() {
-        prepStopOldInstance.addAll(useProviders);
-        useProviders.clear();
+
+    public  void prepStopOldInstance() {
+        lock.writeLock().lock();
+        try {
+            prepStopOldInstance.addAll(useProviders);
+            useProviders.clear();
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     /**
@@ -179,9 +204,14 @@ public class ProviderManager extends AbstractMultipleServerManger<GatewayLocalSe
      *
      * @param channel channel
      */
-    public synchronized void providerOffLine(Channel channel) {
-        providerOffLine(channel, prepStopOldInstance);
-        providerOffLine(channel, useProviders);
+    public void providerOffLine(Channel channel) {
+        lock.writeLock().lock();
+        try {
+            providerOffLine(channel, prepStopOldInstance);
+            providerOffLine(channel, useProviders);
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     private void providerOffLine(Channel channel, List<Provider> providers) {
@@ -189,7 +219,7 @@ public class ProviderManager extends AbstractMultipleServerManger<GatewayLocalSe
         while (iterator.hasNext()) {
             Provider provider = iterator.next();
             if (provider.offline(channel)) {
-                if (provider.getChannelSize()==0) {
+                if (provider.getChannelSize() == 0) {
                     iterator.remove();
                     clearRelation(provider);
                 }
@@ -199,6 +229,7 @@ public class ProviderManager extends AbstractMultipleServerManger<GatewayLocalSe
 
     }
 
+    //用户认证之后需要对之前关联的服务器关联用户id
     public void afterUserAuthorize(long channelToken, long userId) {
         ProviderRelation providerRelation = tokenProviderMap.get(channelToken);
         if (providerRelation != null) {
@@ -207,8 +238,10 @@ public class ProviderManager extends AbstractMultipleServerManger<GatewayLocalSe
             message.setUserId(userId);
             message.setRelationToken(providerRelation.relationToken);
             GatewaySendProviderMessage toMessage = messageExecutor.createMessage(message);
-            //waitRelationTask(providerRelation.provider, providerRelation.relationToken, null);
-            providerRelation.provider.sendMessage(toMessage);
+            if (!getHandleIds().contains(messageExecutor.getCsLoginMessageId())) {
+                providerRelation.provider.sendMessage(toMessage);
+            }
+
         }
     }
 
@@ -223,6 +256,7 @@ public class ProviderManager extends AbstractMultipleServerManger<GatewayLocalSe
     }
 
     //消费方切换用户
+    //除了登录服务器，其他的全部断开
     public void consumerUserChange(Channel consumerChannel, Long token, Long userId, int csLoginMessageId) {
         if (getHandleIds().contains(csLoginMessageId)) {
             breakUserGateway(consumerChannel, token, userId, Constant.BREAK_TYPE_USER_CHANGE, false);

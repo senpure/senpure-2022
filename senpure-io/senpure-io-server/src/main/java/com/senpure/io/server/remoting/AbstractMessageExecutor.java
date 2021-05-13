@@ -80,6 +80,10 @@ public abstract class AbstractMessageExecutor implements FutureService {
         errorMessageIds.addAll(messageIds);
     }
 
+    public TaskLoopGroup getService() {
+        return service;
+    }
+
     public void shutdownService() {
         service.shutdownGracefully();
     }

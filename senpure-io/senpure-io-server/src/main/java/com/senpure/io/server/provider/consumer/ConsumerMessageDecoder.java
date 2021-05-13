@@ -1,4 +1,4 @@
-package com.senpure.io.server.direct;
+package com.senpure.io.server.provider.consumer;
 
 
 import com.senpure.base.util.Assert;
@@ -22,13 +22,13 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 
-public class DirectMessageDecoder extends ByteToMessageDecoder {
+public class ConsumerMessageDecoder extends ByteToMessageDecoder {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
 
     private final MessageDecoderContext decoderContext;
 
-    public DirectMessageDecoder(MessageDecoderContext decoderContext) {
+    public ConsumerMessageDecoder(MessageDecoderContext decoderContext) {
         this.decoderContext = decoderContext;
     }
 

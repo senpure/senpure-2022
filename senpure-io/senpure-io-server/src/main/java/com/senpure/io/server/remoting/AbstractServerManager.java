@@ -14,7 +14,8 @@ public abstract class AbstractServerManager<T extends MessageFrame> implements R
 
     protected int nextRequestId() {
         int requestId = atomicRequestId.getAndIncrement();
-        if (requestId == 0) {
+        if (requestId < 0) {
+            atomicRequestId.compareAndSet(requestId, 1);
             return nextRequestId();
         }
         return requestId;

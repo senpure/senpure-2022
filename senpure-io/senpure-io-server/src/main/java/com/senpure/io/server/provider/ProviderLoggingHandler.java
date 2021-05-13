@@ -32,7 +32,7 @@ public class ProviderLoggingHandler extends LoggingHandler {
             if (msg instanceof ProviderSendMessage) {
                 if (outFormat) {
                     ProviderSendMessage frame = (ProviderSendMessage) msg;
-                    this.logger.log(this.internalLevel, "requestId:{} {} token:{} userIds:{}{}{}",
+                    this.logger.log(this.internalLevel, "{} requestId:{} token:{} userIds:{}{}{}",
                             "WRITE",frame.requestId(), frame.getToken(), Arrays.toString(frame.getUserIds()), "\n", frame.message().toString(null));
                     //this.logger.log(this.internalLevel, this.format(ctx, ChannelAttributeUtil.getChannelPlayerStr(ctx.channel())+" WRITE", "\n"+((Message) msg).toString(null)));
                 } else {
@@ -58,8 +58,8 @@ public class ProviderLoggingHandler extends LoggingHandler {
             if (msg instanceof ProviderReceivedMessage) {
                 if (inFormat) {
                     ProviderReceivedMessage frame = (ProviderReceivedMessage) msg;
-                    this.logger.log(this.internalLevel, "{} token:{} userId:{}{}{}",
-                            "RECEIVED", frame.getToken(), frame.getUserId(), "\n", frame.getMessage().toString(null));
+                    this.logger.log(this.internalLevel, "{} requestId:{} token:{} userId:{}{}{}",
+                            "RECEIVED",frame.requestId(), frame.getToken(), frame.getUserId(), "\n", frame.getMessage().toString(null));
                     // this.logger.log(this.internalLevel, this.format(ctx, ChannelAttributeUtil.getChannelPlayerStr(ctx.channel()) + " RECEIVED", "\n" + ((Message) msg).toString(null)));
 
                 } else {

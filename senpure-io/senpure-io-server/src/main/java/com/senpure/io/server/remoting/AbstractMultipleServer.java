@@ -1,7 +1,6 @@
 package com.senpure.io.server.remoting;
 
 import com.senpure.base.util.Assert;
-import com.senpure.executor.TaskLoopGroup;
 import com.senpure.io.server.MessageFrame;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
@@ -13,15 +12,11 @@ import java.util.List;
 public class AbstractMultipleServer implements MultipleServer {
     protected Logger logger = LoggerFactory.getLogger(getClass());
     protected FutureService futureService;
-    protected TaskLoopGroup service;
+
     protected int defaultTimeout = 500;
     protected int defaultFlushFrames = 100;
 
     public AbstractMultipleServer() {
-    }
-
-    public AbstractMultipleServer(TaskLoopGroup service) {
-        this.service = service;
     }
 
 
@@ -86,6 +81,10 @@ public class AbstractMultipleServer implements MultipleServer {
             channel.writeAndFlush(frame);
         }
         return future.get(timeout);
+    }
+
+    public void setFutureService(FutureService futureService) {
+        this.futureService = futureService;
     }
 
     public void setDefaultTimeout(int defaultTimeout) {

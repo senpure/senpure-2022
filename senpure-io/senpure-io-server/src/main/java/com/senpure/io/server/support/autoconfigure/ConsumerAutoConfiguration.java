@@ -13,19 +13,19 @@ import com.senpure.io.server.consumer.RemoteServerManager;
 import com.senpure.io.server.consumer.handler.ConsumerMessageHandler;
 import com.senpure.io.server.consumer.remoting.DefaultFuture;
 import com.senpure.io.server.consumer.remoting.SuccessCallback;
-import com.senpure.io.server.protocol.message.SCHeartMessage;
 import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
+import com.senpure.io.server.protocol.message.SCHeartMessage;
 import com.senpure.io.server.support.ConsumerServerStarter;
 import io.netty.util.concurrent.DefaultThreadFactory;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.env.Environment;
+import org.springframework.util.StringUtils;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 
@@ -41,26 +41,37 @@ public class ConsumerAutoConfiguration {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
 
-    @Resource
-    private ServerProperties serverProperties;
+
+    private final ServerProperties properties;
 
     private TaskLoopGroup taskLoopGroup;
 
 
-    @PostConstruct
-    public void init() {
-        check();
+
+
+    public ConsumerAutoConfiguration(Environment env, ServerProperties properties) {
+        check(env,properties);
+        this.properties = properties;
     }
 
+    private void check(Environment env, ServerProperties properties) {
+        if (!StringUtils.hasText(properties.getName())) {
+            String name = env.getProperty("spring.application.name");
+            if (StringUtils.hasText(name)) {
+                logger.debug("使用 name {}", name);
+                properties.setName(name);
+            } else {
+                logger.warn("spring.application.name 值为空");
+            }
+        }
+        if (!StringUtils.hasText(properties.getName())) {
+            properties.setName("consumer");
+        }
+        ServerProperties.ConsumerProperties consumer = properties.getConsumer();
+        if (!StringUtils.hasText(consumer.getReadableName()) || consumer.getReadableName().equals(new ServerProperties.ConsumerProperties().getReadableName())) {
+            consumer.setReadableName(properties.getName());
+        }
 
-    private void check() {
-        if (StringUtils.isEmpty(serverProperties.getName())) {
-            serverProperties.setName("consumerServer");
-        }
-        ServerProperties.Consumer consumer = serverProperties.getConsumer();
-        if (!consumer.isSetReadableName()) {
-            consumer.setReadableName(serverProperties.getName());
-        }
         //io *2 logic *1 综合1.5
         double size = Runtime.getRuntime().availableProcessors() * 1.5;
         int ioSize = (int) (size * 0.6);
@@ -78,8 +89,8 @@ public class ConsumerAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(TaskLoopGroup.class)
     public TaskLoopGroup taskLoopGroup() {
-        TaskLoopGroup service = new DefaultTaskLoopGroup(serverProperties.getConsumer().getExecutorThreadPoolSize(),
-                new DefaultThreadFactory(serverProperties.getName() + "-executor"));
+        TaskLoopGroup service = new DefaultTaskLoopGroup(properties.getConsumer().getExecutorThreadPoolSize(),
+                new DefaultThreadFactory(properties.getName() + "-executor"));
         this.taskLoopGroup = service;
         return service;
 
@@ -108,13 +119,13 @@ public class ConsumerAutoConfiguration {
 
     @Bean
     public RemoteServerManager remoteServerManager() {
-        return new RemoteServerManager(serverProperties.getConsumer());
+        return new RemoteServerManager(properties.getConsumer());
     }
 
     @Bean
     public ConsumerMessageExecutor consumerMessageExecutor(ConsumerMessageHandlerContext messageDecoderContext) {
 
-        ConsumerMessageExecutor messageExecutor= new ConsumerMessageExecutor(serverProperties.getConsumer(), messageDecoderContext);
+        ConsumerMessageExecutor messageExecutor = new ConsumerMessageExecutor(properties.getConsumer(), messageDecoderContext);
         DefaultFuture.setMessageExecutor(messageExecutor);
         return messageExecutor;
     }

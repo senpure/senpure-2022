@@ -1,7 +1,8 @@
-package com.senpure.io.server.gateway;
+package com.senpure.io.server.gateway.consumer;
 
 import com.senpure.base.util.Assert;
 import com.senpure.io.server.ServerProperties;
+import com.senpure.io.server.gateway.GatewayMessageExecutor;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -22,25 +23,25 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.TimeUnit;
 
 
-public class GatewayAndProviderServer {
+public class ConsumerServer {
     protected Logger logger = LoggerFactory.getLogger(getClass());
-
 
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
-    private String readableServerName = "网关服务器[SC]";
-
+    private String readableName = "网关服务器[CS]";
     private GatewayMessageExecutor messageExecutor;
-    private ServerProperties.Gateway properties;
+    private ServerProperties.GatewayProperties properties;
 
     public boolean start() {
         Assert.notNull(messageExecutor);
         Assert.notNull(properties);
-        logger.debug("启动 {} SC模块，监听端口号 {}", properties.getReadableName(), properties.getScPort());
-        readableServerName = properties.getReadableName() + "[SC][" + properties.getScPort() + "]";
-        SslContext sslCtx = null;
+        Assert.notNull(properties.getConsumer());
+        ServerProperties.GatewayProperties.ConsumerProperties consumer = properties.getConsumer();
+        logger.info("启动 {} consumer模块，监听端口号 {}", properties.getReadableName(), properties.getConsumer().getPort());
+        readableName = properties.getReadableName() + "[consumer][" + properties.getConsumer().getPort() + "]";
         // Configure SSL.
-        if (properties.isScSsl()) {
+        SslContext sslCtx = null;
+        if (properties.getConsumer().isSsl()) {
             try {
                 SelfSignedCertificate ssc = new SelfSignedCertificate();
                 sslCtx = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
@@ -50,8 +51,8 @@ public class GatewayAndProviderServer {
         }
         try {
             // Configure the server.
-            bossGroup = new NioEventLoopGroup(properties.getIoScBossThreadPoolSize());
-            workerGroup = new NioEventLoopGroup(properties.getIoScWorkThreadPoolSize());
+            bossGroup = new NioEventLoopGroup(consumer.getIoBossThreadPoolSize());
+            workerGroup = new NioEventLoopGroup(consumer.getIoWorkThreadPoolSize());
             ServerBootstrap b = new ServerBootstrap();
             SslContext finalSslCtx = sslCtx;
             b.group(bossGroup, workerGroup)
@@ -65,28 +66,41 @@ public class GatewayAndProviderServer {
                             if (finalSslCtx != null) {
                                 p.addLast(finalSslCtx.newHandler(ch.alloc()));
                             }
-                            p.addLast(new GatewayAndProviderMessageDecoder());
-                            p.addLast(new GatewayAndProviderMessageEncoder());
+                            p.addLast(new ConsumerMessageDecoder());
+                            p.addLast(new ConsumerMessageEncoder());
                             p.addLast(new LoggingHandler(LogLevel.DEBUG));
-                            if (properties.isEnableSCHeartCheck()) {
-                                p.addLast(new IdleStateHandler(properties.getScReaderIdleTime(), 0L, 0L, TimeUnit.MILLISECONDS));
+                            if (consumer.isEnableHeartCheck()) {
+                                p.addLast(new IdleStateHandler(consumer.getReaderIdleTime(), 0L, 0L, TimeUnit.MILLISECONDS));
                             }
-                            p.addLast(new GatewayAndProviderServerHandler(messageExecutor));
+                            p.addLast(new ConsumerServerHandler(messageExecutor));
 
                         }
                     });
             // Start the server.
-            b.bind(properties.getScPort()).sync();
-            logger.info("{} 启动完成", getReadableServerName());
+            b.bind(consumer.getPort()).sync();
+            logger.info("{} 启动完成", getReadableName());
         } catch (Exception e) {
-            logger.error("启动 " + getReadableServerName() + " 失败", e);
+            logger.error("启动 " + getReadableName() + " 失败", e);
             destroy();
             return false;
         }
-
         return true;
     }
 
+
+    private String getReadableName() {
+        return readableName;
+    }
+
+
+    public void setMessageExecutor(GatewayMessageExecutor messageExecutor) {
+        this.messageExecutor = messageExecutor;
+    }
+
+
+    public void setProperties(ServerProperties.GatewayProperties properties) {
+        this.properties = properties;
+    }
 
     public void destroy() {
         if (bossGroup != null) {
@@ -95,21 +109,8 @@ public class GatewayAndProviderServer {
         if (workerGroup != null) {
             workerGroup.shutdownGracefully();
         }
-        logger.info("关闭{}并释放资源 ", getReadableServerName());
+        logger.debug("关闭{}并释放资源 ", readableName);
 
-    }
-
-    public String getReadableServerName() {
-        return readableServerName;
-    }
-
-
-    public void setMessageExecutor(GatewayMessageExecutor messageExecutor) {
-        this.messageExecutor = messageExecutor;
-    }
-
-    public void setProperties(ServerProperties.Gateway properties) {
-        this.properties = properties;
     }
 
 

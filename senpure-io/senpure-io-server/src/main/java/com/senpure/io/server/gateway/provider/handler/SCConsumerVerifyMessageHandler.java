@@ -10,29 +10,31 @@ import java.util.Map;
 
 public class SCConsumerVerifyMessageHandler extends AbstractProviderMessageHandler {
     @Override
-    public void execute(Channel channel, GatewayReceiveProviderMessage message) {
-        long userId = message.getUserIds()[0];
-        Channel clientChannel = messageExecutor.prepLoginChannels.remove(message.getToken());
-        if (clientChannel != null) {
-            Long token = ChannelAttributeUtil.getToken(clientChannel);
-            Long oldUserId = ChannelAttributeUtil.getUserId(clientChannel);
-            if (oldUserId != null) {
-                if (oldUserId == userId) {
-                    logger.info("{}重复登陆 {} 不做额外的处理", clientChannel, userId);
-                } else {
-                    logger.info("{}切换账号{}  -》  {} ", clientChannel, oldUserId, userId);
-                    messageExecutor.consumerUserChange(clientChannel, token, oldUserId);
+    public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
+        long userId = frame.getUserIds()[0];
+        Channel consumerChannel = messageExecutor.prepLoginChannels.remove(frame.getToken());
+        if (consumerChannel != null) {
+            Long token = ChannelAttributeUtil.getToken(consumerChannel);
+            Long oldUserId = ChannelAttributeUtil.getUserId(consumerChannel);
+            if (oldUserId == null) {
+                for (Map.Entry<String, ProviderManager> entry : messageExecutor.providerManagerMap.entrySet()) {
+                    ProviderManager providerManager = entry.getValue();
+                    providerManager.afterUserAuthorize(token, userId);
                 }
             }
-            ChannelAttributeUtil.setUserId(clientChannel, userId);
-            messageExecutor.userClientChannel.put(userId, clientChannel);
-            for (Map.Entry<String, ProviderManager> entry : messageExecutor.providerManagerMap.entrySet()) {
-                ProviderManager providerManager = entry.getValue();
-                providerManager.afterUserAuthorize(token, userId);
-
+            else {
+                if (oldUserId == userId) {
+                    logger.info("{}重复登陆 {} 不做额外的处理", consumerChannel, userId);
+                } else {
+                    logger.info("{}切换账号{}  -》  {} ", consumerChannel, oldUserId, userId);
+                    messageExecutor.consumerUserChange(consumerChannel, token, oldUserId);
+                }
             }
+            ChannelAttributeUtil.setUserId(consumerChannel, userId);
+            messageExecutor.userClientChannel.put(userId, consumerChannel);
+
         } else {
-            logger.warn("登录成功 userId:{} channel缺失 token{}", userId, message.getToken());
+            logger.warn("登录成功 userId:{} channel缺失 token{}", userId, frame.getToken());
         }
 
     }

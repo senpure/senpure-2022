@@ -22,14 +22,14 @@ public class ProviderMetadataCompletionRunListener extends AbstractMetadataCompl
         Class<?> bootClass = AppEvn.getStartClass();
         EnableProvider enableProvider = bootClass.getAnnotation(EnableProvider.class);
         if (enableProvider != null) {
-            ServerProperties.Provider.MODEL model = environment.getProperty("server.io.provider.model", ServerProperties.Provider.MODEL.class);
-            if (model == ServerProperties.Provider.MODEL.DIRECT) {
-                Integer csPort = environment.getProperty("server.io.provider.port", Integer.class);
-                if (csPort == null) {
-                    csPort = new ServerProperties().getProvider().getPort();
+           ServerProperties.ProviderProperties.MODEL model = environment.getProperty("server.io.provider.model",    ServerProperties.ProviderProperties.MODEL.class);
+            if (model == ServerProperties.ProviderProperties.MODEL.GATEWAY) {
+                Integer consumerPort = environment.getProperty("server.io.provider.consumer.port", Integer.class);
+                if (consumerPort == null) {
+                    consumerPort = new ServerProperties.ProviderProperties().getConsumer().getPort();
                 }
                 Metadata metadata = new Metadata("provider");
-                metadata.addMetadata(Constant.GATEWAY_METADATA_CS_PORT, csPort);
+                metadata.addMetadata(Constant.GATEWAY_METADATA_CONSUMER_PORT, consumerPort);
                 return metadata;
             }
         }

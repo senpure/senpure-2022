@@ -1,15 +1,15 @@
 package com.senpure.io.server.provider;
 
 import com.senpure.executor.TaskLoopGroup;
-
 import com.senpure.io.server.Constant;
 import com.senpure.io.server.MessageFrame;
 import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
 import com.senpure.io.server.provider.handler.ProviderMessageHandler;
-import com.senpure.io.server.remoting.*;
+import com.senpure.io.server.remoting.AbstractMessageExecutor;
+import com.senpure.io.server.remoting.RemoteServerManager;
 import io.netty.channel.Channel;
 
-public class ProviderMessageExecutor extends  AbstractMessageExecutor{
+public class ProviderMessageExecutor extends AbstractMessageExecutor {
 
     private final MessageSender messageSender;
     private final ProviderMessageHandlerContext handlerContext;
@@ -53,7 +53,7 @@ public class ProviderMessageExecutor extends  AbstractMessageExecutor{
                     scFrameworkErrorMessage.setMessage("服务器执行错误:" + frame.getMessage().getClass().getSimpleName()
                             + "[" + frame.getMessageId() + "]:" +
                             e.getMessage());
-                    scFrameworkErrorMessage.setCode(Constant.ERROR_SERVER_ERROR);
+                    scFrameworkErrorMessage.setCode(Constant.ERROR_PROVIDER_ERROR);
                     scFrameworkErrorMessage.getArgs().add(String.valueOf(frame.getMessageId()));
                     messageSender.sendMessageByToken(frame.getToken(), scFrameworkErrorMessage);
                 } finally {
@@ -69,10 +69,8 @@ public class ProviderMessageExecutor extends  AbstractMessageExecutor{
         long userId = frame.getUserId();
         long id = userId > 0 ? userId : frame.getToken();
         service.get(id).execute(() -> {
-            int requestId = frame.requestId;
-            if (requestId > 0) {
-                receive(channel,requestId, frame.message());
-            } else {
+            int requestId = frame.requestId();
+            if (requestId == 0) {
                 ProviderMessageHandler handler = handlerContext.handler(frame.getMessageId());
                 if (handler == null) {
                     logger.warn("没有找到消息处理程序{} ", frame.messageId());
@@ -84,6 +82,9 @@ public class ProviderMessageExecutor extends  AbstractMessageExecutor{
                     }
 
                 }
+
+            } else {
+                receive(channel, requestId, frame.message());
             }
         });
 
@@ -102,10 +103,6 @@ public class ProviderMessageExecutor extends  AbstractMessageExecutor{
 
 
     }
-
-
-
-
 
 
 }

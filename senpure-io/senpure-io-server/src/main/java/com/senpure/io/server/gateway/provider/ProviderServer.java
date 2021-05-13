@@ -1,7 +1,8 @@
-package com.senpure.io.server.gateway;
+package com.senpure.io.server.gateway.provider;
 
 import com.senpure.base.util.Assert;
 import com.senpure.io.server.ServerProperties;
+import com.senpure.io.server.gateway.GatewayMessageExecutor;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -22,23 +23,27 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.TimeUnit;
 
 
-public class GatewayAndConsumerServer {
+public class ProviderServer {
     protected Logger logger = LoggerFactory.getLogger(getClass());
+
 
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
-    private String readableName = "网关服务器[CS]";
+    private String readableServerName = "网关服务器[SC]";
+
     private GatewayMessageExecutor messageExecutor;
-    private ServerProperties.Gateway properties;
+    private ServerProperties.GatewayProperties properties;
 
     public boolean start() {
         Assert.notNull(messageExecutor);
         Assert.notNull(properties);
-        logger.info("启动 {} CS模块，监听端口号 {}", properties.getReadableName(), properties.getCsPort());
-        readableName = properties.getReadableName() + "[CS][" + properties.getCsPort() + "]";
-        // Configure SSL.
+        Assert.notNull(properties.getProvider());
+        ServerProperties.GatewayProperties.ProviderProperties provider = properties.getProvider();
+        logger.debug("启动 {} provider 模块，监听端口号 {}", properties.getReadableName(), provider.getPort());
+        readableServerName = properties.getReadableName() + "[provider][" + provider.getPort() + "]";
         SslContext sslCtx = null;
-        if (properties.isCsSsl()) {
+        // Configure SSL.
+        if (provider.isSsl()) {
             try {
                 SelfSignedCertificate ssc = new SelfSignedCertificate();
                 sslCtx = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
@@ -48,8 +53,8 @@ public class GatewayAndConsumerServer {
         }
         try {
             // Configure the server.
-            bossGroup = new NioEventLoopGroup(properties.getIoCsBossThreadPoolSize());
-            workerGroup = new NioEventLoopGroup(properties.getIoCsWorkThreadPoolSize());
+            bossGroup = new NioEventLoopGroup(provider.getIoBossThreadPoolSize());
+            workerGroup = new NioEventLoopGroup(provider.getIoWorkThreadPoolSize());
             ServerBootstrap b = new ServerBootstrap();
             SslContext finalSslCtx = sslCtx;
             b.group(bossGroup, workerGroup)
@@ -63,40 +68,28 @@ public class GatewayAndConsumerServer {
                             if (finalSslCtx != null) {
                                 p.addLast(finalSslCtx.newHandler(ch.alloc()));
                             }
-                            p.addLast(new GatewayAndConsumerMessageDecoder());
-                            p.addLast(new GatewayAndConsumerMessageEncoder());
+                            p.addLast(new ProviderMessageDecoder());
+                            p.addLast(new ProviderMessageEncoder());
                             p.addLast(new LoggingHandler(LogLevel.DEBUG));
-                            if (properties.isEnableCSHeartCheck()) {
-                                p.addLast(new IdleStateHandler(properties.getCsReaderIdleTime(), 0L, 0L, TimeUnit.MILLISECONDS));
+                            if (provider.isEnableHeartCheck()) {
+                                p.addLast(new IdleStateHandler(provider.getReaderIdleTime(), 0L, 0L, TimeUnit.MILLISECONDS));
                             }
-                            p.addLast(new GatewayAndConsumerServerHandler(messageExecutor));
+                            p.addLast(new ProviderServerHandler(messageExecutor));
 
                         }
                     });
             // Start the server.
-            b.bind(properties.getCsPort()).sync();
-            logger.info("{} 启动完成", getReadableName());
+            b.bind(provider.getPort()).sync();
+            logger.info("{} 启动完成", getReadableServerName());
         } catch (Exception e) {
-            logger.error("启动 " + getReadableName() + " 失败", e);
+            logger.error("启动 " + getReadableServerName() + " 失败", e);
             destroy();
             return false;
         }
+
         return true;
     }
 
-
-    private String getReadableName() {
-        return readableName;
-    }
-
-
-    public void setMessageExecutor(GatewayMessageExecutor messageExecutor) {
-        this.messageExecutor = messageExecutor;
-    }
-
-    public void setProperties(ServerProperties.Gateway properties) {
-        this.properties = properties;
-    }
 
     public void destroy() {
         if (bossGroup != null) {
@@ -105,9 +98,21 @@ public class GatewayAndConsumerServer {
         if (workerGroup != null) {
             workerGroup.shutdownGracefully();
         }
-        logger.debug("关闭{}并释放资源 ", readableName);
+        logger.info("关闭{}并释放资源 ", getReadableServerName());
 
     }
 
+    public String getReadableServerName() {
+        return readableServerName;
+    }
 
+
+    public void setMessageExecutor(GatewayMessageExecutor messageExecutor) {
+        this.messageExecutor = messageExecutor;
+    }
+
+
+    public void setProperties(ServerProperties.GatewayProperties properties) {
+        this.properties = properties;
+    }
 }

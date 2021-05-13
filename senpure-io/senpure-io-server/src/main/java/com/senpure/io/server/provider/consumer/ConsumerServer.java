@@ -1,4 +1,4 @@
-package com.senpure.io.server.direct;
+package com.senpure.io.server.provider.consumer;
 
 import com.senpure.base.util.Assert;
 import com.senpure.io.server.MessageDecoderContext;
@@ -24,14 +24,14 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 
-public class DirectServer {
+public class ConsumerServer {
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
 
 
-    private ServerProperties.Provider properties;
+    private ServerProperties.ProviderProperties properties;
 
 
     private String serverName = "ProviderServer";
@@ -42,17 +42,19 @@ public class DirectServer {
 
     private MessageDecoderContext decoderContext;
 
-    private ClientManager clientManager;
+    private ConsumerManager consumerManager;
 
     public boolean start() {
         Assert.notNull(messageExecutor);
-        Assert.notNull(clientManager);
+        Assert.notNull(consumerManager);
         Assert.notNull(properties);
+        Assert.notNull(properties.getConsumer());
         Assert.notNull(decoderContext);
-        logger.debug("启动 {} ，监听端口号 {}", properties.getReadableName(), properties.getPort());
-        readableServerName = properties.getReadableName() + "[SC][" + properties.getPort() + "]";
+        ServerProperties.ProviderProperties.ConsumerProperties consumer = properties.getConsumer();
+        logger.debug("启动 {} ，监听端口号 {}", properties.getReadableName(), consumer.getPort());
+        readableServerName = properties.getReadableName() + "[SC][" + consumer.getPort() + "]";
         SslContext sslCtx = null;
-        if (properties.isSsl()) {
+        if (consumer.isSsl()) {
             try {
                 SelfSignedCertificate ssc = new SelfSignedCertificate();
                 sslCtx = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
@@ -62,8 +64,8 @@ public class DirectServer {
         }
         try {
             // Configure the server.
-            bossGroup = new NioEventLoopGroup(properties.getIoBossThreadPoolSize());
-            workerGroup = new NioEventLoopGroup(properties.getIoWorkThreadPoolSize());
+            bossGroup = new NioEventLoopGroup(consumer.getIoBossThreadPoolSize());
+            workerGroup = new NioEventLoopGroup(consumer.getIoWorkThreadPoolSize());
             ServerBootstrap b = new ServerBootstrap();
             SslContext finalSslCtx = sslCtx;
             b.group(bossGroup, workerGroup)
@@ -77,20 +79,20 @@ public class DirectServer {
                             if (finalSslCtx != null) {
                                 p.addLast(finalSslCtx.newHandler(ch.alloc()));
                             }
-                            p.addLast(new DirectMessageDecoder(decoderContext));
-                            p.addLast(new DirectMessageEncoder());
+                            p.addLast(new ConsumerMessageDecoder(decoderContext));
+                            p.addLast(new ConsumerMessageEncoder());
                             if (addLoggingHandler) {
-                                p.addLast(new ProviderLoggingHandler(LogLevel.DEBUG, properties.isInFormat(), properties.isOutFormat()));
+                                p.addLast(new ProviderLoggingHandler(LogLevel.DEBUG, consumer.isInFormat(), consumer.isOutFormat()));
                             }
-                            if (properties.isEnableHeartCheck()) {
-                                p.addLast(new IdleStateHandler(properties.getReaderIdleTime(), 0L, 0L, TimeUnit.MILLISECONDS));
+                            if (consumer.isEnableHeartCheck()) {
+                                p.addLast(new IdleStateHandler(consumer.getReaderIdleTime(), 0L, 0L, TimeUnit.MILLISECONDS));
                             }
-                            p.addLast(new DirectServerHandler(messageExecutor, clientManager));
+                            p.addLast(new ConsumerServerHandler(messageExecutor, consumerManager));
 
                         }
                     });
             // Start the server.
-            b.bind(properties.getPort()).sync();
+            b.bind(consumer.getPort()).sync();
             logger.info("{} 启动完成", getReadableServerName());
         } catch (Exception e) {
             logger.error("启动 " + getReadableServerName() + " 失败", e);
@@ -116,7 +118,7 @@ public class DirectServer {
         return readableServerName;
     }
 
-    public void setProperties(ServerProperties.Provider properties) {
+    public void setProperties(ServerProperties.ProviderProperties properties) {
         this.properties = properties;
     }
 
@@ -144,7 +146,7 @@ public class DirectServer {
         this.decoderContext = decoderContext;
     }
 
-    public void setClientManager(ClientManager clientManager) {
-        this.clientManager = clientManager;
+    public void setClientManager(ConsumerManager consumerManager) {
+        this.consumerManager = consumerManager;
     }
 }

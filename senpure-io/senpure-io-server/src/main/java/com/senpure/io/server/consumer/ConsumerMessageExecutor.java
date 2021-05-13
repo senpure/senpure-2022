@@ -11,6 +11,7 @@ import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -26,15 +27,17 @@ public class ConsumerMessageExecutor {
 
     private final Logger logger = LoggerFactory.getLogger(ConsumerMessageExecutor.class);
     private TaskLoopGroup service;
-    private int serviceRefCount = 0;
     private final Set<Integer> errorMessageIds = new HashSet<>();
-
 
     private final ConsumerMessageHandlerContext handlerContext;
 
-    public ConsumerMessageExecutor(ServerProperties.Consumer properties, ConsumerMessageHandlerContext handlerContext) {
+    public ConsumerMessageExecutor(ServerProperties.ConsumerProperties properties, ConsumerMessageHandlerContext handlerContext) {
         errorMessageIds.add(SCFrameworkErrorMessage.MESSAGE_ID);
-        errorMessageIds.add(properties.getScErrorMessageId());
+
+        String[] ids = StringUtils.commaDelimitedListToStringArray(properties.getScErrorMessageId());
+        for (String id : ids) {
+            errorMessageIds.add(Integer.valueOf(id));
+        }
         this.handlerContext = handlerContext;
     }
 
@@ -54,8 +57,8 @@ public class ConsumerMessageExecutor {
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void execute(Channel channel, ConsumerMessage frame) {
         service.execute(() -> {
-            int requestId = frame.getRequestId();
-            Message message = frame.getMessage();
+            int requestId = frame.requestId();
+            Message message = frame.message();
             if (requestId == 0) {
 
                 ConsumerMessageHandler handler = handlerContext.handler(message.messageId());

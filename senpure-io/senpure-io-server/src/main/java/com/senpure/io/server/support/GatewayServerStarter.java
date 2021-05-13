@@ -1,8 +1,8 @@
 package com.senpure.io.server.support;
 
 import com.senpure.io.server.ServerProperties;
-import com.senpure.io.server.gateway.GatewayAndConsumerServer;
-import com.senpure.io.server.gateway.GatewayAndProviderServer;
+import com.senpure.io.server.gateway.consumer.ConsumerServer;
+import com.senpure.io.server.gateway.provider.ProviderServer;
 import com.senpure.io.server.gateway.GatewayMessageExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,8 +21,8 @@ public class GatewayServerStarter{
 
     private ServerProperties properties;
     private GatewayMessageExecutor messageExecutor;
-    private GatewayAndConsumerServer gatewayAndConsumerServer;
-    private GatewayAndProviderServer gatewayAndProviderServer;
+    private ConsumerServer consumerServer;
+    private ProviderServer providerServer;
 
 
     public void start(GatewayMessageExecutor  messageExecutor) {
@@ -36,27 +36,27 @@ public class GatewayServerStarter{
 
 
     private void servers() {
-        GatewayAndConsumerServer gatewayAndConsumerServer = new GatewayAndConsumerServer();
-        gatewayAndConsumerServer.setMessageExecutor(messageExecutor);
-        gatewayAndConsumerServer.setProperties(properties.getGateway());
-        if (gatewayAndConsumerServer.start()) {
-            this.gatewayAndConsumerServer = gatewayAndConsumerServer;
+        ConsumerServer consumerServer = new ConsumerServer();
+        consumerServer.setMessageExecutor(messageExecutor);
+        consumerServer.setProperties(properties.getGateway());
+        if (consumerServer.start()) {
+            this.consumerServer = consumerServer;
         }
-        GatewayAndProviderServer gatewayAndProviderServer = new GatewayAndProviderServer();
-        gatewayAndProviderServer.setMessageExecutor(messageExecutor);
-        gatewayAndProviderServer.setProperties(properties.getGateway());
-        if (gatewayAndProviderServer.start()) {
-            this.gatewayAndProviderServer = gatewayAndProviderServer;
+        ProviderServer providerServer = new ProviderServer();
+        providerServer.setMessageExecutor(messageExecutor);
+        providerServer.setProperties(properties.getGateway());
+        if (providerServer.start()) {
+            this.providerServer = providerServer;
         }
     }
 
     @PreDestroy
     public void destroy() {
-        if (gatewayAndConsumerServer != null) {
-            gatewayAndConsumerServer.destroy();
+        if (consumerServer != null) {
+            consumerServer.destroy();
         }
-        if (gatewayAndProviderServer != null) {
-            gatewayAndProviderServer.destroy();
+        if (providerServer != null) {
+            providerServer.destroy();
         }
         if (messageExecutor != null) {
             messageExecutor.shutdownService();

@@ -1,8 +1,11 @@
-package com.senpure.io.server.provider;
+package com.senpure.io.server.provider.gateway;
 
 
 import com.senpure.io.server.ChannelAttributeUtil;
 import com.senpure.io.server.protocol.message.SCHeartMessage;
+import com.senpure.io.server.provider.ProviderMessageExecutor;
+import com.senpure.io.server.provider.ProviderReceivedMessage;
+import com.senpure.io.server.provider.ProviderSendMessage;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -13,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 
 
-public class ProviderServerHandler extends SimpleChannelInboundHandler<ProviderReceivedMessage> {
+public class GatewayServerHandler extends SimpleChannelInboundHandler<ProviderReceivedMessage> {
 
 
     private final ProviderMessageExecutor messageExecutor;
@@ -22,7 +25,7 @@ public class ProviderServerHandler extends SimpleChannelInboundHandler<ProviderR
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public ProviderServerHandler(ProviderMessageExecutor messageExecutor, GatewayManager gatewayManager) {
+    public GatewayServerHandler(ProviderMessageExecutor messageExecutor, GatewayManager gatewayManager) {
         this.messageExecutor = messageExecutor;
         this.gatewayManager = gatewayManager;
     }

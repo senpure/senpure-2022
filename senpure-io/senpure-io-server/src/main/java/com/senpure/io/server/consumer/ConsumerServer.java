@@ -32,7 +32,7 @@ public class ConsumerServer {
     private static final Object groupLock = new Object();
 
     private static int serverRefCont = 0;
-    private ServerProperties.Consumer properties;
+    private ServerProperties.ConsumerProperties properties;
 
     private ChannelFuture channelFuture;
     private String serverName = "consumerServer";
@@ -133,7 +133,7 @@ public class ConsumerServer {
     }
 
 
-    public void setProperties(ServerProperties.Consumer properties) {
+    public void setProperties(ServerProperties.ConsumerProperties properties) {
         this.properties = properties;
     }
 

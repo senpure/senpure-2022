@@ -3,6 +3,8 @@ package com.senpure.io.server.provider;
 import com.senpure.io.protocol.Message;
 import com.senpure.io.server.AbstractMessageFrame;
 
+import java.util.Arrays;
+
 
 public class ProviderSendMessage extends AbstractMessageFrame {
 
@@ -14,7 +16,6 @@ public class ProviderSendMessage extends AbstractMessageFrame {
     public ProviderSendMessage(Message message) {
         super(message);
     }
-
 
 
     public Long[] getUserIds() {
@@ -33,5 +34,13 @@ public class ProviderSendMessage extends AbstractMessageFrame {
         this.token = token;
     }
 
-
+    @Override
+    public String toString() {
+        return "ProviderSendMessage{" +
+                "requestId=" + requestId() +
+                ", userIds=" + Arrays.toString(userIds) +
+                ", token=" + token +
+                ", message=" + message().getClass().getSimpleName() +
+                '}';
+    }
 }

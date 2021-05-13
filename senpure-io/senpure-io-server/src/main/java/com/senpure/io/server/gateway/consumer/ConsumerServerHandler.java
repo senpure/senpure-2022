@@ -1,7 +1,9 @@
-package com.senpure.io.server.gateway;
+package com.senpure.io.server.gateway.consumer;
 
 
 import com.senpure.io.server.ChannelAttributeUtil;
+import com.senpure.io.server.gateway.GatewayMessageExecutor;
+import com.senpure.io.server.gateway.GatewayReceiveConsumerMessage;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -10,14 +12,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class GatewayAndConsumerServerHandler extends SimpleChannelInboundHandler<GatewayReceiveConsumerMessage> {
+public class ConsumerServerHandler extends SimpleChannelInboundHandler<GatewayReceiveConsumerMessage> {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final GatewayMessageExecutor messageExecutor;
 
 
-    public GatewayAndConsumerServerHandler(GatewayMessageExecutor messageExecuter) {
+    public ConsumerServerHandler(GatewayMessageExecutor messageExecuter) {
         this.messageExecutor = messageExecuter;
     }
 
@@ -50,7 +52,7 @@ public class GatewayAndConsumerServerHandler extends SimpleChannelInboundHandler
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent) {
             Channel channel = ctx.channel();
-            logger.info("客户端{} :{}  :{} 心跳失败", channel, ChannelAttributeUtil.getToken(channel), ChannelAttributeUtil.getUserId(channel));
+            logger.info("客户端{} token:{}  userId:{} 心跳失败", channel, ChannelAttributeUtil.getToken(channel), ChannelAttributeUtil.getUserId(channel));
             ctx.close();
             return;
         }

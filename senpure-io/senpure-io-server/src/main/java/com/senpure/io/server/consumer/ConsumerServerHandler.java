@@ -51,9 +51,8 @@ public class ConsumerServerHandler extends SimpleChannelInboundHandler<ConsumerM
             if (channel.isWritable()) {
                 logger.info("维持服务器心跳{} : {}", ChannelAttributeUtil.getRemoteServerKey(channel), channel);
                 CSHeartMessage heartMessage = new CSHeartMessage();
-                ConsumerMessage frame = new ConsumerMessage();
+                ConsumerMessage frame = new ConsumerMessage(heartMessage);
                 frame.setRequestId(0);
-                frame.setMessage(heartMessage);
                 channel.writeAndFlush(frame);
             } else {
                 logger.warn("服务器心跳失败并且channel不可用{}:{}", ChannelAttributeUtil.getRemoteServerKey(channel), channel);

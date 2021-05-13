@@ -1,7 +1,8 @@
-package com.senpure.io.server.gateway;
+package com.senpure.io.server.gateway.provider;
 
 import com.senpure.base.util.Assert;
 import com.senpure.io.protocol.CompressBean;
+import com.senpure.io.server.gateway.GatewayReceiveProviderMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
@@ -13,7 +14,7 @@ import java.util.List;
 /**
  * 将服务器转发到网关的消息，解析出来
  */
-public class GatewayAndProviderMessageDecoder extends ByteToMessageDecoder {
+public class ProviderMessageDecoder extends ByteToMessageDecoder {
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override

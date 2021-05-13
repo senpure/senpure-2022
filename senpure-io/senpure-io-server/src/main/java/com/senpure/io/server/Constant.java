@@ -9,7 +9,7 @@ public class Constant {
     /**
      * 没有找到服务器
      */
-    public final static String ERROR_NOT_FOUND_SERVER = "NOT_FOUND_SERVER";
+    public final static String ERROR_NOT_FOUND_PROVIDER = "NOT_FOUND_PROVIDER";
     /**
      * 无法处理ASK请求
      */
@@ -22,12 +22,17 @@ public class Constant {
     /**
      * 服务器错误
      */
-    public final static String ERROR_SERVER_ERROR = "SERVER_ERROR ";
+    public final static String ERROR_PROVIDER_ERROR = "PROVIDER_ERROR";
+
+    /**
+     * 服务器错误
+     */
+    public final static String ERROR_GATEWAY_ERROR = "GATEWAY_ERROR";
 
     /**
      * 客户端错误
      */
-    public final static String ERROR_CLIENT_ERROR = "CLIENT_ERROR ";
+    public final static String ERROR_CONSUMER_ERROR = "CONSUMER_ERROR";
 
 
     /**
@@ -40,7 +45,7 @@ public class Constant {
     public final static String ERROR_INTERRUPTED = "INTERRUPTED";
 
     /**
-     * 中断错误
+     * channel 不可用
      */
     public final static String ERROR_CHANNEL_NOT_AVAILABLE = "CHANNEL_NOT_AVAILABLE";
 
@@ -51,6 +56,6 @@ public class Constant {
     public static final String BREAK_TYPE_USER_LEAVE = "USER_LEAVE";
 
 
-    public static final String GATEWAY_METADATA_SC_PORT = "scPort";
-    public static final String GATEWAY_METADATA_CS_PORT = "csPort";
+    public static final String GATEWAY_METADATA_PROVIDER_PORT = "provider.port";
+    public static final String GATEWAY_METADATA_CONSUMER_PORT = "consumer.port";
 }

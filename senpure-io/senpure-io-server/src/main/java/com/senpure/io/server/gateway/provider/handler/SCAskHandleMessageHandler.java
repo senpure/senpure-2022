@@ -11,9 +11,9 @@ import io.netty.channel.Channel;
 
 public class SCAskHandleMessageHandler extends AbstractProviderMessageHandler {
     @Override
-    public void execute(Channel channel, GatewayReceiveProviderMessage gatewayReceiveProviderMessage) {
+    public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
         SCAskHandleMessage message = new SCAskHandleMessage();
-        messageExecutor.readMessage(message, gatewayReceiveProviderMessage);
+        messageExecutor.readMessage(message, frame);
         WaitAskTask waitAskTask = messageExecutor.waitAskMap.get(message.getAskToken());
         if (waitAskTask != null) {
             if (message.isHandle()) {

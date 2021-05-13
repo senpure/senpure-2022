@@ -9,9 +9,9 @@ import java.util.Map;
 
 public class SCMessageForwardMessageHandler extends AbstractProviderMessageHandler {
     @Override
-    public void execute(Channel channel, GatewayReceiveProviderMessage gatewayReceiveProviderMessage) {
+    public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
         SCMessageForwardMessage message = new SCMessageForwardMessage();
-        messageExecutor.readMessage(message, gatewayReceiveProviderMessage);
+        messageExecutor.readMessage(message, frame);
         if (message.getServerName() != null) {
             ProviderManager providerManager = messageExecutor.providerManagerMap.get(message.getServerName());
             if (providerManager != null) {

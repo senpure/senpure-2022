@@ -15,19 +15,15 @@ import java.util.concurrent.locks.*;
 
 public abstract class AbstractRemoteServer extends AbstractMultipleServer implements RemoteServer {
 
-
+    protected TaskLoopGroup service;
     protected int defaultWaitSendTimeout = 10000;
-
     protected String remoteServerKey;
-
     protected final List<WaitSendMessage> waitSendMessages = new ArrayList<>();
-
-    protected FutureService futureService;
 
     protected ChannelService channelService;
     private boolean connecting = false;
     private final ReadWriteLock connectLock = new ReentrantReadWriteLock();
-    private TaskLoopGroup service;
+
 
     public AbstractRemoteServer() {
     }
@@ -39,8 +35,8 @@ public abstract class AbstractRemoteServer extends AbstractMultipleServer implem
 
     @Override
     public void verifyWorkable() {
-        Assert.notNull(remoteServerKey);
         Assert.notNull(futureService);
+        Assert.notNull(remoteServerKey);
         Assert.notNull(channelService);
     }
 
@@ -73,7 +69,7 @@ public abstract class AbstractRemoteServer extends AbstractMultipleServer implem
                     if (now - message.firstSendTime <= message.waitSendTimeout) {
                         list.add(message);
                     } else {
-                        logger.warn("超过重试时间限制,不再重新发送 {}", message);
+                        logger.warn("超过重试时间限制,不再重新发送 {} {}", message.waitSendTimeout, message.frame);
                     }
                 }
                 waitSendMessages.clear();
@@ -173,9 +169,6 @@ public abstract class AbstractRemoteServer extends AbstractMultipleServer implem
     }
 
 
-
-
-
     @Override
     public void sendMessage(MessageFrame frame) {
         Channel channel = channelService.nextChannel();
@@ -189,7 +182,6 @@ public abstract class AbstractRemoteServer extends AbstractMultipleServer implem
             addWaitMessage(waitSendMessage);
         }
     }
-
 
 
     @Override
@@ -216,7 +208,6 @@ public abstract class AbstractRemoteServer extends AbstractMultipleServer implem
             addWaitMessage(waitSendMessage);
         }
     }
-
 
 
     @Nonnull
@@ -272,8 +263,6 @@ public abstract class AbstractRemoteServer extends AbstractMultipleServer implem
     }
 
 
-
-
     public int getDefaultWaitSendTimeout() {
         return defaultWaitSendTimeout;
     }
@@ -299,9 +288,6 @@ public abstract class AbstractRemoteServer extends AbstractMultipleServer implem
         return futureService;
     }
 
-    public void setFutureService(FutureService futureService) {
-        this.futureService = futureService;
-    }
 
     public ChannelService getChannelService() {
         return channelService;

@@ -64,7 +64,7 @@ public class ProviderManager3 {
             if (provider == null) {
                 logger.warn("{}没有服务实例可以使用", serverName);
                 SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
-                errorMessage.setCode(Constant.ERROR_NOT_FOUND_SERVER);
+                errorMessage.setCode(Constant.ERROR_NOT_FOUND_PROVIDER);
                 errorMessage.getArgs().add(String.valueOf(gatewayReceiveConsumerMessage.messageId()));
                 errorMessage.setMessage("没有服务器处理" + MessageIdReader.read(gatewayReceiveConsumerMessage.messageId()));
                 messageExecutor.sendMessage2Consumer(gatewayReceiveConsumerMessage.requestId(), gatewayReceiveConsumerMessage.token(), errorMessage);

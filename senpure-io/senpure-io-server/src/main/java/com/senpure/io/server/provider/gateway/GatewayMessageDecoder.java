@@ -1,10 +1,11 @@
-package com.senpure.io.server.provider;
+package com.senpure.io.server.provider.gateway;
 
 import com.senpure.base.util.Assert;
 import com.senpure.io.protocol.CompressBean;
 import com.senpure.io.protocol.Message;
 import com.senpure.io.server.MessageDecoder;
 import com.senpure.io.server.MessageDecoderContext;
+import com.senpure.io.server.provider.ProviderReceivedMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
@@ -13,12 +14,12 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public class ProviderMessageDecoder extends ByteToMessageDecoder {
+public class GatewayMessageDecoder extends ByteToMessageDecoder {
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final MessageDecoderContext decoderContext;
 
-    public ProviderMessageDecoder(MessageDecoderContext decoderContext) {
+    public GatewayMessageDecoder(MessageDecoderContext decoderContext) {
         this.decoderContext = decoderContext;
     }
 

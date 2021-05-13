@@ -20,6 +20,11 @@ public class GatewayReceiveConsumerMessage implements GatewaySendProviderMessage
         this.data = data;
     }
 
+
+    public byte[] getData() {
+        return data;
+    }
+
     @Override
     public int messageType() {
         return messageType;
@@ -60,6 +65,7 @@ public class GatewayReceiveConsumerMessage implements GatewaySendProviderMessage
         Assert.error("not allow");
     }
 
+
     @Override
     public String toString(String indent) {
         return toString();
@@ -92,11 +98,11 @@ public class GatewayReceiveConsumerMessage implements GatewaySendProviderMessage
 
     @Override
     public String toString() {
-        return "CG{" +
+        return "GatewayReceiveConsumerMessage{" +
                 "messageId=" + MessageIdReader.read(messageId) +
+                ", requestId=" + requestId +
                 ",token=" + token +
                 ", userId=" + userId +
-                ", requestId=" + requestId +
                 ", dataLen=" + (data == null ? 0 : data.length) +
                 '}';
     }

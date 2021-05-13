@@ -10,9 +10,9 @@ import io.netty.channel.Channel;
 public class SCStatisticMessageHandler  extends AbstractProviderMessageHandler{
 
     @Override
-    public void execute(Channel channel, GatewayReceiveProviderMessage gatewayReceiveProviderMessage) {
+    public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
         SCStatisticMessage message = new SCStatisticMessage();
-        messageExecutor.readMessage(message, gatewayReceiveProviderMessage);
+        messageExecutor.readMessage(message, frame);
         String producerKey = ChannelAttributeUtil.getRemoteServerKey(channel);
         String producerName = ChannelAttributeUtil.getRemoteServerName(channel);
         ProviderManager providerManager =   messageExecutor.providerManagerMap.get(producerName);

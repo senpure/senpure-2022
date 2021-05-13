@@ -4,10 +4,10 @@ import com.senpure.io.protocol.Message;
 
 public class AbstractMessageFrame implements MessageFrame {
 
-    private int requestId;
-    private final int messageId;
-    private final int messageType;
-    private final Message message;
+    protected int requestId;
+    protected  final int messageId;
+    protected  final int messageType;
+    protected  final Message message;
 
     public AbstractMessageFrame(Message message) {
 

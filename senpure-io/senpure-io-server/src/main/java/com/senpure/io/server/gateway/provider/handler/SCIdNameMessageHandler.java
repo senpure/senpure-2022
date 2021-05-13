@@ -7,9 +7,9 @@ import io.netty.channel.Channel;
 
 public class SCIdNameMessageHandler extends AbstractProviderMessageHandler {
     @Override
-    public void execute(Channel channel, GatewayReceiveProviderMessage gatewayReceiveProviderMessage) {
+    public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
         SCIdNameMessage message = new SCIdNameMessage();
-        messageExecutor.readMessage(message, gatewayReceiveProviderMessage);
+        messageExecutor.readMessage(message, frame);
         MessageIdReader.relation(message.getIdNames());
     }
 

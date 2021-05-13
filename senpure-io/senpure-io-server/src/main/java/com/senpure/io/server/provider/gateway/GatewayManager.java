@@ -1,10 +1,12 @@
-package com.senpure.io.server.provider;
+package com.senpure.io.server.provider.gateway;
 
 import com.senpure.io.protocol.Message;
 import com.senpure.io.server.MessageFrame;
 import com.senpure.io.server.protocol.message.SCBreakUserGatewayMessage;
 import com.senpure.io.server.protocol.message.SCKickOffMessage;
 import com.senpure.io.server.protocol.message.SCMessageForwardMessage;
+import com.senpure.io.server.provider.MessageSender;
+import com.senpure.io.server.provider.ProviderSendMessage;
 import com.senpure.io.server.remoting.AbstractMultipleServerManger;
 import com.senpure.io.server.remoting.ResponseCallback;
 import io.netty.buffer.ByteBuf;

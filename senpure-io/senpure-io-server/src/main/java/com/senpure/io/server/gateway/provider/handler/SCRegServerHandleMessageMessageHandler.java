@@ -18,13 +18,13 @@ import java.util.concurrent.ConcurrentMap;
 public class SCRegServerHandleMessageMessageHandler extends AbstractProviderMessageHandler {
 
     @Override
-    public void execute(Channel channel, GatewayReceiveProviderMessage gatewayReceiveProviderMessage) {
+    public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
         //todo 没有加锁 线程安全问题
         //todo 一个服务只允许一个ask id
         StringBuilder sb = new StringBuilder();
         try {
             SCRegServerHandleMessageMessage message = new SCRegServerHandleMessageMessage();
-            messageExecutor.readMessage(message, gatewayReceiveProviderMessage);
+            messageExecutor.readMessage(message, frame);
             List<HandleMessage> handleMessages = message.getMessages();
             String serverKey = message.getServerKey();
             ChannelAttributeUtil.setRemoteServerName(channel, message.getServerName());

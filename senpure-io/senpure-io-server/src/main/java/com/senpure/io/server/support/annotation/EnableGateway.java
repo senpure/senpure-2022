@@ -22,7 +22,8 @@ import java.lang.annotation.Target;
 @Target(value = {java.lang.annotation.ElementType.TYPE})
 @Documented
 @EnableConfigurationProperties({ServerProperties.class})
-@Import({GatewayAutoConfiguration.class,
+@Import({
+        GatewayAutoConfiguration.class,
         GatewayConsumerHandlerAutoConfiguration.class,
         GatewayProviderHandlerAutoConfiguration.class})
 public @interface EnableGateway {

@@ -1,7 +1,8 @@
-package com.senpure.io.server.gateway;
+package com.senpure.io.server.gateway.provider;
 
 import com.senpure.io.protocol.CompressBean;
 import com.senpure.io.protocol.Message;
+import com.senpure.io.server.gateway.GatewaySendProviderMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
@@ -11,7 +12,7 @@ import org.slf4j.LoggerFactory;
 /**
  * 将客户端发到网关的消息，重新编码，发送给具体的服务器
  */
-public class GatewayAndProviderMessageEncoder extends MessageToByteEncoder<GatewaySendProviderMessage> {
+public class ProviderMessageEncoder extends MessageToByteEncoder<GatewaySendProviderMessage> {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
 

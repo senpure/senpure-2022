@@ -46,7 +46,7 @@ public class ConsumerServerStarter implements ApplicationRunner {
     @Resource
     private TaskLoopGroup taskLoopGroup;
 
-    private final ServerProperties.Gateway gateway = new ServerProperties.Gateway();
+    private final ServerProperties.GatewayProperties gateway = new ServerProperties.GatewayProperties();
     private final List<ConsumerServer> servers = new ArrayList<>();
     private long lastFailTime = 0;
     private long lastLogTime = 0;
@@ -94,7 +94,7 @@ public class ConsumerServerStarter implements ApplicationRunner {
                     if (remoteServerManager.getDefaultChannelManager() == null) {
                         int port;
                         String host;
-                        if (properties.getConsumer().isDirect()) {
+                        if (properties.getConsumer().getModel()== ServerProperties.ConsumerProperties.MODEL.DIRECT) {
                             host = properties.getConsumer().getRemoteHost();
                             port = properties.getConsumer().getRemotePort();
                         } else {
@@ -114,10 +114,10 @@ public class ConsumerServerStarter implements ApplicationRunner {
                                 instance = serviceInstances.get(random.nextInt(serviceInstances.size()));
                             }
 
-                            String portStr = instance.getMetadata().get("csPort");
+                            String portStr = instance.getMetadata().get("consumer.port");
 
                             if (portStr == null) {
-                                port = gateway.getCsPort();
+                                port = gateway.getConsumer().getPort();
                             } else {
                                 port = Integer.parseInt(portStr);
                             }
@@ -129,7 +129,7 @@ public class ConsumerServerStarter implements ApplicationRunner {
                                 getRemoteServerChannelManager(serverKey);
                         remoteServerChannelManager.setHost(host);
                         remoteServerChannelManager.setPort(port);
-                        remoteServerChannelManager.setDefaultMessageRetryTimeLimit(properties.getConsumer().getMessageRetryTimeLimit());
+                        remoteServerChannelManager.setDefaultMessageRetryTimeLimit(properties.getConsumer().getMessageWaitSendTimeout());
                         remoteServerManager.setDefaultChannelManager(remoteServerChannelManager);
 
                     } else {

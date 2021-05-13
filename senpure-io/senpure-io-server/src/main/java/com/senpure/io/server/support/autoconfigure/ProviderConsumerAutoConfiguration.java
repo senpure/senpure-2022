@@ -5,10 +5,10 @@ import com.senpure.executor.DefaultTaskLoopGroup;
 import com.senpure.executor.TaskLoopGroup;
 import com.senpure.io.server.ServerProperties;
 import com.senpure.io.server.provider.MessageSender;
-import com.senpure.io.server.provider.ProviderMessageExecutor;
 import com.senpure.io.server.provider.ProviderMessageHandlerContext;
-import com.senpure.io.server.provider.gateway.GatewayManager;
-import com.senpure.io.server.support.ProviderGatewayServerStarter;
+import com.senpure.io.server.provider.consumer.ConsumerManager;
+import com.senpure.io.server.provider.ProviderMessageExecutor;
+import com.senpure.io.server.support.ProviderConsumerServerStarter;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,31 +19,31 @@ import org.springframework.context.annotation.Bean;
 
 import javax.annotation.PreDestroy;
 
-@ConditionalOnProperty(prefix = "server.io", value = "provider.model", havingValue = "GATEWAY", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "server.io", value = "provider.model", havingValue = "CONSUMER")
 @AutoConfigureAfter(ProviderAutoConfiguration.class)
-public class ProviderGatewayAutoConfiguration {
-
+public class ProviderConsumerAutoConfiguration {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final ServerProperties properties;
     private TaskLoopGroup taskLoopGroup;
 
-    public ProviderGatewayAutoConfiguration(ServerProperties properties) {
-        ServerProperties.ProviderProperties.GatewayProperties gateway = properties.getProvider().getGateway();
+    public ProviderConsumerAutoConfiguration(ServerProperties properties) {
+        ServerProperties.ProviderProperties.ConsumerProperties consumer = properties.getProvider().getConsumer();
         //io *2 logic *1 综合1.5
         double size = Runtime.getRuntime().availableProcessors() * 1.5;
         int ioSize = (int) (size * 0.6);
         ioSize = Math.max(ioSize, 1);
         int logicSize = (int) (size * 0.4);
         logicSize = Math.max(logicSize, 1);
-        if (gateway.getIoWorkThreadPoolSize() < 1) {
-            gateway.setIoWorkThreadPoolSize(ioSize);
+        if (consumer.getIoWorkThreadPoolSize() < 1) {
+            consumer.setIoWorkThreadPoolSize(ioSize);
         }
         if (properties.getProvider().getExecutorThreadPoolSize() < 1) {
             properties.getProvider().setExecutorThreadPoolSize(logicSize);
         }
         this.properties = properties;
     }
+
 
     @Bean
     @ConditionalOnMissingBean(TaskLoopGroup.class)
@@ -58,20 +58,19 @@ public class ProviderGatewayAutoConfiguration {
 
 
     @Bean
-    public GatewayManager gatewayManager() {
-        logger.info("bean gatewayManager");
-        return new GatewayManager();
-    }
-
-    @Bean
     public ProviderMessageExecutor providerMessageExecutor(TaskLoopGroup service, MessageSender messageSender, ProviderMessageHandlerContext handlerContext) {
 
         return new ProviderMessageExecutor(service, messageSender, handlerContext);
     }
 
     @Bean
-    public ProviderGatewayServerStarter providerGatewayServerStarter(ServerProperties properties) {
-        return new ProviderGatewayServerStarter(properties);
+    public ConsumerManager consumerManager(ProviderMessageExecutor messageExecutor) {
+        return new ConsumerManager(messageExecutor);
+    }
+
+    @Bean
+    public ProviderConsumerServerStarter providerConsumerServerStarter() {
+        return new ProviderConsumerServerStarter();
     }
 
     @PreDestroy

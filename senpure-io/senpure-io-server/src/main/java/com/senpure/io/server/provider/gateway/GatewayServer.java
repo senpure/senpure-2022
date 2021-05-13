@@ -1,9 +1,11 @@
-package com.senpure.io.server.provider;
+package com.senpure.io.server.provider.gateway;
 
 import com.senpure.base.util.Assert;
 import com.senpure.io.server.ChannelAttributeUtil;
 import com.senpure.io.server.MessageDecoderContext;
 import com.senpure.io.server.ServerProperties;
+import com.senpure.io.server.provider.ProviderLoggingHandler;
+import com.senpure.io.server.provider.ProviderMessageExecutor;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -20,8 +22,8 @@ import org.slf4j.LoggerFactory;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
-public class ProviderServer {
-    protected static Logger logger = LoggerFactory.getLogger(ProviderServer.class);
+public class GatewayServer {
+    protected static Logger logger = LoggerFactory.getLogger(GatewayServer.class);
 
 
 
@@ -31,7 +33,7 @@ public class ProviderServer {
 
     private static int serverRefCont = 0;
     private static int firstPort;
-    private ServerProperties.Provider properties;
+    private ServerProperties.ProviderProperties properties;
 
     private ChannelFuture channelFuture;
     private String serverName = "ProviderServer";
@@ -48,17 +50,18 @@ public class ProviderServer {
 
         Assert.notNull(gatewayManager);
         Assert.notNull(properties);
+        Assert.notNull(properties.getGateway());
         Assert.notNull(messageExecutor);
         Assert.notNull(decoderContext);
         // Configure SSL.
-
+        ServerProperties.ProviderProperties.GatewayProperties gateway = properties.getGateway();
         if (group == null || group.isShuttingDown() || group.isShutdown()) {
             synchronized (groupLock) {
                 if (group == null || group.isShuttingDown() || group.isShutdown()) {
-                    group = new NioEventLoopGroup(properties.getIoWorkThreadPoolSize());
+                    group = new NioEventLoopGroup(gateway.getIoWorkThreadPoolSize());
                     SslContext sslCtx = null;
                     try {
-                        if (properties.isSsl()) {
+                        if (gateway.isSsl()) {
                             SelfSignedCertificate ssc = new SelfSignedCertificate();
                             sslCtx = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
                         }
@@ -77,15 +80,15 @@ public class ProviderServer {
                                     if (finalSslCtx != null) {
                                         p.addLast(finalSslCtx.newHandler(ch.alloc(), remoteHost, remotePort));
                                     }
-                                    p.addLast(new ProviderMessageDecoder(decoderContext));
-                                    p.addLast(new ProviderMessageEncoder());
+                                    p.addLast(new GatewayMessageDecoder(decoderContext));
+                                    p.addLast(new GatewayMessageEncoder());
                                     if (addLoggingHandler) {
-                                        p.addLast(new ProviderLoggingHandler(LogLevel.DEBUG, properties.isInFormat(), properties.isOutFormat()));
+                                        p.addLast(new ProviderLoggingHandler(LogLevel.DEBUG, gateway.isInFormat(), gateway.isOutFormat()));
                                     }
-                                    if (properties.isEnableHeartCheck()) {
-                                        p.addLast(new IdleStateHandler(0, properties.getWriterIdleTime(), 0, TimeUnit.MILLISECONDS));
+                                    if (gateway.isEnableHeartCheck()) {
+                                        p.addLast(new IdleStateHandler(0, gateway.getWriterIdleTime(), 0, TimeUnit.MILLISECONDS));
                                     }
-                                    p.addLast(new ProviderServerHandler(messageExecutor, gatewayManager));
+                                    p.addLast(new GatewayServerHandler(messageExecutor, gatewayManager));
                                 }
                             });
 
@@ -165,10 +168,9 @@ public class ProviderServer {
         this.addLoggingHandler = addLoggingHandler;
     }
 
-    public void setProperties(ServerProperties.Provider properties) {
+    public void setProperties(ServerProperties.ProviderProperties properties) {
         this.properties = properties;
     }
-
 
     public void setGatewayManager(GatewayManager gatewayManager) {
         this.gatewayManager = gatewayManager;
@@ -190,10 +192,11 @@ public class ProviderServer {
         if (channelFuture != null) {
             channelFuture.channel().close();
             synchronized (groupLock) {
+                logger.debug("{}关闭 channel{} 并释放资源 ", channel, getReadableServerName());
                 serverRefCont--;
             }
         }
-        logger.debug("关闭{}并释放资源 ", getReadableServerName());
+
         tryDestroyGroup(getReadableServerName());
     }
 

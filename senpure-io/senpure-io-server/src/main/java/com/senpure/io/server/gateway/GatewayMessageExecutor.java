@@ -30,7 +30,7 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
 
     private int csLoginMessageId = 0;
 
-    private ServerProperties.Gateway gateway;
+    private ServerProperties.GatewayProperties gatewayProperties;
     private int scLoginMessageId = 0;
 
     public final ConcurrentMap<Long, Channel> prepLoginChannels = new ConcurrentHashMap<>(2048);
@@ -47,8 +47,8 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
     public final ConcurrentHashMap<Long, WaitRelationTask> waitRelationMap = new ConcurrentHashMap<>(16);
     public final ConcurrentHashMap<Long, WaitAskTask> waitAskMap = new ConcurrentHashMap<>(16);
 
-    private final Map<Integer, ProviderMessageHandler> p2gHandlerMap = new HashMap<>();
-    private final Map<Integer, ConsumerMessageHandler> c2gHandlerMap = new HashMap<>();
+    private final Map<Integer, ProviderMessageHandler> provider2GatewayHandlerMap = new HashMap<>();
+    private final Map<Integer, ConsumerMessageHandler> consumer2GatewayHandlerMap = new HashMap<>();
     private boolean init = false;
 
     public GatewayMessageExecutor() {
@@ -68,21 +68,21 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
 
 
     public void registerProviderMessageHandler(ProviderMessageHandler handler) {
-        ProviderMessageHandler old = p2gHandlerMap.get(handler.messageId());
+        ProviderMessageHandler old = provider2GatewayHandlerMap.get(handler.messageId());
         if (old != null) {
             Assert.error(handler.messageId() + " -> " + MessageIdReader.read(handler.messageId()) + "  处理程序已经存在"
                     + " 存在 " + old.getClass().getName() + " 注册 " + handler.getClass().getName());
         }
-        p2gHandlerMap.put(handler.messageId(), handler);
+        provider2GatewayHandlerMap.put(handler.messageId(), handler);
     }
 
     public void registerConsumerMessageHandler(ConsumerMessageHandler handler) {
-        ConsumerMessageHandler old = c2gHandlerMap.get(handler.messageId());
+        ConsumerMessageHandler old = consumer2GatewayHandlerMap.get(handler.messageId());
         if (old != null) {
             Assert.error(handler.messageId() + " -> " + MessageIdReader.read(handler.messageId()) + "  处理程序已经存在"
                     + " 存在 " + old.getClass().getName() + " 注册 " + handler.getClass().getName());
         }
-        c2gHandlerMap.put(handler.messageId(), handler);
+        consumer2GatewayHandlerMap.put(handler.messageId(), handler);
     }
 
 
@@ -99,17 +99,10 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
 
     //将客户端消息转发给具体的服务器
     public void execute(final Channel channel, final GatewayReceiveConsumerMessage message) {
-//        long token = ChannelAttributeUtil.getToken(channel);
-//        message.setToken(token);
-//        Long userId = ChannelAttributeUtil.getUserId(channel);
-//        if (userId != null) {
-//            message.setUserId(userId);
-//        }
         long token = message.token();
         service.get(token).execute(() -> {
             try {
-                logger.debug("new gateway=============");
-                ConsumerMessageHandler handler = c2gHandlerMap.get(message.messageId());
+                ConsumerMessageHandler handler = consumer2GatewayHandlerMap.get(message.messageId());
                 if (handler != null) {
                     handler.execute(channel, message);
                     if (handler.stopProvider()) {
@@ -119,12 +112,12 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
                 //转发到具体的子服务器
                 HandleMessageManager handleMessageManager = handleMessageManagerMap.get(message.messageId());
                 if (handleMessageManager == null) {
-                    logger.warn("没有找到消息的接收服务器{}", message.messageId());
+                    logger.warn("没有找到消息的接收服务器 {}", MessageIdReader.read(message.messageId()));
                     SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
 
-                    errorMessage.setCode(Constant.ERROR_NOT_FOUND_SERVER);
+                    errorMessage.setCode(Constant.ERROR_NOT_FOUND_PROVIDER);
                     errorMessage.getArgs().add(String.valueOf(message.messageId()));
-                    errorMessage.setMessage("没有服务器处理" + MessageIdReader.read(message.messageId()));
+                    errorMessage.setMessage("没有服务器处理 " + MessageIdReader.read(message.messageId()));
                     sendMessage2Consumer(message.requestId(), message.token(), errorMessage);
                     return;
                 }
@@ -133,8 +126,7 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
             } catch (Exception e) {
                 logger.error("转发消息出错 " + message.messageId(), e);
                 SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
-
-                errorMessage.setCode(Constant.ERROR_SERVER_ERROR);
+                errorMessage.setCode(Constant.ERROR_GATEWAY_ERROR);
                 errorMessage.getArgs().add(String.valueOf(message.messageId()));
                 errorMessage.setMessage(MessageIdReader.read(message.messageId()) + "," + e.getMessage());
                 sendMessage2Consumer(message.requestId(), message.token(), errorMessage);
@@ -150,7 +142,6 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
             GatewayLocalSendConsumerMessage frame = new GatewayLocalSendConsumerMessage(message);
 
             frame.setRequestId(requestId);
-            frame.setToken(token);
 
             if (consumerChannel.isWritable()) {
                 consumerChannel.writeAndFlush(frame);
@@ -198,7 +189,7 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
             logger.warn("messageExecutor 已经初始化");
             return;
         }
-        Assert.notNull(gateway, "gateway 配置文件不能为空");
+        Assert.notNull(gatewayProperties, "gateway 配置文件不能为空");
         init = true;
         Assert.isTrue(csLoginMessageId > 0 && scLoginMessageId > 0, "登录消息未设置");
         startCheck();
@@ -210,7 +201,7 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
         long token = message.getToken();
         service.get(token).execute(() -> {
             try {
-                ProviderMessageHandler handler = p2gHandlerMap.get(message.getMessageId());
+                ProviderMessageHandler handler = provider2GatewayHandlerMap.get(message.getMessageId());
                 if (handler != null) {
                     handler.execute(channel, message);
                     if (handler.stopConsumer()) {
@@ -364,7 +355,6 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
     }
 
 
-
     public IDGenerator getIdGenerator() {
         return idGenerator;
     }
@@ -389,13 +379,11 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
         this.scLoginMessageId = scLoginMessageId;
     }
 
-    public ServerProperties.Gateway getGateway() {
-        return gateway;
+    public ServerProperties.GatewayProperties getGatewayProperties() {
+        return gatewayProperties;
     }
 
-    public void setGateway(ServerProperties.Gateway gateway) {
-        this.gateway = gateway;
+    public void setGatewayProperties(ServerProperties.GatewayProperties gatewayProperties) {
+        this.gatewayProperties = gatewayProperties;
     }
-
-
 }

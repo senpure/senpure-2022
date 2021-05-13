@@ -8,17 +8,17 @@ import io.netty.channel.Channel;
 
 public class SCBreakUserGatewayMessageHandler extends AbstractProviderMessageHandler {
     @Override
-    public void execute(Channel channel, GatewayReceiveProviderMessage gatewayReceiveProviderMessage) {
+    public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
 
         SCBreakUserGatewayMessage message = new SCBreakUserGatewayMessage();
-        messageExecutor.readMessage(message, gatewayReceiveProviderMessage);
-        long tempUserId = gatewayReceiveProviderMessage.getMessageId();
+        messageExecutor.readMessage(message, frame);
+        long tempUserId = frame.getMessageId();
         Channel userChannel = null;
         if (tempUserId > 0) {
             userChannel =  messageExecutor.userClientChannel.get(tempUserId);
         }
         if (userChannel == null) {
-            userChannel =  messageExecutor.tokenChannel.get(gatewayReceiveProviderMessage.getToken());
+            userChannel =  messageExecutor.tokenChannel.get(frame.getToken());
         }
         if (userChannel != null) {
             Long userId = ChannelAttributeUtil.getUserId(userChannel);

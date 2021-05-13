@@ -21,7 +21,9 @@ import java.lang.annotation.Target;
 @Target(value = {java.lang.annotation.ElementType.TYPE})
 @Documented
 @EnableConfigurationProperties({ServerProperties.class})
-@Import({ConsumerAutoConfiguration.class, ConsumerMessageHandlerAutoConfiguration.class})
+@Import({
+        ConsumerAutoConfiguration.class,
+        ConsumerMessageHandlerAutoConfiguration.class})
 //, ConsumerSelector.class
 public @interface EnableConsumer {
 //

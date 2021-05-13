@@ -8,7 +8,6 @@ import com.senpure.io.server.ServerProperties;
 import com.senpure.io.server.gateway.GatewayMessageExecutor;
 import com.senpure.io.server.support.GatewayServerStarter;
 import io.netty.util.concurrent.DefaultThreadFactory;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +21,8 @@ import org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfigurati
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.cloud.client.loadbalancer.RestTemplateCustomizer;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.env.Environment;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
@@ -40,16 +41,29 @@ import java.util.Map;
  * @author senpure
  * @time 2019-02-28 16:52:21
  */
-@ConditionalOnClass({CompositeDiscoveryClientAutoConfiguration.class, RestTemplateAutoConfiguration.class, LoadBalancerAutoConfiguration.class})
-@AutoConfigureAfter({CompositeDiscoveryClientAutoConfiguration.class, RestTemplateAutoConfiguration.class, LoadBalancerAutoConfiguration.class})
+@ConditionalOnClass({CompositeDiscoveryClientAutoConfiguration.class,
+        RestTemplateAutoConfiguration.class,
+        LoadBalancerAutoConfiguration.class
+})
+@AutoConfigureAfter({CompositeDiscoveryClientAutoConfiguration.class,
+        RestTemplateAutoConfiguration.class,
+        LoadBalancerAutoConfiguration.class
+}
+)
 public class GatewayAutoConfiguration {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     @Value("${server.port:0}")
     private int httpPort;
     private final RestTemplate restTemplate;
+    private final ServerProperties properties;
 
-    public GatewayAutoConfiguration(RestTemplateBuilder restTemplateBuilder, List<RestTemplateCustomizer> restTemplateCustomizers) {
+    public GatewayAutoConfiguration(Environment env, ServerProperties properties,
+                                    RestTemplateBuilder restTemplateBuilder,
+                                    List<RestTemplateCustomizer> restTemplateCustomizers) {
+
+        check(env, properties);
+        this.properties = properties;
         restTemplate = restTemplateBuilder.build();
 
         // logger.info("======restTemplateCustomizers{}",restTemplateCustomizers);
@@ -58,8 +72,51 @@ public class GatewayAutoConfiguration {
         }
     }
 
-    @Resource
-    private ServerProperties properties;
+
+    private void check(Environment env, ServerProperties properties) {
+        if (!StringUtils.hasText(properties.getName())) {
+            String name = env.getProperty("spring.application.name");
+            if (StringUtils.hasText(name)) {
+                logger.debug("使用 name {}", name);
+                properties.setName(name);
+            } else {
+                logger.warn("spring.application.name 值为空");
+            }
+        }
+        if (!StringUtils.hasText(properties.getName())) {
+            properties.setName("gateway");
+        }
+        ServerProperties.GatewayProperties gateway = properties.getGateway();
+        if (!StringUtils.hasText(gateway.getReadableName()) || gateway.getReadableName().equals(new ServerProperties.GatewayProperties().getReadableName())) {
+            gateway.setReadableName(properties.getName());
+        }
+//
+        //io *2 logic *1 综合1.5
+        double size = Runtime.getRuntime().availableProcessors() * 1.5;
+        int ioSize = (int) (size * 0.6);
+        ioSize = Math.max(ioSize, 1);
+        int logicSize = (int) (size * 0.4);
+        logicSize = Math.max(logicSize, 1);
+        if (gateway.getExecutorThreadPoolSize() < 1) {
+            gateway.setExecutorThreadPoolSize(logicSize);
+        }
+        ServerProperties.GatewayProperties.ConsumerProperties gatewayConsumer = gateway.getConsumer();
+        if (gatewayConsumer.getIoWorkThreadPoolSize() < 1) {
+            int workSize = ioSize << 1;
+            workSize = Math.max(workSize, 1);
+            gatewayConsumer.setIoWorkThreadPoolSize(workSize);
+
+        }
+        ServerProperties.GatewayProperties.ProviderProperties gatewayProvider = gateway.getProvider();
+        if (gatewayProvider.getIoWorkThreadPoolSize() < 1) {
+            int workSize = ioSize << 1;
+            workSize = Math.max(workSize, 1);
+            gatewayProvider.setIoWorkThreadPoolSize(workSize);
+        }
+
+        logger.info(gateway.toString());
+    }
+
     // @Autowired
     // private DiscoveryClient discoveryClient;
 
@@ -71,48 +128,17 @@ public class GatewayAutoConfiguration {
 
     @Bean
     public GatewayMessageExecutor messageExecutor() {
-        check();
-        ServerProperties.Gateway gateway = properties.getGateway();
+        ServerProperties.GatewayProperties gateway = properties.getGateway();
         TaskLoopGroup service = new DefaultTaskLoopGroup(gateway.getExecutorThreadPoolSize(),
                 new DefaultThreadFactory(properties.getName() + "-executor"));
         GatewayMessageExecutor messageExecutor = new GatewayMessageExecutor(service, new IDGenerator(gateway.getSnowflakeDataCenterId(), gateway.getSnowflakeWorkId()));
         messageExecutor.setCsLoginMessageId(gateway.getCsLoginMessageId());
         messageExecutor.setScLoginMessageId(gateway.getScLoginMessageId());
-        messageExecutor.setGateway(properties.getGateway());
+        messageExecutor.setGatewayProperties(properties.getGateway());
         messageExecutor.init();
         return messageExecutor;
     }
 
-    private void check() {
-        if (StringUtils.isEmpty(properties.getName())) {
-            properties.setName("gateway");
-        }
-
-        ServerProperties.Gateway gateway = properties.getGateway();
-        if (!gateway.isSetReadableName()) {
-            gateway.setReadableName(properties.getName());
-        }
-        //io *2 logic *1 综合1.5
-        double size = Runtime.getRuntime().availableProcessors() * 1.5;
-        int ioSize = (int) (size * 0.6);
-        ioSize = Math.max(ioSize, 1);
-        int logicSize = (int) (size * 0.4);
-        logicSize = Math.max(logicSize, 1);
-        if (gateway.getExecutorThreadPoolSize() < 1) {
-            gateway.setExecutorThreadPoolSize(logicSize);
-        }
-        if (gateway.getIoCsWorkThreadPoolSize() < 1) {
-            int workSize = ioSize << 1;
-            workSize = Math.max(workSize, 1);
-            gateway.setIoCsWorkThreadPoolSize(workSize);
-        }
-        if (gateway.getIoScWorkThreadPoolSize() < 1) {
-            int workSize = ioSize << 1;
-            workSize = Math.max(workSize, 1);
-            gateway.setIoScWorkThreadPoolSize(workSize);
-        }
-        logger.info(gateway.toString());
-    }
 
     @Bean
 
@@ -145,7 +171,7 @@ public class GatewayAutoConfiguration {
                     Assert.error("本机地址为空");
 
                 }
-                serverKey = properties.getName() + " " + inetAddress.getHostAddress() + ":" + (httpPort > 0 ? httpPort : properties.getGateway().getCsPort());
+                serverKey = properties.getName() + " " + inetAddress.getHostAddress() + ":" + (httpPort > 0 ? httpPort : properties.getGateway().getConsumer().getPort());
                 params.put("serverKey", serverKey);
                 //  ObjectNode nodes = restTemplate.getForObject(url, ObjectNode.class, params);
                 // logger.debug("雪花调度返回 {}", JSON.toJSONString(nodes));

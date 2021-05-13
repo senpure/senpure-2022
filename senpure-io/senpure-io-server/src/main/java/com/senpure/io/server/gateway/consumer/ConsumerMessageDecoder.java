@@ -1,8 +1,9 @@
-package com.senpure.io.server.gateway;
+package com.senpure.io.server.gateway.consumer;
 
 import com.senpure.base.util.Assert;
 import com.senpure.io.protocol.CompressBean;
 import com.senpure.io.server.ChannelAttributeUtil;
+import com.senpure.io.server.gateway.GatewayReceiveConsumerMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -13,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 
-public class GatewayAndConsumerMessageDecoder extends ByteToMessageDecoder {
+public class ConsumerMessageDecoder extends ByteToMessageDecoder {
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override

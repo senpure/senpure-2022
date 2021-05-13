@@ -2,16 +2,17 @@ package com.senpure.io.server.support;
 
 import com.senpure.executor.TaskLoopGroup;
 import com.senpure.io.protocol.Message;
-import com.senpure.io.server.ChannelAttributeUtil;
-import com.senpure.io.server.Constant;
-import com.senpure.io.server.MessageDecoderContext;
-import com.senpure.io.server.ServerProperties;
+import com.senpure.io.server.*;
 import com.senpure.io.server.protocol.bean.HandleMessage;
 import com.senpure.io.server.protocol.bean.IdName;
 import com.senpure.io.server.protocol.message.CSMatchingMessage;
 import com.senpure.io.server.protocol.message.SCIdNameMessage;
 import com.senpure.io.server.protocol.message.SCRegServerHandleMessageMessage;
 import com.senpure.io.server.provider.*;
+import com.senpure.io.server.provider.gateway.Gateway;
+import com.senpure.io.server.provider.gateway.GatewayManager;
+import com.senpure.io.server.provider.ProviderMessageExecutor;
+import com.senpure.io.server.provider.gateway.GatewayServer;
 import com.senpure.io.server.provider.handler.ProviderAskMessageHandler;
 import com.senpure.io.server.provider.handler.ProviderMessageHandler;
 import com.senpure.io.server.remoting.ChannelService;
@@ -33,11 +34,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class ProviderServerStarter implements ApplicationRunner {
+public class ProviderGatewayServerStarter implements ApplicationRunner {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final ServerProperties properties;
-    private final List<ProviderServer> servers = new ArrayList<>();
+    private final List<GatewayServer> servers = new ArrayList<>();
     private final Map<String, Long> failGatewayMap = new HashMap<>();
     private long lastLogTime = 0;
 
@@ -56,13 +57,13 @@ public class ProviderServerStarter implements ApplicationRunner {
     @Value("${server.port:8080}")
     private int httpPort;
 
-    public ProviderServerStarter(ServerProperties properties) {
+    public ProviderGatewayServerStarter(ServerProperties properties) {
         this.properties = properties;
     }
 
     @PreDestroy
     public void destroy() {
-        for (ProviderServer server : servers) {
+        for (GatewayServer server : servers) {
             server.destroy();
         }
 
@@ -97,13 +98,14 @@ public class ProviderServerStarter implements ApplicationRunner {
                 MessageIdReader.relation(id, message.getClass().getSimpleName());
             }
         }
-        ServerProperties.Provider providerProperties = properties.getProvider();
+        ServerProperties.ProviderProperties providerProperties = properties.getProvider();
+        ServerProperties.ProviderProperties.GatewayProperties providerGateway = properties.getProvider().getGateway();
         List<IdName> idNames = null;
         if (StringUtils.isNoneEmpty(providerProperties.getIdNamesPackage())) {
             idNames = MessageScanner.scan(providerProperties.getIdNamesPackage());
 
         }
-        ServerProperties.Gateway gatewayProperties = new ServerProperties.Gateway();
+        ServerProperties.GatewayProperties gatewayProperties = new ServerProperties.GatewayProperties();
         List<IdName> finalIdNames = idNames;
         service.scheduleWithFixedDelay(() -> {
             try {
@@ -114,19 +116,19 @@ public class ProviderServerStarter implements ApplicationRunner {
                     log = true;
 
                 }
-                List<ServiceInstance> serviceInstances = discoveryClient.getInstances(providerProperties.getGatewayName());
+                List<ServiceInstance> serviceInstances = discoveryClient.getInstances(providerGateway.getName());
                 if (log) {
-                    logger.debug("{} 实例数量 {}", providerProperties.getGatewayName(), serviceInstances.size());
+                    logger.debug("{} 实例数量 {}", providerGateway.getName(), serviceInstances.size());
                     gatewayManager.report();
                 }
                 for (ServiceInstance instance : serviceInstances) {
                     boolean useDefault = false;
-                    String portStr = instance.getMetadata().get(Constant.GATEWAY_METADATA_SC_PORT);
+                    String portStr = instance.getMetadata().get(Constant.GATEWAY_METADATA_PROVIDER_PORT);
 
                     int port;
                     if (portStr == null) {
                         useDefault = true;
-                        port = gatewayProperties.getScPort();
+                        port = gatewayProperties.getProvider().getPort();
                     } else {
                         port = Integer.parseInt(portStr);
                     }
@@ -134,13 +136,14 @@ public class ProviderServerStarter implements ApplicationRunner {
                     Gateway gateway = gatewayManager.getGateway(gatewayKey);
                     if (gateway == null) {
                         gateway = new Gateway(service);
-                        if (providerProperties.getGatewayChannel() <= 1) {
+                        if (providerGateway.getChannel() <= 1) {
                             gateway.setChannelService(new ChannelService.SingleChannelService(gatewayKey));
                         } else {
                             gateway.setChannelService(new ChannelService.MultipleChannelService(gatewayKey));
                         }
                         gateway.setFutureService(messageExecutor);
                         gateway.setRemoteServerKey(gatewayKey);
+
                         gateway.verifyWorkable();
                         gateway = gatewayManager.addGateway(gateway);
                     }
@@ -148,44 +151,47 @@ public class ProviderServerStarter implements ApplicationRunner {
                     if (gateway.isConnecting()) {
                         continue;
                     }
-                    if (gateway.getChannelSize() < providerProperties.getGatewayChannel()) {
+                    if (gateway.getChannelSize() < providerGateway.getChannel()) {
+                        logger.debug("{} channel 数量 {}/{} {}",gatewayKey, gateway.getChannelSize(), providerGateway.getChannel(),gateway);
                         Long lastFailTime = failGatewayMap.get(gatewayKey);
                         boolean start = false;
                         if (lastFailTime == null) {
                             start = true;
                         } else {
-                            if (now - lastFailTime >= providerProperties.getConnectFailInterval()) {
+                            if (now - lastFailTime >= providerGateway.getConnectFailInterval()) {
                                 start = true;
                             }
                         }
                         if (start) {
                             if (useDefault) {
-                                logger.info("网关 [{}] {} {} 没有 没有配置sc socket端口,使用默认端口 {}", providerProperties.getGatewayName(), instance.getHost(), instance.getUri(), gatewayProperties.getScPort());
+                                logger.info("网关 [{}] {} {} 没有 没有配置provider socket端口,使用默认端口 {}", providerGateway.getName(), instance.getHost(), instance.getUri(), gatewayProperties.getProvider().getPort());
                             }
                             gateway.setConnecting(true);
-                            ProviderServer providerServer = new ProviderServer();
-                            providerServer.setGatewayManager(gatewayManager);
-                            providerServer.setProperties(providerProperties);
-                            providerServer.setMessageExecutor(messageExecutor);
-                            providerServer.setDecoderContext(decoderContext);
+                            GatewayServer gatewayServer = new GatewayServer();
+                            gatewayServer.setGatewayManager(gatewayManager);
+                            gatewayServer.setProperties(providerProperties);
+                            gatewayServer.setMessageExecutor(messageExecutor);
+                            gatewayServer.setDecoderContext(decoderContext);
 
-                            providerServer.setServerName(properties.getName());
-                            providerServer.setHttpPort(httpPort);
-                            providerServer.setReadableServerName(providerProperties.getReadableName());
-                            if (providerServer.start(instance.getHost(), port)) {
-                                servers.add(providerServer);
-                                registerProvider(providerServer, gateway, handleMessages);
+                            gatewayServer.setServerName(properties.getName());
+                            gatewayServer.setHttpPort(httpPort);
+                            gatewayServer.setReadableServerName(providerProperties.getReadableName());
+                            if (gatewayServer.start(instance.getHost(), port)) {
+                                servers.add(gatewayServer);
+                                registerProvider(gatewayServer, gateway, handleMessages);
                                 if (gateway.getChannelSize() == 0) {
-                                    gateway.setDefaultWaitSendTimeout(providerProperties.getMessageWaitSendTimeout());
+                                    gateway.setDefaultWaitSendTimeout(providerGateway.getMessageWaitSendTimeout());
                                     if (finalIdNames != null && finalIdNames.size() > 0) {
-                                        registerIdNames(providerServer, finalIdNames);
+                                        registerIdNames(gatewayServer, finalIdNames);
                                     }
                                 }
+
                                 //认证
-                                gateway.addChannel(providerServer.getChannel());
+                                gateway.addChannel(gatewayServer.getChannel());
+                                logger.debug("新增channel {} {}",gatewayServer.getChannel(),gateway.getChannelSize());
 
                             } else {
-                                logger.warn("{}  socket {}:{} 连接失败", providerProperties.getGatewayName(), instance.getHost(), port);
+                                logger.warn("{}  socket {}:{} 连接失败", providerGateway.getName(), instance.getHost(), port);
                                 failGatewayMap.put(gatewayKey, now);
                             }
                             gateway.setConnecting(false);
@@ -199,7 +205,7 @@ public class ProviderServerStarter implements ApplicationRunner {
         }, 2000, 50, TimeUnit.MILLISECONDS);
     }
 
-    public void registerProvider(ProviderServer server, Gateway gateway, List<HandleMessage> handleMessages) {
+    public void registerProvider(GatewayServer server, Gateway gateway, List<HandleMessage> handleMessages) {
         SCRegServerHandleMessageMessage message = new SCRegServerHandleMessageMessage();
         message.setServerName(properties.getName());
         message.setReadableServerName(server.getReadableServerName());
@@ -225,7 +231,7 @@ public class ProviderServerStarter implements ApplicationRunner {
         // server.getChannel().writeAndFlush(frame);
     }
 
-    public void registerIdNames(ProviderServer server, List<IdName> idNames) {
+    public void registerIdNames(GatewayServer server, List<IdName> idNames) {
         SCIdNameMessage message = new SCIdNameMessage();
         for (int i = 0; i < idNames.size(); i++) {
             if (i > 0 && i % 100 == 0) {
@@ -239,7 +245,7 @@ public class ProviderServerStarter implements ApplicationRunner {
         }
     }
 
-    private void registerIdNames(ProviderServer server, SCIdNameMessage message) {
+    private void registerIdNames(GatewayServer server, SCIdNameMessage message) {
         ProviderSendMessage frame = gatewayManager.createMessageByToken(0L, message);
 
         server.getChannel().writeAndFlush(frame);

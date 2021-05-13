@@ -1,4 +1,4 @@
-package com.senpure.io.server.direct;
+package com.senpure.io.server.provider.consumer;
 
 
 import com.senpure.io.server.AbstractMessageEncoder;
@@ -6,7 +6,7 @@ import com.senpure.io.server.provider.ProviderSendMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
-public class DirectMessageEncoder extends AbstractMessageEncoder<ProviderSendMessage> {
+public class ConsumerMessageEncoder extends AbstractMessageEncoder<ProviderSendMessage> {
 
 
     @Override

@@ -2,6 +2,7 @@ package com.senpure.io.server.gateway;
 
 import com.senpure.io.protocol.Message;
 import com.senpure.io.server.AbstractMessageFrame;
+import com.senpure.io.server.support.MessageIdReader;
 
 public class GatewayLocalSendProviderMessage extends AbstractMessageFrame implements GatewaySendProviderMessage {
 
@@ -28,5 +29,15 @@ public class GatewayLocalSendProviderMessage extends AbstractMessageFrame implem
     @Override
     public long userId() {
         return userId;
+    }
+
+    @Override
+    public String toString() {
+        return "GatewayReceiveProviderMessage{" +
+                "messageId=" + MessageIdReader.read(messageId) +
+                ",requestId =" + requestId +
+                ",token=" + token +
+                ", userId=" + userId +
+                '}';
     }
 }

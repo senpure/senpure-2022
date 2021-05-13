@@ -6,7 +6,7 @@ import io.netty.channel.Channel;
 
 public class SCHeartMessageHandler extends AbstractProviderMessageHandler {
     @Override
-    public void execute(Channel channel, GatewayReceiveProviderMessage gatewayReceiveProviderMessage) {
+    public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
 
     }
 

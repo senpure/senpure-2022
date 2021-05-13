@@ -6,7 +6,7 @@ import io.netty.channel.Channel;
 public interface ProviderMessageHandler {
 
 
-    void execute(Channel channel, GatewayReceiveProviderMessage gatewayReceiveProviderMessage);
+    void execute(Channel channel, GatewayReceiveProviderMessage frame);
 
     int messageId();
 

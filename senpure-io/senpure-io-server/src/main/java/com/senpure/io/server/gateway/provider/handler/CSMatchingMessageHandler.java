@@ -7,7 +7,7 @@ import io.netty.channel.Channel;
 
 public class CSMatchingMessageHandler  extends  AbstractProviderMessageHandler{
     @Override
-    public void execute(Channel channel, GatewayReceiveProviderMessage gatewayReceiveProviderMessage) {
+    public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
 
         SCMatchingMessage message = new SCMatchingMessage();
         messageExecutor.sendMessage2Producer(channel, message);

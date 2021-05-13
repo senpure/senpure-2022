@@ -1,35 +1,68 @@
 package com.senpure.io.server;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-/**
- * ServerProperties
- *
- * @author senpure
- * @time 2020-01-06 11:26:30
- */
 @ConfigurationProperties("server.io")
-//@EnableConfigurationProperties
 public class ServerProperties {
-    /**
-     * 该值不用配置读取spring.application.name
-     */
-    @Value("${spring.application.name:}")
     private String name;
-    private Consumer consumer = new Consumer();
-    private Direct direct = new Direct();
-    private Gateway gateway = new Gateway();
-    private Provider provider = new Provider();
+    private ConsumerProperties consumer = new ConsumerProperties();
+    private GatewayProperties gateway = new GatewayProperties();
+    private ProviderProperties provider = new ProviderProperties();
 
 
-    public static class Direct {
+    public String getName() {
+        return name;
+    }
 
-        private boolean setReadableName = false;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public ConsumerProperties getConsumer() {
+        return consumer;
+    }
+
+    public void setConsumer(ConsumerProperties consumer) {
+        this.consumer = consumer;
+    }
+
+    public GatewayProperties getGateway() {
+        return gateway;
+    }
+
+    public void setGateway(GatewayProperties gateway) {
+        this.gateway = gateway;
+    }
+
+    public ProviderProperties getProvider() {
+        return provider;
+    }
+
+    public void setProvider(ProviderProperties provider) {
+        this.provider = provider;
+    }
+
+
+    public static class ProviderProperties {
+        public static enum MODEL {
+            /**
+             * Provider 网关模式(主动连接网关)
+             */
+            GATEWAY,
+            /**
+             * Provider 直连模式(等待客户端连接)
+             */
+            CONSUMER
+        }
+
         /**
          * 服务器名
          */
-        private String readableName = "directServer";
+        private String readableName = "provider";
+        /**
+         * Provider 运行模式
+         */
+        private MODEL model = MODEL.GATEWAY;
 
         /**
          * 开启事件
@@ -39,493 +72,18 @@ public class ServerProperties {
          * 处理事件的线程数
          */
         private int eventThreadPoolSize = 0;
-        /**
-         * netty boosGroup 线程数
-         */
-        private int ioBossThreadPoolSize = 1;
-        /**
-         * netty workGroup 线程数
-         */
-        private int ioWorkThreadPoolSize = 0;
-        /**
-         * 逻辑处理线程数
-         */
-        private int executorThreadPoolSize = 0;
-        /**
-         * 监听端口号
-         */
-        private int port = 2222;
 
-        /**
-         * 输出格式化
-         */
-        private boolean outFormat = true;
-        /**
-         * 输入格式化
-         */
-        private boolean inFormat = true;
-        /**
-         * 开启ssl
-         */
-        private boolean ssl = false;
-        /**
-         * 是否开启心跳检查
-         */
-        private boolean enableHeartCheck = false;
-        /**
-         * 心跳读入间隔毫秒
-         */
-        private long readerIdleTime = 10000;
-
-
-        public boolean isSetReadableName() {
-            return setReadableName;
-        }
-
-
-        public String getReadableName() {
-            return readableName;
-        }
-
-        public void setReadableName(String readableName) {
-            this.readableName = readableName;
-            setReadableName = true;
-        }
-
-
-        public boolean isEnableEvent() {
-            return enableEvent;
-        }
-
-        public void setEnableEvent(boolean enableEvent) {
-            this.enableEvent = enableEvent;
-        }
-
-        public int getEventThreadPoolSize() {
-            return eventThreadPoolSize;
-        }
-
-        public void setEventThreadPoolSize(int eventThreadPoolSize) {
-            this.eventThreadPoolSize = eventThreadPoolSize;
-        }
-
-        public int getIoWorkThreadPoolSize() {
-            return ioWorkThreadPoolSize;
-        }
-
-        public void setIoWorkThreadPoolSize(int ioWorkThreadPoolSize) {
-            this.ioWorkThreadPoolSize = ioWorkThreadPoolSize;
-        }
-
-        public int getExecutorThreadPoolSize() {
-            return executorThreadPoolSize;
-        }
-
-        public void setExecutorThreadPoolSize(int executorThreadPoolSize) {
-            this.executorThreadPoolSize = executorThreadPoolSize;
-        }
-
-        public boolean isOutFormat() {
-            return outFormat;
-        }
-
-        public void setOutFormat(boolean outFormat) {
-            this.outFormat = outFormat;
-        }
-
-        public boolean isInFormat() {
-            return inFormat;
-        }
-
-        public void setInFormat(boolean inFormat) {
-            this.inFormat = inFormat;
-        }
-
-        public boolean isSsl() {
-            return ssl;
-        }
-
-        public void setSsl(boolean ssl) {
-            this.ssl = ssl;
-        }
-
-        public boolean isEnableHeartCheck() {
-            return enableHeartCheck;
-        }
-
-        public void setEnableHeartCheck(boolean enableHeartCheck) {
-            this.enableHeartCheck = enableHeartCheck;
-        }
-
-
-        public long getReaderIdleTime() {
-            return readerIdleTime;
-        }
-
-        public void setReaderIdleTime(long readerIdleTime) {
-            this.readerIdleTime = readerIdleTime;
-        }
-
-        public int getPort() {
-            return port;
-        }
-
-        public void setPort(int port) {
-            this.port = port;
-        }
-
-        public int getIoBossThreadPoolSize() {
-            return ioBossThreadPoolSize;
-        }
-
-        public void setIoBossThreadPoolSize(int ioBossThreadPoolSize) {
-            this.ioBossThreadPoolSize = ioBossThreadPoolSize;
-        }
-    }
-
-    public static class Consumer {
-
-
-        /**
-         * 连接的服务目标服务名
-         */
-        private String remoteName = "gateway";
-        /**
-         * 使用直连模式
-         */
-        private boolean direct;
-
-        /**
-         * 直连模式时 直接连接的端口号
-         */
-        private int remotePort = 2222;
-        private String remoteHost = "127.0.0.1";
-        private boolean setReadableName = false;
-        /**
-         * 自动连接服务
-         */
-        private boolean autoConnect = true;
-        /**
-         * 连接目标失败后下一次连接间隔毫秒(手动连接时自己处理)
-         */
-        private long connectFailInterval = 20000;
-        /**
-         * 与目标建立的channel 数量(手动连接时自己处理)
-         */
-        private int remoteChannel = 1;
-        /**
-         * 服务器名
-         */
-        private String readableName = "consumerServer";
-        /**
-         * 同步请求超时时间
-         */
-        private int requestTimeout = 500;
-        /**
-         * 开启事件
-         */
-        private boolean enableEvent = false;
-
-        /**
-         * 处理事件的线程数
-         */
-        private int eventThreadPoolSize = 0;
-        /**
-         * netty workGroup 线程数
-         */
-        private int ioWorkThreadPoolSize = 1;
         /**
          * 逻辑处理线程数
          */
         private int executorThreadPoolSize = 0;
 
-        /**
-         * 没有channel时下一个可用channel重发消息的时间限制
-         */
-        private int messageRetryTimeLimit = 10000;
-
-        /**
-         * 输出格式化
-         */
-        private boolean outFormat = true;
-        /**
-         * 输入格式化
-         */
-        private boolean inFormat = true;
-        /**
-         * 开启ssl
-         */
-        private boolean ssl = false;
-
-        /**
-         * 是否开启心跳检查
-         */
-        private boolean enableHeartCheck = false;
-        /**
-         * 心跳写入间隔毫秒
-         */
-        private long writerIdleTime = 5000;
-        /**
-         * 服务器返回错误消息id
-         */
-        private int scErrorMessageId = 1000500;
-
-        public String getRemoteHost() {
-            return remoteHost;
-        }
-
-        public void setRemoteHost(String remoteHost) {
-            this.remoteHost = remoteHost;
-        }
-
-        public boolean isOutFormat() {
-            return outFormat;
-        }
-
-        public void setOutFormat(boolean outFormat) {
-            this.outFormat = outFormat;
-        }
-
-        public boolean isInFormat() {
-            return inFormat;
-        }
-
-        public void setInFormat(boolean inFormat) {
-            this.inFormat = inFormat;
-        }
-
-        public boolean isSsl() {
-            return ssl;
-        }
-
-        public void setSsl(boolean ssl) {
-            this.ssl = ssl;
-        }
-
-        public boolean isEnableHeartCheck() {
-            return enableHeartCheck;
-        }
-
-        public void setEnableHeartCheck(boolean enableHeartCheck) {
-            this.enableHeartCheck = enableHeartCheck;
-        }
-
-        public long getWriterIdleTime() {
-            return writerIdleTime;
-        }
-
-        public void setWriterIdleTime(long writerIdleTime) {
-            this.writerIdleTime = writerIdleTime;
-        }
-
-        public String getRemoteName() {
-            return remoteName;
-        }
-
-        public void setRemoteName(String remoteName) {
-            this.remoteName = remoteName;
-        }
-
-        public boolean isSetReadableName() {
-            return setReadableName;
-        }
-
-        public void setSetReadableName(boolean setReadableName) {
-            this.setReadableName = setReadableName;
-        }
-
-        public String getReadableName() {
-            return readableName;
-        }
-
-        public void setReadableName(String readableName) {
-            this.readableName = readableName;
-        }
-
-        public boolean isEnableEvent() {
-            return enableEvent;
-        }
-
-        public void setEnableEvent(boolean enableEvent) {
-            this.enableEvent = enableEvent;
-        }
-
-        public int getRequestTimeout() {
-            return requestTimeout;
-        }
-
-        public void setRequestTimeout(int requestTimeout) {
-            this.requestTimeout = requestTimeout;
-        }
-
-        public int getScErrorMessageId() {
-            return scErrorMessageId;
-        }
-
-        public void setScErrorMessageId(int scErrorMessageId) {
-            this.scErrorMessageId = scErrorMessageId;
-        }
-
-        public int getEventThreadPoolSize() {
-            return eventThreadPoolSize;
-        }
-
-        public void setEventThreadPoolSize(int eventThreadPoolSize) {
-            this.eventThreadPoolSize = eventThreadPoolSize;
-        }
-
-        public int getIoWorkThreadPoolSize() {
-            return ioWorkThreadPoolSize;
-        }
-
-        public void setIoWorkThreadPoolSize(int ioWorkThreadPoolSize) {
-            this.ioWorkThreadPoolSize = ioWorkThreadPoolSize;
-        }
-
-        public int getExecutorThreadPoolSize() {
-            return executorThreadPoolSize;
-        }
-
-        public void setExecutorThreadPoolSize(int executorThreadPoolSize) {
-            this.executorThreadPoolSize = executorThreadPoolSize;
-        }
-
-        public int getMessageRetryTimeLimit() {
-            return messageRetryTimeLimit;
-        }
-
-        public void setMessageRetryTimeLimit(int messageRetryTimeLimit) {
-            this.messageRetryTimeLimit = messageRetryTimeLimit;
-        }
-
-        public long getConnectFailInterval() {
-            return connectFailInterval;
-        }
-
-        public void setConnectFailInterval(long connectFailInterval) {
-            this.connectFailInterval = connectFailInterval;
-        }
-
-        public int getRemoteChannel() {
-            return remoteChannel;
-        }
-
-        public void setRemoteChannel(int remoteChannel) {
-            this.remoteChannel = remoteChannel;
-        }
-
-        public boolean isAutoConnect() {
-            return autoConnect;
-        }
-
-        public void setAutoConnect(boolean autoConnect) {
-            this.autoConnect = autoConnect;
-        }
-
-        public boolean isDirect() {
-            return direct;
-        }
-
-        public void setDirect(boolean direct) {
-            this.direct = direct;
-        }
-
-        public int getRemotePort() {
-            return remotePort;
-        }
-
-        public void setRemotePort(int remotePort) {
-            this.remotePort = remotePort;
-        }
-    }
-
-    public static class Provider {
-        public static enum MODEL {
-            GATEWAY,
-            DIRECT
-        }
-
-        /**
-         * 网关服务名
-         */
-        private String gatewayName = "gateway";
-
-        private MODEL model = MODEL.GATEWAY;
-
-        private boolean setReadableName = false;
-
-        private int port = 2222;
-        /**
-         * 服务器名
-         */
-        private String readableName = "realityServer";
         /**
          * 关联id与类名的包名多个用,逗号分割
          */
         private String idNamesPackage;
-        /**
-         * 开启事件
-         */
-        private boolean enableEvent = true;
-        /**
-         * 处理事件的线程数
-         */
-        private int eventThreadPoolSize = 0;
-        /**
-         * netty boosGroup 线程数
-         */
-        private int ioBossThreadPoolSize = 1;
-        /**
-         * netty workGroup 线程数
-         */
-        private int ioWorkThreadPoolSize = 0;
-        /**
-         * 逻辑处理线程数
-         */
-        private int executorThreadPoolSize = 0;
-        /**
-         * 连接网关失败后下一次连接间隔毫秒
-         */
-        private long connectFailInterval = 20000;
-        /**
-         * 与网关建立的channel 数量，多条channel在高并发下消息可能会有乱序问题
-         */
-        private int gatewayChannel = 1;
-        /**
-         * 没有channel时下一个可用channel重发消息的时间限制
-         */
-        @Deprecated
-        private int messageRetryTimeLimit = 10000;
-        /**
-         * 没有channel时下一个可用channel重发消息的时间限制
-         */
-        private int messageWaitSendTimeout = 10000;
-        /**
-         * 输出格式化
-         */
-        private boolean outFormat = true;
-        /**
-         * 输入格式化
-         */
-        private boolean inFormat = true;
-        /**
-         * 开启ssl
-         */
-        private boolean ssl = false;
-        /**
-         * 是否开启心跳检查
-         */
-        private boolean enableHeartCheck = false;
-        /**
-         * 心跳写入间隔毫秒
-         */
-        private long writerIdleTime = 5000;
-        private long readerIdleTime = 10000;
-
-        public boolean isSetReadableName() {
-            return setReadableName;
-        }
-
+        private GatewayProperties gateway = new GatewayProperties();
+        private ConsumerProperties consumer = new ConsumerProperties();
 
         public String getReadableName() {
             return readableName;
@@ -533,79 +91,14 @@ public class ServerProperties {
 
         public void setReadableName(String readableName) {
             this.readableName = readableName;
-            setReadableName = true;
         }
 
-        public int getIoBossThreadPoolSize() {
-            return ioBossThreadPoolSize;
+        public MODEL getModel() {
+            return model;
         }
 
-        public void setIoBossThreadPoolSize(int ioBossThreadPoolSize) {
-            this.ioBossThreadPoolSize = ioBossThreadPoolSize;
-        }
-
-        public int getPort() {
-            return port;
-        }
-
-        public void setPort(int port) {
-            this.port = port;
-        }
-
-        public long getReaderIdleTime() {
-            return readerIdleTime;
-        }
-
-        public void setReaderIdleTime(long readerIdleTime) {
-            this.readerIdleTime = readerIdleTime;
-        }
-
-        public int getExecutorThreadPoolSize() {
-            return executorThreadPoolSize;
-        }
-
-        public void setExecutorThreadPoolSize(int executorThreadPoolSize) {
-            this.executorThreadPoolSize = executorThreadPoolSize;
-        }
-
-        public long getConnectFailInterval() {
-            return connectFailInterval;
-        }
-
-        public void setConnectFailInterval(long connectFailInterval) {
-            this.connectFailInterval = connectFailInterval;
-        }
-
-        public int getIoWorkThreadPoolSize() {
-            return ioWorkThreadPoolSize;
-        }
-
-        public void setIoWorkThreadPoolSize(int ioWorkThreadPoolSize) {
-            this.ioWorkThreadPoolSize = ioWorkThreadPoolSize;
-        }
-
-        public boolean isEnableHeartCheck() {
-            return enableHeartCheck;
-        }
-
-        public void setEnableHeartCheck(boolean enableHeartCheck) {
-            this.enableHeartCheck = enableHeartCheck;
-        }
-
-        public long getWriterIdleTime() {
-            return writerIdleTime;
-        }
-
-        public void setWriterIdleTime(long writerIdleTime) {
-            this.writerIdleTime = writerIdleTime;
-        }
-
-        public String getGatewayName() {
-            return gatewayName;
-        }
-
-        public void setGatewayName(String gatewayName) {
-            this.gatewayName = gatewayName;
+        public void setModel(MODEL model) {
+            this.model = model;
         }
 
         public boolean isEnableEvent() {
@@ -624,36 +117,30 @@ public class ServerProperties {
             this.eventThreadPoolSize = eventThreadPoolSize;
         }
 
-        public int getGatewayChannel() {
-            return gatewayChannel;
+
+        public int getExecutorThreadPoolSize() {
+            return executorThreadPoolSize;
         }
 
-        public void setGatewayChannel(int gatewayChannel) {
-            this.gatewayChannel = gatewayChannel;
+        public void setExecutorThreadPoolSize(int executorThreadPoolSize) {
+            this.executorThreadPoolSize = executorThreadPoolSize;
         }
 
-        public boolean isOutFormat() {
-            return outFormat;
+
+        public GatewayProperties getGateway() {
+            return gateway;
         }
 
-        public void setOutFormat(boolean outFormat) {
-            this.outFormat = outFormat;
+        public void setGateway(GatewayProperties gateway) {
+            this.gateway = gateway;
         }
 
-        public boolean isInFormat() {
-            return inFormat;
+        public ConsumerProperties getConsumer() {
+            return consumer;
         }
 
-        public void setInFormat(boolean inFormat) {
-            this.inFormat = inFormat;
-        }
-
-        public boolean isSsl() {
-            return ssl;
-        }
-
-        public void setSsl(boolean ssl) {
-            this.ssl = ssl;
+        public void setConsumer(ConsumerProperties consumer) {
+            this.consumer = consumer;
         }
 
         public String getIdNamesPackage() {
@@ -664,34 +151,297 @@ public class ServerProperties {
             this.idNamesPackage = idNamesPackage;
         }
 
-        public int getMessageRetryTimeLimit() {
-            return messageRetryTimeLimit;
+        public static class ConsumerProperties {
+            /**
+             * 绑定端口号
+             */
+            private int port = 2222;
+            /**
+             * 输出格式化
+             */
+            private boolean outFormat = true;
+            /**
+             * 输入格式化
+             */
+            private boolean inFormat = true;
+            /**
+             * netty boosGroup 线程数
+             */
+            private int ioBossThreadPoolSize = 1;
+            /**
+             * netty workGroup 线程数
+             */
+            private int ioWorkThreadPoolSize = 0;
+            /**
+             * 开启ssl
+             */
+            private boolean ssl = false;
+            /**
+             * 是否开启心跳检查
+             */
+            private boolean enableHeartCheck = false;
+            /**
+             * 读心跳间隔毫秒
+             */
+            private long readerIdleTime = 5000;
+
+
+            public int getPort() {
+                return port;
+            }
+
+            public void setPort(int port) {
+                this.port = port;
+            }
+
+            public long getReaderIdleTime() {
+                return readerIdleTime;
+            }
+
+            public void setReaderIdleTime(long readerIdleTime) {
+                this.readerIdleTime = readerIdleTime;
+            }
+
+            public boolean isOutFormat() {
+                return outFormat;
+            }
+
+            public void setOutFormat(boolean outFormat) {
+                this.outFormat = outFormat;
+            }
+
+            public boolean isInFormat() {
+                return inFormat;
+            }
+
+            public void setInFormat(boolean inFormat) {
+                this.inFormat = inFormat;
+            }
+
+            public int getIoBossThreadPoolSize() {
+                return ioBossThreadPoolSize;
+            }
+
+            public void setIoBossThreadPoolSize(int ioBossThreadPoolSize) {
+                this.ioBossThreadPoolSize = ioBossThreadPoolSize;
+            }
+
+            public int getIoWorkThreadPoolSize() {
+                return ioWorkThreadPoolSize;
+            }
+
+            public void setIoWorkThreadPoolSize(int ioWorkThreadPoolSize) {
+                this.ioWorkThreadPoolSize = ioWorkThreadPoolSize;
+            }
+
+            public boolean isSsl() {
+                return ssl;
+            }
+
+            public void setSsl(boolean ssl) {
+                this.ssl = ssl;
+            }
+
+            public boolean isEnableHeartCheck() {
+                return enableHeartCheck;
+            }
+
+            public void setEnableHeartCheck(boolean enableHeartCheck) {
+                this.enableHeartCheck = enableHeartCheck;
+            }
+
+
         }
 
-        public void setMessageRetryTimeLimit(int messageRetryTimeLimit) {
-            this.messageRetryTimeLimit = messageRetryTimeLimit;
-        }
+        public static class GatewayProperties {
+            public static enum MODEL {
+                /**
+                 * 服务模式（通过注册中心查找服务）
+                 */
+                SERVER,
+                /**
+                 * 直连模式(直接连接ip地址)
+                 */
+                DIRECT
+            }
 
-        public int getMessageWaitSendTimeout() {
-            return messageWaitSendTimeout;
-        }
+            private MODEL model = MODEL.SERVER;
+            /**
+             * 网关服务名
+             */
+            private String name = "gateway";
+            /**
+             * 网关地址
+             */
+            private String host = "127.0.0.1";
+            /**
+             * 网关端口
+             */
+            private int port = 3333;
 
-        public void setMessageWaitSendTimeout(int messageWaitSendTimeout) {
-            this.messageWaitSendTimeout = messageWaitSendTimeout;
-        }
 
-        public MODEL getModel() {
-            return model;
-        }
+            /**
+             * 连接网关失败后下一次连接间隔毫秒
+             */
+            private long connectFailInterval = 20000;
+            /**
+             * 与网关建立的channel 数量，多条channel在高并发下消息可能会有乱序问题
+             */
+            private int channel = 1;
 
-        public void setModel(MODEL model) {
-            this.model = model;
+            /**
+             * 没有channel时下一个可用channel重发消息的时间限制
+             */
+            private int messageWaitSendTimeout = 10000;
+            /**
+             * 输出格式化
+             */
+            private boolean outFormat = true;
+            /**
+             * 输入格式化
+             */
+            private boolean inFormat = true;
+            /**
+             * netty boosGroup 线程数
+             */
+            private int ioBossThreadPoolSize = 1;
+            /**
+             * netty workGroup 线程数
+             */
+            private int ioWorkThreadPoolSize = 0;
+            /**
+             * 开启ssl
+             */
+            private boolean ssl = false;
+            /**
+             * 是否开启心跳检查
+             */
+            private boolean enableHeartCheck = false;
+            /**
+             * 心跳写入间隔毫秒
+             */
+            private long writerIdleTime = 5000;
+
+            public MODEL getModel() {
+                return model;
+            }
+
+            public void setModel(MODEL model) {
+                this.model = model;
+            }
+
+            public String getName() {
+                return name;
+            }
+
+            public void setName(String name) {
+                this.name = name;
+            }
+
+            public String getHost() {
+                return host;
+            }
+
+            public void setHost(String host) {
+                this.host = host;
+            }
+
+            public int getPort() {
+                return port;
+            }
+
+            public void setPort(int port) {
+                this.port = port;
+            }
+
+
+            public long getConnectFailInterval() {
+                return connectFailInterval;
+            }
+
+            public void setConnectFailInterval(long connectFailInterval) {
+                this.connectFailInterval = connectFailInterval;
+            }
+
+            public int getChannel() {
+                return channel;
+            }
+
+            public void setChannel(int channel) {
+                this.channel = channel;
+            }
+
+            public int getMessageWaitSendTimeout() {
+                return messageWaitSendTimeout;
+            }
+
+            public void setMessageWaitSendTimeout(int messageWaitSendTimeout) {
+                this.messageWaitSendTimeout = messageWaitSendTimeout;
+            }
+
+            public long getWriterIdleTime() {
+                return writerIdleTime;
+            }
+
+            public void setWriterIdleTime(long writerIdleTime) {
+                this.writerIdleTime = writerIdleTime;
+            }
+
+            public boolean isOutFormat() {
+                return outFormat;
+            }
+
+            public void setOutFormat(boolean outFormat) {
+                this.outFormat = outFormat;
+            }
+
+            public boolean isInFormat() {
+                return inFormat;
+            }
+
+            public void setInFormat(boolean inFormat) {
+                this.inFormat = inFormat;
+            }
+
+            public int getIoBossThreadPoolSize() {
+                return ioBossThreadPoolSize;
+            }
+
+            public void setIoBossThreadPoolSize(int ioBossThreadPoolSize) {
+                this.ioBossThreadPoolSize = ioBossThreadPoolSize;
+            }
+
+            public int getIoWorkThreadPoolSize() {
+                return ioWorkThreadPoolSize;
+            }
+
+            public void setIoWorkThreadPoolSize(int ioWorkThreadPoolSize) {
+                this.ioWorkThreadPoolSize = ioWorkThreadPoolSize;
+            }
+
+            public boolean isSsl() {
+                return ssl;
+            }
+
+            public void setSsl(boolean ssl) {
+                this.ssl = ssl;
+            }
+
+            public boolean isEnableHeartCheck() {
+                return enableHeartCheck;
+            }
+
+            public void setEnableHeartCheck(boolean enableHeartCheck) {
+                this.enableHeartCheck = enableHeartCheck;
+            }
         }
     }
 
-    public static class Gateway {
+    public static class GatewayProperties {
 
-        private boolean setReadableName = false;
+        private ConsumerProperties consumer = new ConsumerProperties();
+        private ProviderProperties provider = new ProviderProperties();
+
         /**
          * 服务名不是唯一
          */
@@ -700,39 +450,11 @@ public class ServerProperties {
          * 工作线程数量
          */
         private int executorThreadPoolSize = 0;
-        /**
-         * cs模块 netty boosGroup 线程数
-         */
-        private int ioCsBossThreadPoolSize = 1;
-        /**
-         * sc模块 netty boosGroup 线程数
-         */
-        private int ioScBossThreadPoolSize = 1;
-        /**
-         * cs模块 netty workGroup 线程数
-         */
-        private int ioCsWorkThreadPoolSize = 0;
-        /**
-         * sc模块 netty workGroup 线程数
-         */
-        private int ioScWorkThreadPoolSize = 0;
-        /**
-         * cs 是否开启ssl
-         */
-        private boolean csSsl = false;
-        /**
-         * sc 是否开启ssl
-         */
-        private boolean scSsl = false;
-        /**
-         * cs 模块端口号
-         */
-        private int csPort = 2222;
-        /**
-         * sc 模块端口号
-         */
-        private int scPort = 3333;
 
+        /**
+         * 询问处理最多延迟毫秒
+         */
+        private long askMaxDelay = 1000;
         /**
          * 客户端登录消息id
          */
@@ -742,29 +464,13 @@ public class ServerProperties {
          */
         private int scLoginMessageId = 1000102;
         /**
-         * 是否开启cs 模块的心跳检查
-         */
-        private boolean enableCSHeartCheck = true;
-        /**
-         * cs模块的的读心跳时间毫秒
-         */
-        private long csReaderIdleTime = 10000;
-        /**
-         * 是否开启sc 模块的心跳检查
-         */
-        private boolean enableSCHeartCheck = false;
-        /**
-         * sc模块的的心跳读时间毫秒
-         */
-        private long scReaderIdleTime = 10000;
-        /**
          * 雪花算法的服务名
          */
         private String snowflakeDispatcherName = "dispatcher";
         /**
          * 没有找到雪花服务直接使用配置的dataCenterId与workId
          */
-        private boolean notFoundSnowflakeUseCode=false;
+        private boolean notFoundSnowflakeUseCode = false;
         /**
          * 是否直接是配置文件中的雪花算法的dataCenterId与workId
          */
@@ -778,27 +484,38 @@ public class ServerProperties {
          */
         private int snowflakeWorkId = 0;
 
-        /**
-         * 询问处理最多延迟毫秒
-         */
-        private long askMaxDelay = 1000;
 
-        public int getCsPort() {
-            return csPort;
+        public ConsumerProperties getConsumer() {
+            return consumer;
         }
 
-        public void setCsPort(int csPort) {
-            this.csPort = csPort;
+        public void setConsumer(ConsumerProperties consumer) {
+            this.consumer = consumer;
         }
 
-        public int getScPort() {
-            return scPort;
+        public ProviderProperties getProvider() {
+            return provider;
         }
 
-        public void setScPort(int scPort) {
-            this.scPort = scPort;
+        public void setProvider(ProviderProperties provider) {
+            this.provider = provider;
         }
 
+        public String getReadableName() {
+            return readableName;
+        }
+
+        public void setReadableName(String readableName) {
+            this.readableName = readableName;
+        }
+
+        public int getExecutorThreadPoolSize() {
+            return executorThreadPoolSize;
+        }
+
+        public void setExecutorThreadPoolSize(int executorThreadPoolSize) {
+            this.executorThreadPoolSize = executorThreadPoolSize;
+        }
 
         public int getCsLoginMessageId() {
             return csLoginMessageId;
@@ -816,25 +533,20 @@ public class ServerProperties {
             this.scLoginMessageId = scLoginMessageId;
         }
 
-
-        public long getAskMaxDelay() {
-            return askMaxDelay;
-        }
-
-        public void setAskMaxDelay(long askMaxDelay) {
-            this.askMaxDelay = askMaxDelay;
-        }
-
-        public int getExecutorThreadPoolSize() {
-            return executorThreadPoolSize;
-        }
-
-        public void setExecutorThreadPoolSize(int executorThreadPoolSize) {
-            this.executorThreadPoolSize = executorThreadPoolSize;
-        }
-
         public String getSnowflakeDispatcherName() {
             return snowflakeDispatcherName;
+        }
+
+        public void setSnowflakeDispatcherName(String snowflakeDispatcherName) {
+            this.snowflakeDispatcherName = snowflakeDispatcherName;
+        }
+
+        public boolean isNotFoundSnowflakeUseCode() {
+            return notFoundSnowflakeUseCode;
+        }
+
+        public void setNotFoundSnowflakeUseCode(boolean notFoundSnowflakeUseCode) {
+            this.notFoundSnowflakeUseCode = notFoundSnowflakeUseCode;
         }
 
         public boolean isSnowflakeUseCode() {
@@ -861,13 +573,315 @@ public class ServerProperties {
             this.snowflakeWorkId = snowflakeWorkId;
         }
 
-        public void setSnowflakeDispatcherName(String snowflakeDispatcherName) {
-            this.snowflakeDispatcherName = snowflakeDispatcherName;
+        public long getAskMaxDelay() {
+            return askMaxDelay;
         }
 
-        public boolean isSetReadableName() {
-            return setReadableName;
+        public void setAskMaxDelay(long askMaxDelay) {
+            this.askMaxDelay = askMaxDelay;
         }
+
+        public static class ProviderProperties {
+
+            /**
+             * netty boosGroup 线程数
+             */
+            private int ioBossThreadPoolSize = 1;
+            /**
+             * netty workGroup 线程数
+             */
+            private int ioWorkThreadPoolSize = 0;
+
+            /**
+             * 监听端口号
+             */
+            private int port = 3333;
+
+            /**
+             * 开启ssl
+             */
+            private boolean ssl = false;
+            /**
+             * 是否开启心跳检查
+             */
+            private boolean enableHeartCheck = false;
+            /**
+             * 心跳读入间隔毫秒
+             */
+            private long readerIdleTime = 10000;
+
+            public int getIoBossThreadPoolSize() {
+                return ioBossThreadPoolSize;
+            }
+
+            public void setIoBossThreadPoolSize(int ioBossThreadPoolSize) {
+                this.ioBossThreadPoolSize = ioBossThreadPoolSize;
+            }
+
+            public int getIoWorkThreadPoolSize() {
+                return ioWorkThreadPoolSize;
+            }
+
+            public void setIoWorkThreadPoolSize(int ioWorkThreadPoolSize) {
+                this.ioWorkThreadPoolSize = ioWorkThreadPoolSize;
+            }
+
+
+            public int getPort() {
+                return port;
+            }
+
+            public void setPort(int port) {
+                this.port = port;
+            }
+
+            public boolean isSsl() {
+                return ssl;
+            }
+
+            public void setSsl(boolean ssl) {
+                this.ssl = ssl;
+            }
+
+            public boolean isEnableHeartCheck() {
+                return enableHeartCheck;
+            }
+
+            public void setEnableHeartCheck(boolean enableHeartCheck) {
+                this.enableHeartCheck = enableHeartCheck;
+            }
+
+            public long getReaderIdleTime() {
+                return readerIdleTime;
+            }
+
+            public void setReaderIdleTime(long readerIdleTime) {
+                this.readerIdleTime = readerIdleTime;
+            }
+
+            @Override
+            public String toString() {
+                return "ProviderProperties{" +
+                        "ioBossThreadPoolSize=" + ioBossThreadPoolSize +
+                        ", ioWorkThreadPoolSize=" + ioWorkThreadPoolSize +
+                        ", port=" + port +
+                        ", ssl=" + ssl +
+                        ", enableHeartCheck=" + enableHeartCheck +
+                        ", readerIdleTime=" + readerIdleTime +
+                        '}';
+            }
+        }
+
+        public static class ConsumerProperties {
+
+            /**
+             * netty boosGroup 线程数
+             */
+            private int ioBossThreadPoolSize = 1;
+            /**
+             * netty workGroup 线程数
+             */
+            private int ioWorkThreadPoolSize = 0;
+
+            /**
+             * 监听端口号
+             */
+            private int port = 2222;
+
+            /**
+             * 开启ssl
+             */
+            private boolean ssl = false;
+            /**
+             * 是否开启心跳检查
+             */
+            private boolean enableHeartCheck = true;
+            /**
+             * 心跳读入间隔毫秒
+             */
+            private long readerIdleTime = 10000;
+
+            public int getIoBossThreadPoolSize() {
+                return ioBossThreadPoolSize;
+            }
+
+            public void setIoBossThreadPoolSize(int ioBossThreadPoolSize) {
+                this.ioBossThreadPoolSize = ioBossThreadPoolSize;
+            }
+
+            public int getIoWorkThreadPoolSize() {
+                return ioWorkThreadPoolSize;
+            }
+
+            public void setIoWorkThreadPoolSize(int ioWorkThreadPoolSize) {
+                this.ioWorkThreadPoolSize = ioWorkThreadPoolSize;
+            }
+
+
+            public int getPort() {
+                return port;
+            }
+
+            public void setPort(int port) {
+                this.port = port;
+            }
+
+            public boolean isSsl() {
+                return ssl;
+            }
+
+            public void setSsl(boolean ssl) {
+                this.ssl = ssl;
+            }
+
+            public boolean isEnableHeartCheck() {
+                return enableHeartCheck;
+            }
+
+            public void setEnableHeartCheck(boolean enableHeartCheck) {
+                this.enableHeartCheck = enableHeartCheck;
+            }
+
+            public long getReaderIdleTime() {
+                return readerIdleTime;
+            }
+
+            public void setReaderIdleTime(long readerIdleTime) {
+                this.readerIdleTime = readerIdleTime;
+            }
+
+            @Override
+            public String toString() {
+                return "ConsumerProperties{" +
+                        "ioBossThreadPoolSize=" + ioBossThreadPoolSize +
+                        ", ioWorkThreadPoolSize=" + ioWorkThreadPoolSize +
+                        ", port=" + port +
+                        ", ssl=" + ssl +
+                        ", enableHeartCheck=" + enableHeartCheck +
+                        ", readerIdleTime=" + readerIdleTime +
+                        '}';
+            }
+        }
+
+        @Override
+        public String toString() {
+            return "GatewayProperties{" +
+                    "consumer=" + consumer +
+                    ", provider=" + provider +
+                    ", readableName='" + readableName + '\'' +
+                    ", executorThreadPoolSize=" + executorThreadPoolSize +
+                    ", askMaxDelay=" + askMaxDelay +
+                    ", csLoginMessageId=" + csLoginMessageId +
+                    ", scLoginMessageId=" + scLoginMessageId +
+                    ", snowflakeDispatcherName='" + snowflakeDispatcherName + '\'' +
+                    ", notFoundSnowflakeUseCode=" + notFoundSnowflakeUseCode +
+                    ", snowflakeUseCode=" + snowflakeUseCode +
+                    ", snowflakeDataCenterId=" + snowflakeDataCenterId +
+                    ", snowflakeWorkId=" + snowflakeWorkId +
+                    '}';
+        }
+    }
+
+    public static class ConsumerProperties {
+        public enum MODEL {
+            /**
+             * 服务模式
+             */
+            SERVER,
+            /**
+             * 直连模式
+             */
+            DIRECT
+        }
+
+        /**
+         * 服务器名
+         */
+        private String readableName = "consumer";
+        /**
+         * 连接模式
+         */
+        private MODEL model = MODEL.SERVER;
+
+        /**
+         * 连接的服务目标服务名
+         */
+        private String remoteName = "gateway";
+
+
+        /**
+         * 直连模式时 直接连接的端口号
+         */
+        private int remotePort = 2222;
+        /**
+         * 直连模式时 直接连接的地址
+         */
+        private String remoteHost = "127.0.0.1";
+        /**
+         * 自动连接服务
+         */
+        private boolean autoConnect = true;
+        /**
+         * 连接目标失败后下一次连接间隔毫秒(手动连接时自己处理)
+         */
+        private long connectFailInterval = 20000;
+        /**
+         * 与目标建立的channel 数量
+         */
+        private int remoteChannel = 1;
+
+        /**
+         * 同步请求超时时间
+         */
+        private int requestTimeout = 500;
+        /**
+         * 开启事件
+         */
+        private boolean enableEvent = false;
+
+        /**
+         * 处理事件的线程数
+         */
+        private int eventThreadPoolSize = 0;
+        /**
+         * netty workGroup 线程数
+         */
+        private int ioWorkThreadPoolSize = 1;
+        /**
+         * 逻辑处理线程数
+         */
+        private int executorThreadPoolSize = 0;
+
+        /**
+         * 没有channel时下一个可用channel重发消息的时间限制
+         */
+        private int messageWaitSendTimeout = 10000;
+
+        /**
+         * 输出格式化
+         */
+        private boolean outFormat = true;
+        /**
+         * 输入格式化
+         */
+        private boolean inFormat = true;
+        /**
+         * 开启ssl
+         */
+        private boolean ssl = false;
+
+        /**
+         * 是否开启心跳检查
+         */
+        private boolean enableHeartCheck = false;
+        /**
+         * 心跳写入间隔毫秒
+         */
+        private long writerIdleTime = 5000;
+        /**
+         * 服务器返回错误消息id 多个用逗号,隔开
+         */
+        private String scErrorMessageId = "1000500";
 
         public String getReadableName() {
             return readableName;
@@ -875,154 +889,158 @@ public class ServerProperties {
 
         public void setReadableName(String readableName) {
             this.readableName = readableName;
-            setReadableName = true;
         }
 
-        public boolean isCsSsl() {
-            return csSsl;
+        public MODEL getModel() {
+            return model;
         }
 
-        public void setCsSsl(boolean csSsl) {
-            this.csSsl = csSsl;
+        public void setModel(MODEL model) {
+            this.model = model;
         }
 
-        public boolean isScSsl() {
-            return scSsl;
+        public String getRemoteName() {
+            return remoteName;
         }
 
-        public void setScSsl(boolean scSsl) {
-            this.scSsl = scSsl;
+        public void setRemoteName(String remoteName) {
+            this.remoteName = remoteName;
         }
 
-        public int getIoCsBossThreadPoolSize() {
-            return ioCsBossThreadPoolSize;
+        public int getRemotePort() {
+            return remotePort;
         }
 
-        public void setIoCsBossThreadPoolSize(int ioCsBossThreadPoolSize) {
-            this.ioCsBossThreadPoolSize = ioCsBossThreadPoolSize;
+        public void setRemotePort(int remotePort) {
+            this.remotePort = remotePort;
         }
 
-        public int getIoCsWorkThreadPoolSize() {
-            return ioCsWorkThreadPoolSize;
+        public String getRemoteHost() {
+            return remoteHost;
         }
 
-        public void setIoCsWorkThreadPoolSize(int ioCsWorkThreadPoolSize) {
-            this.ioCsWorkThreadPoolSize = ioCsWorkThreadPoolSize;
+        public void setRemoteHost(String remoteHost) {
+            this.remoteHost = remoteHost;
         }
 
-        public int getIoScBossThreadPoolSize() {
-            return ioScBossThreadPoolSize;
+        public boolean isAutoConnect() {
+            return autoConnect;
         }
 
-        public void setIoScBossThreadPoolSize(int ioScBossThreadPoolSize) {
-            this.ioScBossThreadPoolSize = ioScBossThreadPoolSize;
+        public void setAutoConnect(boolean autoConnect) {
+            this.autoConnect = autoConnect;
         }
 
-        public int getIoScWorkThreadPoolSize() {
-            return ioScWorkThreadPoolSize;
+        public long getConnectFailInterval() {
+            return connectFailInterval;
         }
 
-        public void setIoScWorkThreadPoolSize(int ioScWorkThreadPoolSize) {
-            this.ioScWorkThreadPoolSize = ioScWorkThreadPoolSize;
+        public void setConnectFailInterval(long connectFailInterval) {
+            this.connectFailInterval = connectFailInterval;
         }
 
-        public long getCsReaderIdleTime() {
-            return csReaderIdleTime;
+        public int getRemoteChannel() {
+            return remoteChannel;
         }
 
-        public void setCsReaderIdleTime(long csReaderIdleTime) {
-            this.csReaderIdleTime = csReaderIdleTime;
+        public void setRemoteChannel(int remoteChannel) {
+            this.remoteChannel = remoteChannel;
         }
 
-        public long getScReaderIdleTime() {
-            return scReaderIdleTime;
+        public int getRequestTimeout() {
+            return requestTimeout;
         }
 
-        public void setScReaderIdleTime(long scReaderIdleTime) {
-            this.scReaderIdleTime = scReaderIdleTime;
+        public void setRequestTimeout(int requestTimeout) {
+            this.requestTimeout = requestTimeout;
         }
 
-        public boolean isEnableSCHeartCheck() {
-            return enableSCHeartCheck;
+        public boolean isEnableEvent() {
+            return enableEvent;
         }
 
-        public void setEnableSCHeartCheck(boolean enableSCHeartCheck) {
-            this.enableSCHeartCheck = enableSCHeartCheck;
+        public void setEnableEvent(boolean enableEvent) {
+            this.enableEvent = enableEvent;
         }
 
-        public boolean isEnableCSHeartCheck() {
-            return enableCSHeartCheck;
+        public int getEventThreadPoolSize() {
+            return eventThreadPoolSize;
         }
 
-        public void setEnableCSHeartCheck(boolean enableCSHeartCheck) {
-            this.enableCSHeartCheck = enableCSHeartCheck;
+        public void setEventThreadPoolSize(int eventThreadPoolSize) {
+            this.eventThreadPoolSize = eventThreadPoolSize;
         }
 
-        public boolean isNotFoundSnowflakeUseCode() {
-            return notFoundSnowflakeUseCode;
+        public int getIoWorkThreadPoolSize() {
+            return ioWorkThreadPoolSize;
         }
 
-        public void setNotFoundSnowflakeUseCode(boolean notFoundSnowflakeUseCode) {
-            this.notFoundSnowflakeUseCode = notFoundSnowflakeUseCode;
+        public void setIoWorkThreadPoolSize(int ioWorkThreadPoolSize) {
+            this.ioWorkThreadPoolSize = ioWorkThreadPoolSize;
         }
 
-        @Override
-        public String toString() {
-            return "Gateway{" +
-                    ", readableName='" + readableName + '\'' +
-                    ", executorThreadPoolSize=" + executorThreadPoolSize +
-                    ", ioCsBossThreadPoolSize=" + ioCsBossThreadPoolSize +
-                    ", ioScBossThreadPoolSize=" + ioScBossThreadPoolSize +
-                    ", ioCsWorkThreadPoolSize=" + ioCsWorkThreadPoolSize +
-                    ", ioScWorkThreadPoolSize=" + ioScWorkThreadPoolSize +
-                    ", csSsl=" + csSsl +
-                    ", ScSsl=" + scSsl +
-                    ", csPort=" + csPort +
-                    ", scPort=" + scPort +
-                    ", csLoginMessageId=" + csLoginMessageId +
-                    ", scLoginMessageId=" + scLoginMessageId +
-                    '}';
+        public int getExecutorThreadPoolSize() {
+            return executorThreadPoolSize;
         }
-    }
 
+        public void setExecutorThreadPoolSize(int executorThreadPoolSize) {
+            this.executorThreadPoolSize = executorThreadPoolSize;
+        }
 
-    public Gateway getGateway() {
-        return gateway;
-    }
+        public int getMessageWaitSendTimeout() {
+            return messageWaitSendTimeout;
+        }
 
-    public void setGateway(Gateway gateway) {
-        this.gateway = gateway;
-    }
+        public void setMessageWaitSendTimeout(int messageWaitSendTimeout) {
+            this.messageWaitSendTimeout = messageWaitSendTimeout;
+        }
 
-    public Provider getProvider() {
-        return provider;
-    }
+        public boolean isOutFormat() {
+            return outFormat;
+        }
 
-    public void setProvider(Provider provider) {
-        this.provider = provider;
-    }
+        public void setOutFormat(boolean outFormat) {
+            this.outFormat = outFormat;
+        }
 
-    public String getName() {
-        return name;
-    }
+        public boolean isInFormat() {
+            return inFormat;
+        }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+        public void setInFormat(boolean inFormat) {
+            this.inFormat = inFormat;
+        }
 
-    public Consumer getConsumer() {
-        return consumer;
-    }
+        public boolean isSsl() {
+            return ssl;
+        }
 
-    public void setConsumer(Consumer consumer) {
-        this.consumer = consumer;
-    }
+        public void setSsl(boolean ssl) {
+            this.ssl = ssl;
+        }
 
-    public Direct getDirect() {
-        return direct;
-    }
+        public boolean isEnableHeartCheck() {
+            return enableHeartCheck;
+        }
 
-    public void setDirect(Direct direct) {
-        this.direct = direct;
+        public void setEnableHeartCheck(boolean enableHeartCheck) {
+            this.enableHeartCheck = enableHeartCheck;
+        }
+
+        public long getWriterIdleTime() {
+            return writerIdleTime;
+        }
+
+        public void setWriterIdleTime(long writerIdleTime) {
+            this.writerIdleTime = writerIdleTime;
+        }
+
+        public String getScErrorMessageId() {
+            return scErrorMessageId;
+        }
+
+        public void setScErrorMessageId(String scErrorMessageId) {
+            this.scErrorMessageId = scErrorMessageId;
+        }
     }
 }

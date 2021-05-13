@@ -1,10 +1,7 @@
 package com.senpure.io.server.support.annotation;
 
 import com.senpure.io.server.ServerProperties;
-import com.senpure.io.server.support.autoconfigure.ProviderAutoConfiguration;
-import com.senpure.io.server.support.autoconfigure.ProviderDirectAutoConfiguration;
-import com.senpure.io.server.support.autoconfigure.ProviderGatewayAutoConfiguration;
-import com.senpure.io.server.support.autoconfigure.ProviderMessageHandlerAutoConfiguration;
+import com.senpure.io.server.support.autoconfigure.*;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Import;
 
@@ -22,9 +19,10 @@ import java.lang.annotation.Target;
 @Target(value = {java.lang.annotation.ElementType.TYPE})
 @Documented
 @EnableConfigurationProperties({ServerProperties.class})
-@Import({ProviderAutoConfiguration.class,
+@Import({
+        ProviderAutoConfiguration.class,
         ProviderGatewayAutoConfiguration.class,
-        ProviderDirectAutoConfiguration.class,
+        ProviderConsumerAutoConfiguration.class,
         ProviderMessageHandlerAutoConfiguration.class
 
 })

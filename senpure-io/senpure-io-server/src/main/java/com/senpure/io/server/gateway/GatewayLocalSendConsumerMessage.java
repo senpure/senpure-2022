@@ -2,15 +2,20 @@ package com.senpure.io.server.gateway;
 
 import com.senpure.io.protocol.Message;
 import com.senpure.io.server.AbstractMessageFrame;
+import com.senpure.io.server.support.MessageIdReader;
 
 public class GatewayLocalSendConsumerMessage  extends AbstractMessageFrame implements GatewaySendConsumerMessage{
 
-   private  long token;
+
     public GatewayLocalSendConsumerMessage(Message message) {
         super(message);
     }
 
-    public void setToken(long token) {
-        this.token = token;
+    @Override
+    public String toString() {
+        return "GatewayLocalSendConsumerMessage{" +
+                "messageId=" + MessageIdReader.read(messageId) +
+                ",requestId =" + requestId +
+                '}';
     }
 }

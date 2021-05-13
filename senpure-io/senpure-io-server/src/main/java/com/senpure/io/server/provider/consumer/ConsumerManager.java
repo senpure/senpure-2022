@@ -1,11 +1,11 @@
-package com.senpure.io.server.direct;
+package com.senpure.io.server.provider.consumer;
 
 import com.senpure.io.protocol.Message;
 import com.senpure.io.server.ChannelAttributeUtil;
-import com.senpure.io.server.gateway.consumer.Consumer;
 import com.senpure.io.server.provider.MessageSender;
 import com.senpure.io.server.provider.ProviderSendMessage;
 import com.senpure.io.server.remoting.AbstractServerManager;
+import com.senpure.io.server.remoting.FutureService;
 import com.senpure.io.server.remoting.ResponseCallback;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
@@ -15,22 +15,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ClientManager extends AbstractServerManager<ProviderSendMessage> implements MessageSender {
+public class ConsumerManager extends AbstractServerManager<ProviderSendMessage> implements MessageSender {
 
-    private final Map<Long, ClientRelation> userChannelMap = new ConcurrentHashMap<>();
-    private final Map<Long, ClientRelation> tokenChannelMap = new ConcurrentHashMap<>();
-    private final Map<String, Channel> keyChannelMap = new ConcurrentHashMap<>();
+    private final Map<Long, ConsumerRelation> userChannelMap = new ConcurrentHashMap<>();
+    private final Map<Long, ConsumerRelation> tokenChannelMap = new ConcurrentHashMap<>();
+    private final Map<String, Channel> consumerChannelMap = new ConcurrentHashMap<>();
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Consumer consumer;
 
+    public ConsumerManager(FutureService futureService) {
+        consumer = new Consumer();
+        consumer.setFutureService(futureService);
+        consumer.verifyWorkable();
+    }
 
-
-
-    private Consumer consumer = new Consumer();
 
     public void addChannel(String key, Channel channel) {
 
-        keyChannelMap.put(key, channel);
+        consumerChannelMap.put(key, channel);
     }
 
     /**
@@ -42,9 +45,9 @@ public class ClientManager extends AbstractServerManager<ProviderSendMessage> im
     @Override
     public void sendMessage(Long userId, Message message) {
 
-        ClientRelation clientRelation = userChannelMap.get(userId);
-        if (clientRelation != null) {
-            clientRelation.channel.writeAndFlush(createMessage(userId, message));
+        ConsumerRelation consumerRelation = userChannelMap.get(userId);
+        if (consumerRelation != null) {
+            consumerRelation.channel.writeAndFlush(createMessage(userId, message));
         } else {
 
             logger.warn("userId {} channel is null ", userId);
@@ -54,9 +57,9 @@ public class ClientManager extends AbstractServerManager<ProviderSendMessage> im
 
     @Override
     public void sendMessage(Long userId, Message message, ResponseCallback callback) {
-        ClientRelation clientRelation = userChannelMap.get(userId);
-        if (clientRelation != null) {
-            consumer.sendMessage(clientRelation.channel, createMessage(userId, message), callback);
+        ConsumerRelation consumerRelation = userChannelMap.get(userId);
+        if (consumerRelation != null) {
+            consumer.sendMessage(consumerRelation.channel, createMessage(userId, message), callback);
         } else {
 
             logger.warn("userId {} channel is null ", userId);
@@ -66,9 +69,9 @@ public class ClientManager extends AbstractServerManager<ProviderSendMessage> im
 
     @Override
     public void sendMessage(Long userId, Message message, ResponseCallback callback, int timeout) {
-        ClientRelation clientRelation = userChannelMap.get(userId);
-        if (clientRelation != null) {
-            consumer.sendMessage(clientRelation.channel, createMessage(userId, message), callback, timeout);
+        ConsumerRelation consumerRelation = userChannelMap.get(userId);
+        if (consumerRelation != null) {
+            consumer.sendMessage(consumerRelation.channel, createMessage(userId, message), callback, timeout);
         } else {
 
             logger.warn("userId {} channel is null ", userId);
@@ -84,9 +87,9 @@ public class ClientManager extends AbstractServerManager<ProviderSendMessage> im
      */
     @Override
     public void sendMessageByToken(Long token, Message message) {
-        ClientRelation clientRelation = tokenChannelMap.get(token);
-        if (clientRelation != null) {
-            clientRelation.channel.writeAndFlush(createMessageByToken(token, message));
+        ConsumerRelation consumerRelation = tokenChannelMap.get(token);
+        if (consumerRelation != null) {
+            consumerRelation.channel.writeAndFlush(createMessageByToken(token, message));
         } else {
             logger.warn("token  {} channel is null ", token);
 
@@ -115,7 +118,7 @@ public class ClientManager extends AbstractServerManager<ProviderSendMessage> im
     @Override
     public void respondMessage(Long userId, Message message, int requestId) {
 
-        ClientRelation relation = userChannelMap.get(userId);
+        ConsumerRelation relation = userChannelMap.get(userId);
         if (relation != null) {
             ProviderSendMessage frame = createMessage(userId, message);
             frame.setRequestId(requestId);
@@ -147,7 +150,7 @@ public class ClientManager extends AbstractServerManager<ProviderSendMessage> im
      */
     @Override
     public void respondMessageByToken(Long token, Message message, int requestId) {
-        ClientRelation relation = tokenChannelMap.get(token);
+        ConsumerRelation relation = tokenChannelMap.get(token);
         if (relation != null) {
             ProviderSendMessage frame = createMessageByToken(token, message);
             frame.setRequestId(requestId);
@@ -161,7 +164,7 @@ public class ClientManager extends AbstractServerManager<ProviderSendMessage> im
 
     @Override
     public void sendMessage(Long userId, List<Message> messages) {
-        ClientRelation relation = userChannelMap.get(userId);
+        ConsumerRelation relation = userChannelMap.get(userId);
         if (relation != null) {
             for (Message message : messages) {
                 ProviderSendMessage frame = createMessage(userId, message);
@@ -177,7 +180,7 @@ public class ClientManager extends AbstractServerManager<ProviderSendMessage> im
 
     @Override
     public void sendMessageByToken(Long token, List<Message> messages) {
-        ClientRelation relation = tokenChannelMap.get(token);
+        ConsumerRelation relation = tokenChannelMap.get(token);
         if (relation != null) {
             for (Message message : messages) {
                 ProviderSendMessage frame = createMessageByToken(token, message);
@@ -244,7 +247,7 @@ public class ClientManager extends AbstractServerManager<ProviderSendMessage> im
 
     @Override
     public void sendKickOffMessage(Long userId) {
-        ClientRelation relation = userChannelMap.get(userId);
+        ConsumerRelation relation = userChannelMap.get(userId);
         if (relation != null) {
 
             relation.channel.close();
@@ -260,7 +263,7 @@ public class ClientManager extends AbstractServerManager<ProviderSendMessage> im
     public void sendKickOffMessageByToken(Long token) {
         // logger.warn("direct sendKickOffMessageByToken ignore");
 
-        ClientRelation relation = tokenChannelMap.get(token);
+        ConsumerRelation relation = tokenChannelMap.get(token);
         if (relation != null) {
 
             relation.channel.close();
@@ -303,7 +306,7 @@ public class ClientManager extends AbstractServerManager<ProviderSendMessage> im
 
     @Override
     public void respondMessageByTokenAndRelationUser(Long token, Long userId, Message message, int requestId) {
-        ClientRelation relation = tokenChannelMap.get(token);
+        ConsumerRelation relation = tokenChannelMap.get(token);
         if (relation != null) {
             userChannelMap.put(userId, relation);
             ChannelAttributeUtil.setUserId(relation.channel, userId);
@@ -332,13 +335,13 @@ public class ClientManager extends AbstractServerManager<ProviderSendMessage> im
     @Override
     public void relationUser(String gatewayKey, Long userId, long relationToken) {
 
-        Channel channel = keyChannelMap.get(gatewayKey);
+        Channel channel = consumerChannelMap.get(gatewayKey);
         if (channel != null) {
-            ClientRelation clientRelation = new ClientRelation();
-            clientRelation.relationToken = relationToken;
-            clientRelation.channel = channel;
-            clientRelation.key = gatewayKey;
-            userChannelMap.put(userId, clientRelation);
+            ConsumerRelation consumerRelation = new ConsumerRelation();
+            consumerRelation.relationToken = relationToken;
+            consumerRelation.channel = channel;
+            consumerRelation.key = gatewayKey;
+            userChannelMap.put(userId, consumerRelation);
         } else {
 
             logger.warn("gatewayKey {} userId  没有找到channel", gatewayKey);
@@ -355,13 +358,13 @@ public class ClientManager extends AbstractServerManager<ProviderSendMessage> im
     @Override
     public void relationToken(String gatewayKey, Long token, long relationToken) {
 
-        Channel channel = keyChannelMap.get(gatewayKey);
+        Channel channel = consumerChannelMap.get(gatewayKey);
         if (channel != null) {
-            ClientRelation clientRelation = new ClientRelation();
-            clientRelation.relationToken = relationToken;
-            clientRelation.channel = channel;
-            clientRelation.key = gatewayKey;
-            tokenChannelMap.put(token, clientRelation);
+            ConsumerRelation consumerRelation = new ConsumerRelation();
+            consumerRelation.relationToken = relationToken;
+            consumerRelation.channel = channel;
+            consumerRelation.key = gatewayKey;
+            tokenChannelMap.put(token, consumerRelation);
         } else {
 
             logger.warn("gatewayKey {}  token没有找到channel", gatewayKey);
@@ -371,7 +374,7 @@ public class ClientManager extends AbstractServerManager<ProviderSendMessage> im
     @Override
     public boolean breakUser(Long userId, long relationToken) {
 
-        ClientRelation relation = userChannelMap.get(userId);
+        ConsumerRelation relation = userChannelMap.get(userId);
         if (relation != null) {
             if (relation.relationToken == relationToken) {
                 logger.debug("{} 取消关联user {}", relation.key, userId);
@@ -384,7 +387,7 @@ public class ClientManager extends AbstractServerManager<ProviderSendMessage> im
 
     @Override
     public boolean breakToken(Long token, long relationToken) {
-        ClientRelation relation = tokenChannelMap.get(token);
+        ConsumerRelation relation = tokenChannelMap.get(token);
         if (relation != null) {
             if (relation.relationToken == relationToken) {
                 logger.debug("{} 取消关联token {}", relation.key, token);
@@ -409,9 +412,10 @@ public class ClientManager extends AbstractServerManager<ProviderSendMessage> im
     }
 
 
-    private static class ClientRelation {
+    private static class ConsumerRelation {
         String key;
         Channel channel;
         Long relationToken;
     }
+
 }

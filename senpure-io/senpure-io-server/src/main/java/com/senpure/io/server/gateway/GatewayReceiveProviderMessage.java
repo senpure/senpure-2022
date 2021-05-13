@@ -92,8 +92,9 @@ public class GatewayReceiveProviderMessage implements GatewaySendConsumerMessage
 
     public String toString() {
 
-        return "SG{" +
+        return "GatewayReceiveProviderMessage{" +
                 "messageId=" + MessageIdReader.read(messageId) +
+                ",requestId =" + requestId +
                 ",token=" + token +
                 ", userIds=" + Arrays.toString(userIds) +
                 ", dataLen=" + (data == null ? 0 : data.length) +
