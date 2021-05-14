@@ -22,8 +22,8 @@ import org.slf4j.LoggerFactory;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
-public class GatewayServer {
-    protected static Logger logger = LoggerFactory.getLogger(GatewayServer.class);
+public class ProviderGatewayServer {
+    protected static Logger logger = LoggerFactory.getLogger(ProviderGatewayServer.class);
 
 
 
@@ -80,15 +80,15 @@ public class GatewayServer {
                                     if (finalSslCtx != null) {
                                         p.addLast(finalSslCtx.newHandler(ch.alloc(), remoteHost, remotePort));
                                     }
-                                    p.addLast(new GatewayMessageDecoder(decoderContext));
-                                    p.addLast(new GatewayMessageEncoder());
+                                    p.addLast(new ProviderGatewayMessageDecoder(decoderContext));
+                                    p.addLast(new ProviderGatewayMessageEncoder());
                                     if (addLoggingHandler) {
                                         p.addLast(new ProviderLoggingHandler(LogLevel.DEBUG, gateway.isInFormat(), gateway.isOutFormat()));
                                     }
                                     if (gateway.isEnableHeartCheck()) {
                                         p.addLast(new IdleStateHandler(0, gateway.getWriterIdleTime(), 0, TimeUnit.MILLISECONDS));
                                     }
-                                    p.addLast(new GatewayServerHandler(messageExecutor, gatewayManager));
+                                    p.addLast(new ProviderGatewayServerHandler(messageExecutor, gatewayManager));
                                 }
                             });
 

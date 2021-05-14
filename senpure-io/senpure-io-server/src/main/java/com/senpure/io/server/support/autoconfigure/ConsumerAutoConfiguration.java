@@ -6,13 +6,9 @@ import com.senpure.executor.TaskLoopGroup;
 import com.senpure.io.server.DefaultMessageDecoderContext;
 import com.senpure.io.server.MessageDecoderContext;
 import com.senpure.io.server.ServerProperties;
-import com.senpure.io.server.consumer.ConsumerMessageExecutor;
-import com.senpure.io.server.consumer.ConsumerMessageHandlerContext;
-import com.senpure.io.server.consumer.DefaultConsumerMessageHandlerContext;
-import com.senpure.io.server.consumer.RemoteServerManager;
+import com.senpure.io.server.consumer.*;
 import com.senpure.io.server.consumer.handler.ConsumerMessageHandler;
-import com.senpure.io.server.consumer.remoting.DefaultFuture;
-import com.senpure.io.server.consumer.remoting.SuccessCallback;
+import com.senpure.io.server.consumer.SuccessCallback;
 import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
 import com.senpure.io.server.protocol.message.SCHeartMessage;
 import com.senpure.io.server.support.ConsumerServerStarter;
@@ -41,16 +37,13 @@ public class ConsumerAutoConfiguration {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
 
-
     private final ServerProperties properties;
 
     private TaskLoopGroup taskLoopGroup;
 
 
-
-
     public ConsumerAutoConfiguration(Environment env, ServerProperties properties) {
-        check(env,properties);
+        check(env, properties);
         this.properties = properties;
     }
 
@@ -117,17 +110,24 @@ public class ConsumerAutoConfiguration {
         return handlerContext;
     }
 
+    // @Bean
+//    public RemoteServerManager remoteServerManager() {
+//        return new RemoteServerManager(properties.getConsumer());
+//    }
+
     @Bean
-    public RemoteServerManager remoteServerManager() {
-        return new RemoteServerManager(properties.getConsumer());
+    public ProviderManager providerManager() {
+
+        return new ProviderManager();
     }
 
     @Bean
-    public ConsumerMessageExecutor consumerMessageExecutor(ConsumerMessageHandlerContext messageDecoderContext) {
-
-        ConsumerMessageExecutor messageExecutor = new ConsumerMessageExecutor(properties.getConsumer(), messageDecoderContext);
-        DefaultFuture.setMessageExecutor(messageExecutor);
-        return messageExecutor;
+    public ConsumerMessageExecutor consumerMessageExecutor(TaskLoopGroup taskLoopGroup,
+                                                           ConsumerMessageHandlerContext messageDecoderContext,
+                                                           ProviderManager providerManager) {
+        return new ConsumerMessageExecutor(taskLoopGroup,
+                properties.getConsumer(),
+                messageDecoderContext, providerManager);
     }
 
     @Bean

@@ -5,7 +5,7 @@ import com.senpure.io.server.protocol.message.CSMatchingMessage;
 import com.senpure.io.server.protocol.message.SCMatchingMessage;
 import io.netty.channel.Channel;
 
-public class CSMatchingMessageHandler  extends  AbstractProviderMessageHandler{
+public class CSMatchingMessageHandler  extends AbstractGatewayProviderMessageHandler {
     @Override
     public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
 

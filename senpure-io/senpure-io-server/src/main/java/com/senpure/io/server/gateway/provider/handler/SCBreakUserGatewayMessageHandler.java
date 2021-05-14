@@ -6,7 +6,7 @@ import com.senpure.io.server.gateway.provider.ProviderManager;
 import com.senpure.io.server.protocol.message.SCBreakUserGatewayMessage;
 import io.netty.channel.Channel;
 
-public class SCBreakUserGatewayMessageHandler extends AbstractProviderMessageHandler {
+public class SCBreakUserGatewayMessageHandler extends AbstractGatewayProviderMessageHandler {
     @Override
     public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
 

@@ -41,14 +41,13 @@ public class ConsumerServer {
     private ConsumerMessageExecutor messageExecutor;
 
     private Channel channel;
-    private RemoteServerManager remoteServerManager;
+    private ProviderManager remoteServerManager;
     private boolean addLoggingHandler = true;
 
     private final List<ChannelHandler> extHandlers = new ArrayList<>();
 
 
     private MessageDecoderContext decoderContext;
-
 
 
     public final boolean start(String host, int port) {
@@ -150,9 +149,10 @@ public class ConsumerServer {
             channelFuture.channel().close();
             synchronized (groupLock) {
                 serverRefCont--;
+                logger.debug("{} 关闭 channel {} ", getReadableServerName(),channel);
             }
         }
-        logger.debug("关闭{}并释放资源 ", getReadableServerName());
+
         tryDestroyGroup(getReadableServerName());
     }
 
@@ -171,7 +171,7 @@ public class ConsumerServer {
     }
 
 
-    public void setRemoteServerManager(RemoteServerManager remoteServerManager) {
+    public void setRemoteServerManager(ProviderManager remoteServerManager) {
         this.remoteServerManager = remoteServerManager;
     }
 

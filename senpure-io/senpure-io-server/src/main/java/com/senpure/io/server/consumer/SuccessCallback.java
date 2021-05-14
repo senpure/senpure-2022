@@ -1,9 +1,10 @@
-package com.senpure.io.server.consumer.remoting;
+package com.senpure.io.server.consumer;
 
 
 import com.senpure.io.protocol.Message;
-import com.senpure.io.server.consumer.ConsumerMessageHandlerContext;
 import com.senpure.io.server.consumer.handler.ConsumerMessageHandler;
+import com.senpure.io.server.remoting.Response;
+import com.senpure.io.server.remoting.ResponseCallback;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,9 +23,9 @@ public abstract class SuccessCallback<T extends Message> implements ResponseCall
     @Override
     public void execute(Response result) {
         if (result.isSuccess()) {
-            success(result.getValue());
+            success(result.getMessage());
         } else {
-            error(result.getChannel(), result.getError());
+            error(result.getChannel(), result.getMessage());
         }
     }
 

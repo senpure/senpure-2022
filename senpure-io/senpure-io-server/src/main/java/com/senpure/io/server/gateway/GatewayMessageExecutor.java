@@ -8,10 +8,10 @@ import com.senpure.io.protocol.Message;
 import com.senpure.io.server.ChannelAttributeUtil;
 import com.senpure.io.server.Constant;
 import com.senpure.io.server.ServerProperties;
-import com.senpure.io.server.gateway.consumer.handler.ConsumerMessageHandler;
+import com.senpure.io.server.gateway.consumer.handler.GatewayConsumerMessageHandler;
 import com.senpure.io.server.gateway.provider.Provider;
 import com.senpure.io.server.gateway.provider.ProviderManager;
-import com.senpure.io.server.gateway.provider.handler.ProviderMessageHandler;
+import com.senpure.io.server.gateway.provider.handler.GatewayProviderMessageHandler;
 import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
 import com.senpure.io.server.remoting.AbstractMessageExecutor;
 import com.senpure.io.server.support.MessageIdReader;
@@ -47,8 +47,8 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
     public final ConcurrentHashMap<Long, WaitRelationTask> waitRelationMap = new ConcurrentHashMap<>(16);
     public final ConcurrentHashMap<Long, WaitAskTask> waitAskMap = new ConcurrentHashMap<>(16);
 
-    private final Map<Integer, ProviderMessageHandler> provider2GatewayHandlerMap = new HashMap<>();
-    private final Map<Integer, ConsumerMessageHandler> consumer2GatewayHandlerMap = new HashMap<>();
+    private final Map<Integer, GatewayProviderMessageHandler> provider2GatewayHandlerMap = new HashMap<>();
+    private final Map<Integer, GatewayConsumerMessageHandler> consumer2GatewayHandlerMap = new HashMap<>();
     private boolean init = false;
 
     public GatewayMessageExecutor() {
@@ -67,8 +67,8 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
     }
 
 
-    public void registerProviderMessageHandler(ProviderMessageHandler handler) {
-        ProviderMessageHandler old = provider2GatewayHandlerMap.get(handler.messageId());
+    public void registerProviderMessageHandler(GatewayProviderMessageHandler handler) {
+        GatewayProviderMessageHandler old = provider2GatewayHandlerMap.get(handler.messageId());
         if (old != null) {
             Assert.error(handler.messageId() + " -> " + MessageIdReader.read(handler.messageId()) + "  处理程序已经存在"
                     + " 存在 " + old.getClass().getName() + " 注册 " + handler.getClass().getName());
@@ -76,8 +76,8 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
         provider2GatewayHandlerMap.put(handler.messageId(), handler);
     }
 
-    public void registerConsumerMessageHandler(ConsumerMessageHandler handler) {
-        ConsumerMessageHandler old = consumer2GatewayHandlerMap.get(handler.messageId());
+    public void registerConsumerMessageHandler(GatewayConsumerMessageHandler handler) {
+        GatewayConsumerMessageHandler old = consumer2GatewayHandlerMap.get(handler.messageId());
         if (old != null) {
             Assert.error(handler.messageId() + " -> " + MessageIdReader.read(handler.messageId()) + "  处理程序已经存在"
                     + " 存在 " + old.getClass().getName() + " 注册 " + handler.getClass().getName());
@@ -102,7 +102,7 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
         long token = message.token();
         service.get(token).execute(() -> {
             try {
-                ConsumerMessageHandler handler = consumer2GatewayHandlerMap.get(message.messageId());
+                GatewayConsumerMessageHandler handler = consumer2GatewayHandlerMap.get(message.messageId());
                 if (handler != null) {
                     handler.execute(channel, message);
                     if (handler.stopProvider()) {
@@ -201,7 +201,7 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
         long token = message.getToken();
         service.get(token).execute(() -> {
             try {
-                ProviderMessageHandler handler = provider2GatewayHandlerMap.get(message.getMessageId());
+                GatewayProviderMessageHandler handler = provider2GatewayHandlerMap.get(message.getMessageId());
                 if (handler != null) {
                     handler.execute(channel, message);
                     if (handler.stopConsumer()) {

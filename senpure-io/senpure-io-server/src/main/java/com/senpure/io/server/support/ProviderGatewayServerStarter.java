@@ -12,7 +12,7 @@ import com.senpure.io.server.provider.*;
 import com.senpure.io.server.provider.gateway.Gateway;
 import com.senpure.io.server.provider.gateway.GatewayManager;
 import com.senpure.io.server.provider.ProviderMessageExecutor;
-import com.senpure.io.server.provider.gateway.GatewayServer;
+import com.senpure.io.server.provider.gateway.ProviderGatewayServer;
 import com.senpure.io.server.provider.handler.ProviderAskMessageHandler;
 import com.senpure.io.server.provider.handler.ProviderMessageHandler;
 import com.senpure.io.server.remoting.ChannelService;
@@ -38,7 +38,7 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final ServerProperties properties;
-    private final List<GatewayServer> servers = new ArrayList<>();
+    private final List<ProviderGatewayServer> servers = new ArrayList<>();
     private final Map<String, Long> failGatewayMap = new HashMap<>();
     private long lastLogTime = 0;
 
@@ -63,7 +63,7 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
 
     @PreDestroy
     public void destroy() {
-        for (GatewayServer server : servers) {
+        for (ProviderGatewayServer server : servers) {
             server.destroy();
         }
 
@@ -167,28 +167,28 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
                                 logger.info("网关 [{}] {} {} 没有 没有配置provider socket端口,使用默认端口 {}", providerGateway.getName(), instance.getHost(), instance.getUri(), gatewayProperties.getProvider().getPort());
                             }
                             gateway.setConnecting(true);
-                            GatewayServer gatewayServer = new GatewayServer();
-                            gatewayServer.setGatewayManager(gatewayManager);
-                            gatewayServer.setProperties(providerProperties);
-                            gatewayServer.setMessageExecutor(messageExecutor);
-                            gatewayServer.setDecoderContext(decoderContext);
+                            ProviderGatewayServer providerGatewayServer = new ProviderGatewayServer();
+                            providerGatewayServer.setGatewayManager(gatewayManager);
+                            providerGatewayServer.setProperties(providerProperties);
+                            providerGatewayServer.setMessageExecutor(messageExecutor);
+                            providerGatewayServer.setDecoderContext(decoderContext);
 
-                            gatewayServer.setServerName(properties.getName());
-                            gatewayServer.setHttpPort(httpPort);
-                            gatewayServer.setReadableServerName(providerProperties.getReadableName());
-                            if (gatewayServer.start(instance.getHost(), port)) {
-                                servers.add(gatewayServer);
-                                registerProvider(gatewayServer, gateway, handleMessages);
+                            providerGatewayServer.setServerName(properties.getName());
+                            providerGatewayServer.setHttpPort(httpPort);
+                            providerGatewayServer.setReadableServerName(providerProperties.getReadableName());
+                            if (providerGatewayServer.start(instance.getHost(), port)) {
+                                servers.add(providerGatewayServer);
+                                registerProvider(providerGatewayServer, gateway, handleMessages);
                                 if (gateway.getChannelSize() == 0) {
                                     gateway.setDefaultWaitSendTimeout(providerGateway.getMessageWaitSendTimeout());
                                     if (finalIdNames != null && finalIdNames.size() > 0) {
-                                        registerIdNames(gatewayServer, finalIdNames);
+                                        registerIdNames(providerGatewayServer, finalIdNames);
                                     }
                                 }
 
                                 //认证
-                                gateway.addChannel(gatewayServer.getChannel());
-                                logger.debug("新增channel {} {}",gatewayServer.getChannel(),gateway.getChannelSize());
+                                gateway.addChannel(providerGatewayServer.getChannel());
+                                logger.debug("新增channel {} {}", providerGatewayServer.getChannel(),gateway.getChannelSize());
 
                             } else {
                                 logger.warn("{}  socket {}:{} 连接失败", providerGateway.getName(), instance.getHost(), port);
@@ -205,7 +205,7 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
         }, 2000, 50, TimeUnit.MILLISECONDS);
     }
 
-    public void registerProvider(GatewayServer server, Gateway gateway, List<HandleMessage> handleMessages) {
+    public void registerProvider(ProviderGatewayServer server, Gateway gateway, List<HandleMessage> handleMessages) {
         SCRegServerHandleMessageMessage message = new SCRegServerHandleMessageMessage();
         message.setServerName(properties.getName());
         message.setReadableServerName(server.getReadableServerName());
@@ -231,7 +231,7 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
         // server.getChannel().writeAndFlush(frame);
     }
 
-    public void registerIdNames(GatewayServer server, List<IdName> idNames) {
+    public void registerIdNames(ProviderGatewayServer server, List<IdName> idNames) {
         SCIdNameMessage message = new SCIdNameMessage();
         for (int i = 0; i < idNames.size(); i++) {
             if (i > 0 && i % 100 == 0) {
@@ -245,7 +245,7 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
         }
     }
 
-    private void registerIdNames(GatewayServer server, SCIdNameMessage message) {
+    private void registerIdNames(ProviderGatewayServer server, SCIdNameMessage message) {
         ProviderSendMessage frame = gatewayManager.createMessageByToken(0L, message);
 
         server.getChannel().writeAndFlush(frame);

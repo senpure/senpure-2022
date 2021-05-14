@@ -8,7 +8,7 @@ import com.senpure.io.server.protocol.message.SCRelationUserGatewayMessage;
 import com.senpure.io.server.support.MessageIdReader;
 import io.netty.channel.Channel;
 
-public class SCRelationUserGatewayMessageHandler extends AbstractProviderMessageHandler {
+public class SCRelationUserGatewayMessageHandler extends AbstractGatewayProviderMessageHandler {
     @Override
     public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
         SCRelationUserGatewayMessage message = new SCRelationUserGatewayMessage();

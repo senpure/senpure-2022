@@ -3,7 +3,7 @@ package com.senpure.io.server.gateway.consumer.handler;
 import com.senpure.io.server.gateway.GatewayReceiveConsumerMessage;
 import io.netty.channel.Channel;
 
-public interface ConsumerMessageHandler {
+public interface GatewayConsumerMessageHandler {
 
     void execute(Channel channel, GatewayReceiveConsumerMessage message);
 

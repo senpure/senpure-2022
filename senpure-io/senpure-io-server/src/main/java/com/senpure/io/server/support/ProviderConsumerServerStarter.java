@@ -3,7 +3,7 @@ package com.senpure.io.server.support;
 import com.senpure.io.server.MessageDecoderContext;
 import com.senpure.io.server.ServerProperties;
 import com.senpure.io.server.provider.consumer.ConsumerManager;
-import com.senpure.io.server.provider.consumer.ConsumerServer;
+import com.senpure.io.server.provider.consumer.ProviderConsumerServer;
 import com.senpure.io.server.protocol.bean.IdName;
 import com.senpure.io.server.provider.ProviderMessageExecutor;
 import org.apache.commons.lang3.StringUtils;
@@ -30,35 +30,35 @@ public class ProviderConsumerServerStarter {
     @Resource
     private MessageDecoderContext decoderContext;
 
-    private ConsumerServer consumerServer;
+    private ProviderConsumerServer providerConsumerServer;
 
 
     @PostConstruct
     public void init() {
 
-        ConsumerServer consumerServer = new ConsumerServer();
-        consumerServer.setMessageExecutor(messageExecutor);
-        consumerServer.setProperties(properties.getProvider());
+        ProviderConsumerServer providerConsumerServer = new ProviderConsumerServer();
+        providerConsumerServer.setMessageExecutor(messageExecutor);
+        providerConsumerServer.setProperties(properties.getProvider());
 
-        consumerServer.setClientManager(consumerManager);
+        providerConsumerServer.setClientManager(consumerManager);
 
-        consumerServer.setDecoderContext(decoderContext);
+        providerConsumerServer.setDecoderContext(decoderContext);
 
-        consumerServer.start();
+        providerConsumerServer.start();
         if (StringUtils.isNoneEmpty(properties.getProvider().getIdNamesPackage())) {
             List<IdName> idNames=  MessageScanner.scan(properties.getProvider().getIdNamesPackage());
             MessageIdReader.relation(idNames);
 
         }
 
-        this.consumerServer = consumerServer;
+        this.providerConsumerServer = providerConsumerServer;
     }
 
 
     @PreDestroy
     public void destroy() {
-        if (consumerServer != null) {
-            consumerServer.destroy();
+        if (providerConsumerServer != null) {
+            providerConsumerServer.destroy();
         }
 
 

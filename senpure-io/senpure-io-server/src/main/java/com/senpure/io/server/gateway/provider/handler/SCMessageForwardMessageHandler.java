@@ -7,7 +7,7 @@ import io.netty.channel.Channel;
 
 import java.util.Map;
 
-public class SCMessageForwardMessageHandler extends AbstractProviderMessageHandler {
+public class SCMessageForwardMessageHandler extends AbstractGatewayProviderMessageHandler {
     @Override
     public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
         SCMessageForwardMessage message = new SCMessageForwardMessage();

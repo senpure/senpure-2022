@@ -9,14 +9,24 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class AbstractServerManager<T extends MessageFrame> implements RemoteServerManager {
     protected Logger logger = LoggerFactory.getLogger(getClass());
-    private final AtomicInteger atomicRequestId = new AtomicInteger(1);
+    protected final AtomicInteger atomicRequestId = new AtomicInteger(1);
 
 
     protected int nextRequestId() {
         int requestId = atomicRequestId.getAndIncrement();
+        //为了编码效率将负数提高为正数
         if (requestId < 0) {
-            atomicRequestId.compareAndSet(requestId, 1);
-            return nextRequestId();
+            logger.info("requestId {} 小于0 重新获取", requestId);
+            synchronized (atomicRequestId) {
+                requestId = atomicRequestId.getAndIncrement();
+                if (requestId < 0) {
+                    atomicRequestId.set(1);
+                    requestId = atomicRequestId.getAndIncrement();
+                } else {
+                    logger.info("requestId {} 已经被其他线程修改", requestId);
+                }
+                return requestId;
+            }
         }
         return requestId;
     }

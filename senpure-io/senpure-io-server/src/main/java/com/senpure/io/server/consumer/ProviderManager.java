@@ -2,13 +2,11 @@ package com.senpure.io.server.consumer;
 
 import com.senpure.io.protocol.Message;
 import com.senpure.io.server.remoting.AbstractSingleServerManager;
-import com.senpure.io.server.remoting.RemoteServer;
 
-public class ProviderManager  extends AbstractSingleServerManager<ConsumerMessage> {
+import java.util.HashSet;
+import java.util.Set;
 
-    public ProviderManager(RemoteServer remoteServer) {
-        super(remoteServer);
-    }
+public class ProviderManager  extends AbstractSingleServerManager<ConsumerMessage,Provider> {
 
     @Override
     protected ConsumerMessage createMessage(Message message) {
@@ -22,4 +20,36 @@ public class ProviderManager  extends AbstractSingleServerManager<ConsumerMessag
         frame.setRequestId(requestId);
         return frame;
     }
+
+    public static void main(String[] args) {
+        ProviderManager providerManager = new ProviderManager();
+        providerManager.atomicRequestId.set(Integer.MAX_VALUE -20);
+
+        Set<Integer> integers = new HashSet<>();
+        for (int i = 0; i < 10; i++) {
+            Thread thread=new Thread(() -> {
+                for (int j = 0; j < 8; j++) {
+                    int id = providerManager.nextRequestId();
+                    integers.add(id);
+                    System.out.println(Thread.currentThread().getName()+" "+id);
+//                    if (!integers.add(id)) {
+//
+//                        Assert.error("" + id);
+//                    }
+                }
+            });
+            thread.start();
+
+        }
+
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println(integers.size());
+    }
+
+
 }

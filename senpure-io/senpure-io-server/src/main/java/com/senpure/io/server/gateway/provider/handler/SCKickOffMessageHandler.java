@@ -5,7 +5,7 @@ import com.senpure.io.server.gateway.GatewayReceiveProviderMessage;
 import com.senpure.io.server.protocol.message.SCKickOffMessage;
 import io.netty.channel.Channel;
 
-public class SCKickOffMessageHandler extends  AbstractProviderMessageHandler{
+public class SCKickOffMessageHandler extends AbstractGatewayProviderMessageHandler {
     @Override
     public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
         SCKickOffMessage message = new SCKickOffMessage();

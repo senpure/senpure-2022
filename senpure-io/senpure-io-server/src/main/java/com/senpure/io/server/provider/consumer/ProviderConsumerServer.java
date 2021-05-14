@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 
-public class ConsumerServer {
+public class ProviderConsumerServer {
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
     private EventLoopGroup bossGroup;
@@ -79,15 +79,15 @@ public class ConsumerServer {
                             if (finalSslCtx != null) {
                                 p.addLast(finalSslCtx.newHandler(ch.alloc()));
                             }
-                            p.addLast(new ConsumerMessageDecoder(decoderContext));
-                            p.addLast(new ConsumerMessageEncoder());
+                            p.addLast(new ProviderConsumerMessageDecoder(decoderContext));
+                            p.addLast(new ProviderConsumerMessageEncoder());
                             if (addLoggingHandler) {
                                 p.addLast(new ProviderLoggingHandler(LogLevel.DEBUG, consumer.isInFormat(), consumer.isOutFormat()));
                             }
                             if (consumer.isEnableHeartCheck()) {
                                 p.addLast(new IdleStateHandler(consumer.getReaderIdleTime(), 0L, 0L, TimeUnit.MILLISECONDS));
                             }
-                            p.addLast(new ConsumerServerHandler(messageExecutor, consumerManager));
+                            p.addLast(new ProviderConsumerServerHandler(messageExecutor, consumerManager));
 
                         }
                     });

@@ -8,7 +8,9 @@ import javax.annotation.Nonnull;
 public abstract class AbstractMultipleServerManger<T extends MessageFrame> extends AbstractServerManager<T> implements MultipleServerManager {
 
 
-
+    public String getRemoteServerKey(String host, int port) {
+        return host + ":" + port;
+    }
 
     @Override
     public void sendMessage(RemoteServer server, Message message) {

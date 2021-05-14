@@ -4,7 +4,7 @@ import com.senpure.io.server.gateway.GatewayReceiveProviderMessage;
 import com.senpure.io.server.protocol.message.SCHeartMessage;
 import io.netty.channel.Channel;
 
-public class SCHeartMessageHandler extends AbstractProviderMessageHandler {
+public class SCHeartMessageHandler extends AbstractGatewayProviderMessageHandler {
     @Override
     public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
 

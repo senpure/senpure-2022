@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 /**
  * 将客户端发到网关的消息，重新编码，发送给具体的服务器
  */
-public class ProviderMessageEncoder extends MessageToByteEncoder<GatewaySendProviderMessage> {
+public class GatewayProviderMessageEncoder extends MessageToByteEncoder<GatewaySendProviderMessage> {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
 

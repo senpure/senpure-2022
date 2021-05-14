@@ -5,9 +5,9 @@ import com.senpure.io.server.MessageDecoderContext;
 import com.senpure.io.server.ServerProperties;
 import com.senpure.io.server.consumer.ConsumerMessageExecutor;
 import com.senpure.io.server.consumer.ConsumerServer;
-import com.senpure.io.server.consumer.RemoteServerChannelManager;
-import com.senpure.io.server.consumer.RemoteServerManager;
-import com.senpure.io.server.event.EventHelper;
+import com.senpure.io.server.consumer.Provider;
+import com.senpure.io.server.consumer.ProviderManager;
+import com.senpure.io.server.remoting.ChannelService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -15,7 +15,6 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -37,7 +36,7 @@ public class ConsumerServerStarter implements ApplicationRunner {
     @Resource
     private ServerProperties properties;
     @Resource
-    private RemoteServerManager remoteServerManager;
+    private ProviderManager remoteServerManager;
 
     @Resource
     private ConsumerMessageExecutor messageExecutor;
@@ -53,15 +52,6 @@ public class ConsumerServerStarter implements ApplicationRunner {
     private long failTimes = 0;
     private String lastFailServerKey;
 
-    @PostConstruct
-    public void init() {
-        messageExecutor();
-    }
-
-    private void messageExecutor() {
-        messageExecutor.setService(taskLoopGroup);
-        EventHelper.setService(taskLoopGroup);
-    }
 
     @PreDestroy
     public void destroy() {
@@ -91,10 +81,10 @@ public class ConsumerServerStarter implements ApplicationRunner {
             messageExecutor.getService().scheduleWithFixedDelay(() -> {
                 try {
                     boolean canLog = canLog();
-                    if (remoteServerManager.getDefaultChannelManager() == null) {
+                    if (remoteServerManager.getDefaultRemoteServer() == null) {
                         int port;
                         String host;
-                        if (properties.getConsumer().getModel()== ServerProperties.ConsumerProperties.MODEL.DIRECT) {
+                        if (properties.getConsumer().getModel() == ServerProperties.ConsumerProperties.MODEL.DIRECT) {
                             host = properties.getConsumer().getRemoteHost();
                             port = properties.getConsumer().getRemotePort();
                         } else {
@@ -125,23 +115,31 @@ public class ConsumerServerStarter implements ApplicationRunner {
                         }
 
                         String serverKey = remoteServerManager.getRemoteServerKey(host, port);
-                        RemoteServerChannelManager remoteServerChannelManager = remoteServerManager.
-                                getRemoteServerChannelManager(serverKey);
-                        remoteServerChannelManager.setHost(host);
-                        remoteServerChannelManager.setPort(port);
-                        remoteServerChannelManager.setDefaultMessageRetryTimeLimit(properties.getConsumer().getMessageWaitSendTimeout());
-                        remoteServerManager.setDefaultChannelManager(remoteServerChannelManager);
+                        Provider provider = new Provider(taskLoopGroup);
+                        provider.setRemoteServerKey(serverKey);
+                        provider.setFutureService(messageExecutor);
+                        if (properties.getConsumer().getRemoteChannel() <= 1) {
+                            provider.setChannelService(new ChannelService.SingleChannelService(serverKey));
+                        } else {
+                            provider.setChannelService(new ChannelService.MultipleChannelService(serverKey));
+                        }
+                        provider.setDefaultTimeout(properties.getConsumer().getRequestTimeout());
+                        provider.setDefaultWaitSendTimeout(properties.getConsumer().getMessageWaitSendTimeout());
+
+                        provider.verifyWorkable();
+                        remoteServerManager.setDefaultRemoteServer(provider);
 
                     } else {
 
 
-                        RemoteServerChannelManager remoteServerChannelManager = remoteServerManager.getDefaultChannelManager();
+                       Provider provider = remoteServerManager.getDefaultRemoteServer();
 
-                        if (remoteServerChannelManager.isConnecting()) {
+                        if (provider.isConnecting()) {
                             return;
                         }
                         long now = System.currentTimeMillis();
-                        if (remoteServerChannelManager.getChannelSize() < properties.getConsumer().getRemoteChannel()) {
+                        ServerProperties.ConsumerProperties consumerProperties = properties.getConsumer();
+                        if (provider.getChannelSize() < properties.getConsumer().getRemoteChannel()) {
                             boolean start = false;
                             if (lastFailTime == 0) {
                                 start = true;
@@ -151,27 +149,27 @@ public class ConsumerServerStarter implements ApplicationRunner {
                                 }
                             }
                             if (start) {
-                                remoteServerChannelManager.setConnecting(true);
+                                provider.setConnecting(true);
                                 ConsumerServer consumerServer = new ConsumerServer();
                                 consumerServer.setMessageExecutor(messageExecutor);
                                 consumerServer.setRemoteServerManager(remoteServerManager);
                                 consumerServer.setProperties(properties.getConsumer());
                                 consumerServer.setDecoderContext(decoderContext);
-                                if (consumerServer.start(remoteServerChannelManager.getHost(), remoteServerChannelManager.getPort())) {
+                                if (consumerServer.start(consumerProperties.getRemoteHost(), consumerProperties.getRemotePort())) {
                                     servers.add(consumerServer);
                                     //验证
-                                    remoteServerChannelManager.addChannel(consumerServer.getChannel());
+                                    provider.addChannel(consumerServer.getChannel());
                                     failTimes = 0;
                                 } else {
                                     lastFailTime = now;
-                                    lastFailServerKey = remoteServerChannelManager.getServerKey();
+                                    lastFailServerKey = provider.getRemoteServerKey();
                                     failTimes++;
-                                    if (failTimes >= 10 && remoteServerChannelManager.getChannelSize() == 0) {
-                                        remoteServerManager.setDefaultChannelManager(null);
+                                    if (failTimes >= 10 && provider.getChannelSize() == 0) {
+                                        remoteServerManager.setDefaultRemoteServer(null);
                                         failTimes = 0;
                                     }
                                 }
-                                remoteServerChannelManager.setConnecting(false);
+                                provider.setConnecting(false);
                             }
 
                         }

@@ -8,7 +8,7 @@ import org.springframework.beans.factory.InitializingBean;
 
 import javax.annotation.Resource;
 
-public abstract class AbstractConsumerMessageHandler implements ConsumerMessageHandler, InitializingBean {
+public abstract class AbstractGatewayConsumerMessageHandler implements GatewayConsumerMessageHandler, InitializingBean {
 
     protected Logger logger = LoggerFactory.getLogger(getClass());
 

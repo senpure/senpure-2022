@@ -6,7 +6,7 @@ import com.senpure.io.server.provider.ProviderSendMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
-public class ConsumerMessageEncoder extends AbstractMessageEncoder<ProviderSendMessage> {
+public class ProviderConsumerMessageEncoder extends AbstractMessageEncoder<ProviderSendMessage> {
 
 
     @Override

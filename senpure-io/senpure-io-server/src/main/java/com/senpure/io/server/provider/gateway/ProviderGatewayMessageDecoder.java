@@ -14,12 +14,12 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public class GatewayMessageDecoder extends ByteToMessageDecoder {
+public class ProviderGatewayMessageDecoder extends ByteToMessageDecoder {
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final MessageDecoderContext decoderContext;
 
-    public GatewayMessageDecoder(MessageDecoderContext decoderContext) {
+    public ProviderGatewayMessageDecoder(MessageDecoderContext decoderContext) {
         this.decoderContext = decoderContext;
     }
 

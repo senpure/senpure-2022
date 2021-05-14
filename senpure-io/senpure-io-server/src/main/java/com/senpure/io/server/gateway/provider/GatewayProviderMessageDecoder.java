@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * 将服务器转发到网关的消息，解析出来
  */
-public class ProviderMessageDecoder extends ByteToMessageDecoder {
+public class GatewayProviderMessageDecoder extends ByteToMessageDecoder {
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override

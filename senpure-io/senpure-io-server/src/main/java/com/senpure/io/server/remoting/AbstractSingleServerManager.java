@@ -5,40 +5,56 @@ import com.senpure.io.server.MessageFrame;
 
 import javax.annotation.Nonnull;
 
-public abstract class AbstractSingleServerManager<T extends MessageFrame> extends AbstractServerManager<T> implements SingleServerManager {
+public abstract class AbstractSingleServerManager<T extends MessageFrame, R extends RemoteServer> extends AbstractMultipleServerManger<T> implements SingleServerManager {
 
 
-    private final RemoteServer remoteServer;
+    protected R defaultRemoteServer;
 
-    public AbstractSingleServerManager(RemoteServer remoteServer) {
-        this.remoteServer = remoteServer;
+    public void setDefaultRemoteServer(R defaultRemoteServer) {
+        this.defaultRemoteServer = defaultRemoteServer;
+    }
+
+    public R getDefaultRemoteServer() {
+        return defaultRemoteServer;
     }
 
     @Override
     public void sendMessage(Message message) {
 
-        remoteServer.sendMessage(createMessage(message));
+        defaultRemoteServer.sendMessage(createMessage(message));
     }
 
     @Override
     public void sendMessage(Message message, ResponseCallback callback) {
-        remoteServer.sendMessage(createMessage(message, nextRequestId()), callback);
+        defaultRemoteServer.sendMessage(createMessage(message, nextRequestId()), callback);
     }
 
     @Override
     public void sendMessage(Message message, ResponseCallback callback, int timeout) {
-        remoteServer.sendMessage(createMessage(message, nextRequestId()), callback, timeout);
+        defaultRemoteServer.sendMessage(createMessage(message, nextRequestId()), callback, timeout);
     }
 
     @Nonnull
     @Override
     public Response sendSyncMessage(Message message) {
-        return remoteServer.sendSyncMessage(createMessage(message, nextRequestId()));
+        return defaultRemoteServer.sendSyncMessage(createMessage(message, nextRequestId()));
     }
 
     @Nonnull
     @Override
     public Response sendSyncMessage(Message message, int timeout) {
-        return remoteServer.sendSyncMessage(createMessage(message, nextRequestId()), timeout);
+        return defaultRemoteServer.sendSyncMessage(createMessage(message, nextRequestId()), timeout);
+    }
+
+    @Override
+    public void respondMessage(Message message) {
+
+
+        defaultRemoteServer.sendMessage(createMessage(message, requestId()));
+    }
+
+    @Override
+    public void respondMessage(Message message, int requestId) {
+        defaultRemoteServer.sendMessage(createMessage(message, requestId));
     }
 }

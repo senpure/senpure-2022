@@ -5,7 +5,7 @@ import com.senpure.io.server.protocol.message.CSHeartMessage;
 import com.senpure.io.server.protocol.message.SCHeartMessage;
 import io.netty.channel.Channel;
 
-public class CSHeartMessageHandler extends AbstractConsumerMessageHandler {
+public class CSHeartMessageHandler extends AbstractGatewayConsumerMessageHandler {
 
     @Override
     public void execute(Channel channel, GatewayReceiveConsumerMessage message) {

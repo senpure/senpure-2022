@@ -5,7 +5,7 @@ import com.senpure.io.server.protocol.message.SCIdNameMessage;
 import com.senpure.io.server.support.MessageIdReader;
 import io.netty.channel.Channel;
 
-public class SCIdNameMessageHandler extends AbstractProviderMessageHandler {
+public class SCIdNameMessageHandler extends AbstractGatewayProviderMessageHandler {
     @Override
     public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
         SCIdNameMessage message = new SCIdNameMessage();

@@ -7,7 +7,7 @@ import com.senpure.io.server.gateway.provider.ProviderManager;
 import com.senpure.io.server.protocol.message.SCStatisticMessage;
 import io.netty.channel.Channel;
 
-public class SCStatisticMessageHandler  extends AbstractProviderMessageHandler{
+public class SCStatisticMessageHandler  extends AbstractGatewayProviderMessageHandler {
 
     @Override
     public void execute(Channel channel, GatewayReceiveProviderMessage frame) {

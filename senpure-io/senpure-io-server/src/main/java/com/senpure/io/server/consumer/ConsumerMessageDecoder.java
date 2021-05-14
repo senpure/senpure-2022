@@ -57,9 +57,8 @@ public class ConsumerMessageDecoder extends ByteToMessageDecoder {
             } else {
                 try {
                     Message message = decoder.decode(in, maxIndex);
-                    ConsumerMessage frame = new ConsumerMessage();
+                    ConsumerMessage frame = new ConsumerMessage(message);
                     frame.setRequestId(requestId);
-                    frame.setMessage(message);
                     out.add(frame);
                 } catch (Exception e) {
                     ctx.close();

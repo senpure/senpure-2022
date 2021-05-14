@@ -22,13 +22,13 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 
-public class ConsumerMessageDecoder extends ByteToMessageDecoder {
+public class ProviderConsumerMessageDecoder extends ByteToMessageDecoder {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
 
     private final MessageDecoderContext decoderContext;
 
-    public ConsumerMessageDecoder(MessageDecoderContext decoderContext) {
+    public ProviderConsumerMessageDecoder(MessageDecoderContext decoderContext) {
         this.decoderContext = decoderContext;
     }
 

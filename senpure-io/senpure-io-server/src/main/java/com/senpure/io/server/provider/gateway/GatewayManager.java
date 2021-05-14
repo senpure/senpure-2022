@@ -30,9 +30,7 @@ public class GatewayManager extends AbstractMultipleServerManger<ProviderSendMes
     private final ConcurrentMap<Long, GatewayRelation> tokenGatewayMap = new ConcurrentHashMap<>();
 
 
-    public String getRemoteServerKey(String host, int port) {
-        return host + ":" + port;
-    }
+
 
     @Override
     public  ProviderSendMessage createMessage(Message message) {

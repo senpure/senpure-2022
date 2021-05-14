@@ -15,7 +15,7 @@ import io.netty.channel.Channel;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
-public class SCRegServerHandleMessageMessageHandler extends AbstractProviderMessageHandler {
+public class SCRegServerHandleMessageMessageHandler extends AbstractGatewayProviderMessageHandler {
 
     @Override
     public void execute(Channel channel, GatewayReceiveProviderMessage frame) {

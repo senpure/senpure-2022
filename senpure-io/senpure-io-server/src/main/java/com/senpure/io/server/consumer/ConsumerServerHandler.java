@@ -13,12 +13,14 @@ import org.slf4j.LoggerFactory;
 public class ConsumerServerHandler extends SimpleChannelInboundHandler<ConsumerMessage> {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
-    private RemoteServerManager remoteServerManager;
+   // private RemoteServerManager remoteServerManager;
     private ConsumerMessageExecutor messageExecutor;
 
+    private ProviderManager providerManager;
 
-    public ConsumerServerHandler(ConsumerMessageExecutor messageExecutor, RemoteServerManager remoteServerManager) {
-        this.remoteServerManager = remoteServerManager;
+
+    public ConsumerServerHandler(ConsumerMessageExecutor messageExecutor, ProviderManager providerManager) {
+        this.providerManager = providerManager;
         this.messageExecutor = messageExecutor;
     }
 
@@ -31,9 +33,12 @@ public class ConsumerServerHandler extends SimpleChannelInboundHandler<ConsumerM
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        logger.info("{} :{} 远程服务器连接断开 ", ChannelAttributeUtil.getRemoteServerKey(ctx.channel()), ctx.channel());
-        remoteServerManager.getRemoteServerChannelManager(ChannelAttributeUtil.
-                getRemoteServerKey(ctx.channel())).removeChannel(ctx.channel());
+        String remoteServerKey=ChannelAttributeUtil.getRemoteServerKey(ctx.channel());
+        logger.info("{} :{} 远程服务器连接断开 ", remoteServerKey, ctx.channel());
+        providerManager.getDefaultRemoteServer().removeChannel(ctx.channel());
+       // providerManager.getRemoteServer().
+//        remoteServerManager.getRemoteServerChannelManager(ChannelAttributeUtil.
+//                getRemoteServerKey(ctx.channel())).removeChannel(ctx.channel());
 
     }
 

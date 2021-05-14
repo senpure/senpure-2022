@@ -179,11 +179,11 @@ public class ServerProperties {
             /**
              * 是否开启心跳检查
              */
-            private boolean enableHeartCheck = false;
+            private boolean enableHeartCheck = true;
             /**
              * 读心跳间隔毫秒
              */
-            private long readerIdleTime = 5000;
+            private long readerIdleTime = 15000;
 
 
             public int getPort() {
@@ -316,7 +316,7 @@ public class ServerProperties {
             /**
              * 是否开启心跳检查
              */
-            private boolean enableHeartCheck = false;
+            private boolean enableHeartCheck = true;
             /**
              * 心跳写入间隔毫秒
              */
@@ -604,11 +604,11 @@ public class ServerProperties {
             /**
              * 是否开启心跳检查
              */
-            private boolean enableHeartCheck = false;
+            private boolean enableHeartCheck = true;
             /**
              * 心跳读入间隔毫秒
              */
-            private long readerIdleTime = 10000;
+            private long readerIdleTime = 15000;
 
             public int getIoBossThreadPoolSize() {
                 return ioBossThreadPoolSize;
@@ -699,7 +699,7 @@ public class ServerProperties {
             /**
              * 心跳读入间隔毫秒
              */
-            private long readerIdleTime = 10000;
+            private long readerIdleTime = 15000;
 
             public int getIoBossThreadPoolSize() {
                 return ioBossThreadPoolSize;
@@ -873,7 +873,7 @@ public class ServerProperties {
         /**
          * 是否开启心跳检查
          */
-        private boolean enableHeartCheck = false;
+        private boolean enableHeartCheck = true;
         /**
          * 心跳写入间隔毫秒
          */

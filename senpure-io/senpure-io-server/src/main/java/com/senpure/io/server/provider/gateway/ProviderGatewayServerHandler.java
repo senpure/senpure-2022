@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 
 
-public class GatewayServerHandler extends SimpleChannelInboundHandler<ProviderReceivedMessage> {
+public class ProviderGatewayServerHandler extends SimpleChannelInboundHandler<ProviderReceivedMessage> {
 
 
     private final ProviderMessageExecutor messageExecutor;
@@ -25,7 +25,7 @@ public class GatewayServerHandler extends SimpleChannelInboundHandler<ProviderRe
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public GatewayServerHandler(ProviderMessageExecutor messageExecutor, GatewayManager gatewayManager) {
+    public ProviderGatewayServerHandler(ProviderMessageExecutor messageExecutor, GatewayManager gatewayManager) {
         this.messageExecutor = messageExecutor;
         this.gatewayManager = gatewayManager;
     }

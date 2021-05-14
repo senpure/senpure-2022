@@ -8,7 +8,7 @@ import org.springframework.beans.factory.InitializingBean;
 
 import javax.annotation.Resource;
 
-public abstract class AbstractProviderMessageHandler implements ProviderMessageHandler , InitializingBean {
+public abstract class AbstractGatewayProviderMessageHandler implements GatewayProviderMessageHandler, InitializingBean {
     protected Logger logger = LoggerFactory.getLogger(getClass());
     @Resource
     protected GatewayMessageExecutor messageExecutor;

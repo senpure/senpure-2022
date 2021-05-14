@@ -9,7 +9,7 @@ import com.senpure.io.server.protocol.message.SCAskHandleMessage;
 import com.senpure.io.server.support.MessageIdReader;
 import io.netty.channel.Channel;
 
-public class SCAskHandleMessageHandler extends AbstractProviderMessageHandler {
+public class SCAskHandleMessageHandler extends AbstractGatewayProviderMessageHandler {
     @Override
     public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
         SCAskHandleMessage message = new SCAskHandleMessage();

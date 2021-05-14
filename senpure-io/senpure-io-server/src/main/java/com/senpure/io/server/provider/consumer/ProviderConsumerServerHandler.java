@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.atomic.AtomicLong;
 
 
-public class ConsumerServerHandler extends SimpleChannelInboundHandler<ProviderReceivedMessage> {
+public class ProviderConsumerServerHandler extends SimpleChannelInboundHandler<ProviderReceivedMessage> {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -27,7 +27,7 @@ public class ConsumerServerHandler extends SimpleChannelInboundHandler<ProviderR
 
   private  final static   AtomicLong ID = new AtomicLong(1);
 
-    public ConsumerServerHandler(ProviderMessageExecutor messageExecutor, ConsumerManager consumerManager) {
+    public ProviderConsumerServerHandler(ProviderMessageExecutor messageExecutor, ConsumerManager consumerManager) {
         this.messageExecutor = messageExecutor;
         this.consumerManager = consumerManager;
     }

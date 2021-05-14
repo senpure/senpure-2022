@@ -12,20 +12,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class ProviderServerHandler extends SimpleChannelInboundHandler<GatewayReceiveProviderMessage> {
+public class GatewayProviderServerHandler extends SimpleChannelInboundHandler<GatewayReceiveProviderMessage> {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final GatewayMessageExecutor messageExecutor;
 
   //  private SourceOffline sourceOffline;
 
-    public ProviderServerHandler(GatewayMessageExecutor messageExecuter) {
-        this.messageExecutor = messageExecuter;
+    public GatewayProviderServerHandler(GatewayMessageExecutor messageExecutor) {
+        this.messageExecutor = messageExecutor;
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, GatewayReceiveProviderMessage msg) {
-        //  messageExecuter.execute(msg);
         messageExecutor.execute(ctx.channel(), msg);
     }
 

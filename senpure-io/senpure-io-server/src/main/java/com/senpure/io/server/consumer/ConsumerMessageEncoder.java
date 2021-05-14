@@ -13,7 +13,7 @@ public class ConsumerMessageEncoder extends AbstractMessageEncoder<ConsumerMessa
     @Override
     protected void encode(ChannelHandlerContext channelHandlerContext, ConsumerMessage frame, ByteBuf out) {
 
-        encode(out, frame.getRequestId(), frame.getMessage());
+        encode(out, frame.requestId(), frame.message());
     }
 
 

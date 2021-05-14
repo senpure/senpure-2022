@@ -31,7 +31,7 @@ public class ConsumerLoggingHandler extends LoggingHandler {
                 ConsumerMessage frame= (ConsumerMessage) msg;
                 if (outFormat) {
                     this.logger.log(this.internalLevel, "{} {}{}",
-                            "WRITE", "\n", frame.getMessage().toString(null));
+                            "WRITE", "\n", frame.message().toString(null));
                     //this.logger.log(this.internalLevel, this.format(ctx, ChannelAttributeUtil.getChannelPlayerStr(ctx.channel())+" WRITE", "\n"+((Message) msg).toString(null)));
                 } else {
                     this.logger.log(this.internalLevel, "{} {}",
@@ -57,7 +57,7 @@ public class ConsumerLoggingHandler extends LoggingHandler {
                 ConsumerMessage frame= (ConsumerMessage) msg;
                 if (inFormat) {
                     this.logger.log(this.internalLevel, "{} {}{}",
-                            "RECEIVED", "\n", frame.getMessage().toString(null));
+                            "RECEIVED", "\n", frame.message().toString(null));
                     // this.logger.log(this.internalLevel, this.format(ctx, ChannelAttributeUtil.getChannelPlayerStr(ctx.channel()) + " RECEIVED", "\n" + ((Message) msg).toString(null)));
 
                 } else {

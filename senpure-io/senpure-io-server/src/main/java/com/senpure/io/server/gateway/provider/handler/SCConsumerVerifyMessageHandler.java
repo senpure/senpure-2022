@@ -8,7 +8,7 @@ import io.netty.channel.Channel;
 
 import java.util.Map;
 
-public class SCConsumerVerifyMessageHandler extends AbstractProviderMessageHandler {
+public class SCConsumerVerifyMessageHandler extends AbstractGatewayProviderMessageHandler {
     @Override
     public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
         long userId = frame.getUserIds()[0];

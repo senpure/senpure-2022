@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 
-public class ConsumerMessageDecoder extends ByteToMessageDecoder {
+public class GatewayConsumerMessageDecoder extends ByteToMessageDecoder {
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override

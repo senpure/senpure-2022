@@ -4,7 +4,7 @@ import com.senpure.io.server.gateway.GatewayReceiveConsumerMessage;
 import com.senpure.io.server.protocol.message.CSConsumerVerifyMessage;
 import io.netty.channel.Channel;
 
-public class CSConsumerVerifyMessageHandler extends AbstractConsumerMessageHandler {
+public class CSConsumerVerifyMessageHandler extends AbstractGatewayConsumerMessageHandler {
     @Override
     public void execute(Channel channel, GatewayReceiveConsumerMessage message) {
         logger.debug("{} 准备登录 ", message.token());

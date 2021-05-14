@@ -12,14 +12,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class ConsumerServerHandler extends SimpleChannelInboundHandler<GatewayReceiveConsumerMessage> {
+public class GatewayConsumerServerHandler extends SimpleChannelInboundHandler<GatewayReceiveConsumerMessage> {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final GatewayMessageExecutor messageExecutor;
 
 
-    public ConsumerServerHandler(GatewayMessageExecutor messageExecuter) {
+    public GatewayConsumerServerHandler(GatewayMessageExecutor messageExecuter) {
         this.messageExecutor = messageExecuter;
     }
 
