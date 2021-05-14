@@ -9,7 +9,7 @@ import io.netty.buffer.ByteBuf;
  * @author senpure
  * @time 2021-5-6 19:44:19
  */
-public class CSConsumerVerifyMessage extends CompressMessage {
+public class CSFrameworkVerifyMessage extends CompressMessage {
 
     public static final int MESSAGE_ID = 103;
     //服务名
@@ -20,7 +20,7 @@ public class CSConsumerVerifyMessage extends CompressMessage {
     private String ip;
     private String token;
 
-    public void copy(CSConsumerVerifyMessage source) {
+    public void copy(CSFrameworkVerifyMessage source) {
         this.serverName = source.getServerName();
         this.serverKey = source.getServerKey();
         this.ip = source.getIp();
@@ -126,7 +126,7 @@ public class CSConsumerVerifyMessage extends CompressMessage {
     /**
      * set 服务名
      */
-    public CSConsumerVerifyMessage setServerName(String serverName) {
+    public CSFrameworkVerifyMessage setServerName(String serverName) {
         this.serverName = serverName;
         return this;
     }
@@ -143,7 +143,7 @@ public class CSConsumerVerifyMessage extends CompressMessage {
     /**
      * set 服务实例唯一标识
      */
-    public CSConsumerVerifyMessage setServerKey(String serverKey) {
+    public CSFrameworkVerifyMessage setServerKey(String serverKey) {
         this.serverKey = serverKey;
         return this;
     }
@@ -160,7 +160,7 @@ public class CSConsumerVerifyMessage extends CompressMessage {
     /**
      * set ip
      */
-    public CSConsumerVerifyMessage setIp(String ip) {
+    public CSFrameworkVerifyMessage setIp(String ip) {
         this.ip = ip;
         return this;
     }
@@ -169,7 +169,7 @@ public class CSConsumerVerifyMessage extends CompressMessage {
         return token;
     }
 
-    public CSConsumerVerifyMessage setToken(String token) {
+    public CSFrameworkVerifyMessage setToken(String token) {
         this.token = token;
         return this;
     }

@@ -11,7 +11,7 @@ import io.netty.channel.Channel;
  * @author senpure
  * @time 2019-07-26 15:36:12
  */
-public class CSRegServerHandleMessageMessageHandler extends AbstractInnerMessageHandler<CSRegServerHandleMessageMessage> {
+public class CSRegServerHandleMessageMessageHandler extends AbstractFrameworkMessageHandler<CSRegServerHandleMessageMessage> {
     @Override
     public void execute(Channel channel, long token, long playerId, CSRegServerHandleMessageMessage message) {
 

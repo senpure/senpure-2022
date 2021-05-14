@@ -18,6 +18,7 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -156,6 +157,16 @@ public class ConsumerServerStarter implements ApplicationRunner {
                                 consumerServer.setProperties(properties.getConsumer());
                                 consumerServer.setDecoderContext(decoderContext);
                                 if (consumerServer.start(consumerProperties.getRemoteHost(), consumerProperties.getRemotePort())) {
+
+                                    Iterator<ConsumerServer> iterator = servers.iterator();
+                                    while (iterator.hasNext()) {
+                                        ConsumerServer server = iterator.next();
+                                        logger.info("server.isClosed() {}",server.isClosed());
+                                        if (server.isClosed()) {
+                                            iterator.remove();
+                                            server.destroy();
+                                        }
+                                    }
                                     servers.add(consumerServer);
                                     //验证
                                     provider.addChannel(consumerServer.getChannel());

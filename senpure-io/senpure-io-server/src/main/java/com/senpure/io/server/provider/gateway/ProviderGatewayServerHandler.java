@@ -2,7 +2,7 @@ package com.senpure.io.server.provider.gateway;
 
 
 import com.senpure.io.server.ChannelAttributeUtil;
-import com.senpure.io.server.protocol.message.SCHeartMessage;
+import com.senpure.io.server.protocol.message.CSHeartMessage;
 import com.senpure.io.server.provider.ProviderMessageExecutor;
 import com.senpure.io.server.provider.ProviderReceivedMessage;
 import com.senpure.io.server.provider.ProviderSendMessage;
@@ -61,7 +61,7 @@ public class ProviderGatewayServerHandler extends SimpleChannelInboundHandler<Pr
             Channel channel = ctx.channel();
             if (channel.isWritable()) {
                 logger.info("维持网关心跳{} : {}", ChannelAttributeUtil.getRemoteServerKey(channel), channel);
-                SCHeartMessage heartMessage = new SCHeartMessage();
+                CSHeartMessage heartMessage = new  CSHeartMessage();
                 ProviderSendMessage frame=  gatewayManager.createMessageByToken(0L, heartMessage);
                 channel.writeAndFlush(frame);
             } else {

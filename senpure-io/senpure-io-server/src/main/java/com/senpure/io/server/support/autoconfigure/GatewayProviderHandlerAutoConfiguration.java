@@ -11,13 +11,13 @@ public class GatewayProviderHandlerAutoConfiguration {
     }
 
     @Bean
-    public SCConsumerVerifyMessageHandler scConsumerVerifyMessageHandler() {
-        return new SCConsumerVerifyMessageHandler();
+    public SCFrameworkVerifyMessageHandler scConsumerVerifyMessageHandler() {
+        return new SCFrameworkVerifyMessageHandler();
     }
 
     @Bean
-    public SCHeartMessageHandler scHeartMessageHandler() {
-        return new SCHeartMessageHandler();
+    public CSHeartMessageHandler csHeartMessageHandler() {
+        return new CSHeartMessageHandler();
     }
 
     @Bean

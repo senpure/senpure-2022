@@ -7,11 +7,11 @@ import io.netty.buffer.ByteBuf;
  * @author senpure
  * @time 2021-5-6 19:44:19
  */
-public class SCConsumerVerifyMessage extends CompressMessage {
+public class SCFrameworkVerifyMessage extends CompressMessage {
 
     public static final int MESSAGE_ID = 104;
 
-    public void copy(SCConsumerVerifyMessage source) {
+    public void copy(SCFrameworkVerifyMessage source) {
     }
 
     /**

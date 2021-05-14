@@ -48,6 +48,7 @@ public class ConsumerServer {
 
 
     private MessageDecoderContext decoderContext;
+    private volatile boolean closed = false;
 
 
     public final boolean start(String host, int port) {
@@ -105,7 +106,14 @@ public class ConsumerServer {
             logger.debug("启动{}，远程服务器地址 {}", properties.getReadableName(), host + ":" + port);
             readableServerName = properties.getReadableName() + "->[" + host + ":" + port + "]";
             channelFuture = bootstrap.connect(host, port).sync();
+
+
             channel = channelFuture.channel();
+            channel.closeFuture().addListener((ChannelFutureListener) channelFuture -> {
+
+                logger.debug("修改closed -> true");
+                closed = true;
+            });
             synchronized (groupLock) {
                 serverRefCont++;
             }
@@ -149,7 +157,7 @@ public class ConsumerServer {
             channelFuture.channel().close();
             synchronized (groupLock) {
                 serverRefCont--;
-                logger.debug("{} 关闭 channel {} ", getReadableServerName(),channel);
+                logger.debug("{} 关闭 channel {} ", getReadableServerName(), channel);
             }
         }
 
@@ -196,6 +204,10 @@ public class ConsumerServer {
     public void setReadableServerName(String readableServerName) {
         this.readableServerName = readableServerName;
         setReadableServerName = true;
+    }
+
+    public boolean isClosed() {
+        return closed;
     }
 
     public void setAddLoggingHandler(boolean addLoggingHandler) {

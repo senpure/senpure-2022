@@ -46,6 +46,7 @@ public class ProviderGatewayServer {
     private GatewayManager gatewayManager;
     private MessageDecoderContext decoderContext;
 
+    private  volatile boolean closed;
     public final boolean start(String remoteHost, int remotePort) {
 
         Assert.notNull(gatewayManager);
@@ -101,6 +102,11 @@ public class ProviderGatewayServer {
             readableServerName = properties.getReadableName() + "->[" + remoteHost + ":" + remotePort + "]";
             channelFuture = bootstrap.connect(remoteHost, remotePort).sync();
             channel = channelFuture.channel();
+            channel.closeFuture().addListener((ChannelFutureListener) channelFuture -> {
+
+                logger.info("修改closed -> true");
+                closed = true;
+            });
             synchronized (groupLock) {
                 serverRefCont++;
             }
@@ -198,6 +204,10 @@ public class ProviderGatewayServer {
         }
 
         tryDestroyGroup(getReadableServerName());
+    }
+
+    public boolean isClosed() {
+        return closed;
     }
 
     private synchronized static void tryDestroyGroup(String readableServerName) {

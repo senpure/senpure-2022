@@ -222,6 +222,7 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
                     for (Long userId : message.getUserIds()) {
                         //全消息
                         if (userId == 0L) {
+                            logger.debug("给所有客户端发送消息 {}", MessageIdReader.read(message.messageId()));
                             for (Map.Entry<Long, Channel> entry : userClientChannel.entrySet()) {
                                 Channel consumerChannel = entry.getValue();
                                 if (consumerChannel.isWritable()) {

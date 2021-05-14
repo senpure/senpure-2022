@@ -2,16 +2,20 @@ package com.senpure.io.server.support;
 
 import com.senpure.executor.TaskLoopGroup;
 import com.senpure.io.protocol.Message;
-import com.senpure.io.server.*;
+import com.senpure.io.server.ChannelAttributeUtil;
+import com.senpure.io.server.Constant;
+import com.senpure.io.server.MessageDecoderContext;
+import com.senpure.io.server.ServerProperties;
 import com.senpure.io.server.protocol.bean.HandleMessage;
 import com.senpure.io.server.protocol.bean.IdName;
 import com.senpure.io.server.protocol.message.CSMatchingMessage;
 import com.senpure.io.server.protocol.message.SCIdNameMessage;
 import com.senpure.io.server.protocol.message.SCRegServerHandleMessageMessage;
-import com.senpure.io.server.provider.*;
+import com.senpure.io.server.provider.ProviderMessageExecutor;
+import com.senpure.io.server.provider.ProviderMessageHandlerContext;
+import com.senpure.io.server.provider.ProviderSendMessage;
 import com.senpure.io.server.provider.gateway.Gateway;
 import com.senpure.io.server.provider.gateway.GatewayManager;
-import com.senpure.io.server.provider.ProviderMessageExecutor;
 import com.senpure.io.server.provider.gateway.ProviderGatewayServer;
 import com.senpure.io.server.provider.handler.ProviderAskMessageHandler;
 import com.senpure.io.server.provider.handler.ProviderMessageHandler;
@@ -28,10 +32,7 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class ProviderGatewayServerStarter implements ApplicationRunner {
@@ -152,7 +153,7 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
                         continue;
                     }
                     if (gateway.getChannelSize() < providerGateway.getChannel()) {
-                        logger.debug("{} channel 数量 {}/{} {}",gatewayKey, gateway.getChannelSize(), providerGateway.getChannel(),gateway);
+                        logger.debug("{} channel 数量 {}/{} {}", gatewayKey, gateway.getChannelSize(), providerGateway.getChannel(), gateway);
                         Long lastFailTime = failGatewayMap.get(gatewayKey);
                         boolean start = false;
                         if (lastFailTime == null) {
@@ -177,6 +178,15 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
                             providerGatewayServer.setHttpPort(httpPort);
                             providerGatewayServer.setReadableServerName(providerProperties.getReadableName());
                             if (providerGatewayServer.start(instance.getHost(), port)) {
+
+                                Iterator<ProviderGatewayServer> iterator = servers.iterator();
+                                while (iterator.hasNext()) {
+                                    ProviderGatewayServer server = iterator.next();
+                                    if (server.isClosed()) {
+                                        iterator.remove();
+                                        server.destroy();
+                                    }
+                                }
                                 servers.add(providerGatewayServer);
                                 registerProvider(providerGatewayServer, gateway, handleMessages);
                                 if (gateway.getChannelSize() == 0) {
@@ -188,7 +198,7 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
 
                                 //认证
                                 gateway.addChannel(providerGatewayServer.getChannel());
-                                logger.debug("新增channel {} {}", providerGatewayServer.getChannel(),gateway.getChannelSize());
+                                logger.debug("新增channel {} {}", providerGatewayServer.getChannel(), gateway.getChannelSize());
 
                             } else {
                                 logger.warn("{}  socket {}:{} 连接失败", providerGateway.getName(), instance.getHost(), port);

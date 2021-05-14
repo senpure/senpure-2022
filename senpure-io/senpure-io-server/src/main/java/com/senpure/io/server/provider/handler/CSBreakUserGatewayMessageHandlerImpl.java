@@ -11,7 +11,7 @@ import io.netty.channel.Channel;
  * @author senpure
  * @time 2018-10-19 16:14:32
  */
-public class CSBreakUserGatewayMessageHandlerImpl extends AbstractInnerMessageHandler<CSBreakUserGatewayMessage>
+public class CSBreakUserGatewayMessageHandlerImpl extends AbstractFrameworkMessageHandler<CSBreakUserGatewayMessage>
         implements CSBreakUserGatewayMessageHandler {
 
 

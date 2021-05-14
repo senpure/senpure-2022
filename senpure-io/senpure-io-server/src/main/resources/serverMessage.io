@@ -34,15 +34,15 @@ message SC RegServerHandleMessage 102 {
     HandleMessage [] messages           = 4; //可以处理的消息
 }
 
-//消费者认证
-message CS ConsumerVerify 103 {
+//框架内部验证
+message CS FrameworkVerify 103 {
     String serverName = 1;                //服务名
     String serverKey  = 2;                //服务实例唯一标识
     String ip         = 3;                //ip
     String token      = 4;                //
 }
 
-message SC ConsumerVerify 104 {
+message SC FrameworkVerify 104 {
 }
 
 //数字id与字符串的关联

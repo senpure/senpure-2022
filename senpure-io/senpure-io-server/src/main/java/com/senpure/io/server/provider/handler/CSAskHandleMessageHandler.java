@@ -17,7 +17,7 @@ import java.util.Arrays;
  * @author senpure
  * @time 2018-10-17 14:59:15
  */
-public class CSAskHandleMessageHandler extends AbstractInnerMessageHandler<CSAskHandleMessage> {
+public class CSAskHandleMessageHandler extends AbstractFrameworkMessageHandler<CSAskHandleMessage> {
 
 
     @SuppressWarnings({"unchecked", "rawtypes"})

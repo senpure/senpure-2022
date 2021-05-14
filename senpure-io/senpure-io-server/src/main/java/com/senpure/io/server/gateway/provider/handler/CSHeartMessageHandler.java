@@ -1,10 +1,10 @@
 package com.senpure.io.server.gateway.provider.handler;
 
 import com.senpure.io.server.gateway.GatewayReceiveProviderMessage;
-import com.senpure.io.server.protocol.message.SCHeartMessage;
+import com.senpure.io.server.protocol.message.CSHeartMessage;
 import io.netty.channel.Channel;
 
-public class SCHeartMessageHandler extends AbstractGatewayProviderMessageHandler {
+public class CSHeartMessageHandler extends AbstractGatewayProviderMessageHandler {
     @Override
     public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
 
@@ -12,6 +12,6 @@ public class SCHeartMessageHandler extends AbstractGatewayProviderMessageHandler
 
     @Override
     public int messageId() {
-        return SCHeartMessage.MESSAGE_ID;
+        return CSHeartMessage.MESSAGE_ID;
     }
 }

@@ -12,7 +12,7 @@ import io.netty.channel.Channel;
  * @author senpure
  * @time 2018-10-17 14:59:15
  */
-public class CSRelationUserGatewayMessageHandler extends AbstractInnerMessageHandler<CSRelationUserGatewayMessage> {
+public class CSRelationUserGatewayMessageHandler extends AbstractFrameworkMessageHandler<CSRelationUserGatewayMessage> {
 
 
 
