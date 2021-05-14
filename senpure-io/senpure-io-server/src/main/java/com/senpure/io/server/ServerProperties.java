@@ -82,8 +82,32 @@ public class ServerProperties {
          * 关联id与类名的包名多个用,逗号分割
          */
         private String idNamesPackage;
+        /**
+         * 使用简单认证模式
+         */
+        private boolean simpleVerify;
+        /**
+         * 认证token
+         */
+        private String verifyToken = "senpure.io.server.framework.simple.token";
         private GatewayProperties gateway = new GatewayProperties();
         private ConsumerProperties consumer = new ConsumerProperties();
+
+        public boolean isSimpleVerify() {
+            return simpleVerify;
+        }
+
+        public void setSimpleVerify(boolean simpleVerify) {
+            this.simpleVerify = simpleVerify;
+        }
+
+        public String getVerifyToken() {
+            return verifyToken;
+        }
+
+        public void setVerifyToken(String verifyToken) {
+            this.verifyToken = verifyToken;
+        }
 
         public String getReadableName() {
             return readableName;
@@ -463,6 +487,7 @@ public class ServerProperties {
          * 服务器登录成功返回消息id
          */
         private int scLoginMessageId = 1000102;
+
         /**
          * 雪花算法的服务名
          */
@@ -483,7 +508,14 @@ public class ServerProperties {
          * 雪花算法 workId
          */
         private int snowflakeWorkId = 0;
-
+        /**
+         * 框架认证使用简单认证
+         */
+        private boolean simpleVerify = false;
+        /**
+         * 认证token
+         */
+        private String verifyToken = "senpure.io.server.framework.simple.token";
 
         public ConsumerProperties getConsumer() {
             return consumer;
@@ -579,6 +611,22 @@ public class ServerProperties {
 
         public void setAskMaxDelay(long askMaxDelay) {
             this.askMaxDelay = askMaxDelay;
+        }
+
+        public boolean isSimpleVerify() {
+            return simpleVerify;
+        }
+
+        public void setSimpleVerify(boolean simpleVerify) {
+            this.simpleVerify = simpleVerify;
+        }
+
+        public String getVerifyToken() {
+            return verifyToken;
+        }
+
+        public void setVerifyToken(String verifyToken) {
+            this.verifyToken = verifyToken;
         }
 
         public static class ProviderProperties {
@@ -882,6 +930,31 @@ public class ServerProperties {
          * 服务器返回错误消息id 多个用逗号,隔开
          */
         private String scErrorMessageId = "1000500";
+        /**
+         * 使用简单认证模式
+         */
+        private boolean simpleVerify;
+        /**
+         * 认证token
+         */
+        private String verifyToken = "senpure.io.server.framework.simple.token";
+
+
+        public boolean isSimpleVerify() {
+            return simpleVerify;
+        }
+
+        public void setSimpleVerify(boolean simpleVerify) {
+            this.simpleVerify = simpleVerify;
+        }
+
+        public String getVerifyToken() {
+            return verifyToken;
+        }
+
+        public void setVerifyToken(String verifyToken) {
+            this.verifyToken = verifyToken;
+        }
 
         public String getReadableName() {
             return readableName;

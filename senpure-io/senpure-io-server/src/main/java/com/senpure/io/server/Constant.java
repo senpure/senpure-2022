@@ -34,7 +34,10 @@ public class Constant {
      */
     public final static String ERROR_CONSUMER_ERROR = "CONSUMER_ERROR";
 
-
+    /**
+     * 认证失败
+     */
+    public final static String ERROR_VERIFY_FAILURE = "VERIFY_FAILURE ";
     /**
      * 超时错误
      */

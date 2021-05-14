@@ -30,11 +30,8 @@ public class GatewayManager extends AbstractMultipleServerManger<ProviderSendMes
     private final ConcurrentMap<Long, GatewayRelation> tokenGatewayMap = new ConcurrentHashMap<>();
 
 
-
-
     @Override
     public  ProviderSendMessage createMessage(Message message) {
-
 
         return createMessage(0L, message);
     }

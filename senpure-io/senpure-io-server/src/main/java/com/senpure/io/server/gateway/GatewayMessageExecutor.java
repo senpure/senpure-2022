@@ -118,7 +118,7 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
                     errorMessage.setCode(Constant.ERROR_NOT_FOUND_PROVIDER);
                     errorMessage.getArgs().add(String.valueOf(message.messageId()));
                     errorMessage.setMessage("没有服务器处理 " + MessageIdReader.read(message.messageId()));
-                    sendMessage2Consumer(message.requestId(), message.token(), errorMessage);
+                    responseMessage2Consumer(message.requestId(), message.token(), errorMessage);
                     return;
                 }
 
@@ -129,12 +129,12 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
                 errorMessage.setCode(Constant.ERROR_GATEWAY_ERROR);
                 errorMessage.getArgs().add(String.valueOf(message.messageId()));
                 errorMessage.setMessage(MessageIdReader.read(message.messageId()) + "," + e.getMessage());
-                sendMessage2Consumer(message.requestId(), message.token(), errorMessage);
+                responseMessage2Consumer(message.requestId(), message.token(), errorMessage);
             }
         });
     }
 
-    public void sendMessage2Consumer(int requestId, Long token, Message message) {
+    public void responseMessage2Consumer(int requestId, Long token, Message message) {
         Channel consumerChannel = tokenChannel.get(token);
         if (consumerChannel == null) {
             logger.warn("没有找到channel token {}", token);
@@ -225,6 +225,9 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
                             logger.debug("给所有客户端发送消息 {}", MessageIdReader.read(message.messageId()));
                             for (Map.Entry<Long, Channel> entry : userClientChannel.entrySet()) {
                                 Channel consumerChannel = entry.getValue();
+                                if (ChannelAttributeUtil.isFramework(consumerChannel)) {
+                                    continue;
+                                }
                                 if (consumerChannel.isWritable()) {
                                     consumerChannel.writeAndFlush(message);
                                 }
@@ -299,6 +302,24 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
         message.read(buf, buf.writerIndex());
     }
 
+    public void readMessage(Message message, byte[] data) {
+        ByteBuf buf = Unpooled.buffer(data.length);
+        buf.writeBytes(data);
+        message.read(buf, buf.writerIndex());
+    }
+
+    public void consumerVerifySuccess(Channel channel) {
+
+        ChannelAttributeUtil.setFramework(channel, true);
+    }
+
+    public void consumerVerifyFailure(Channel channel) {
+
+        SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
+
+       // ChannelAttributeUtil.setFramework(channel, false);
+    }
+
     public GatewayLocalSendProviderMessage createMessage(Message message) {
 
         return new GatewayLocalSendProviderMessage(message);
@@ -339,7 +360,7 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
                     errorMessage.getArgs().add(String.valueOf(waitAskTask.getFromMessageId()));
                     errorMessage.setMessage(MessageIdReader.read(waitAskTask.getFromMessageId()));
                     errorMessage.getArgs().add(Arrays.toString(waitAskTask.getValue()));
-                    sendMessage2Consumer(waitAskTask.getRequestId(), waitAskTask.getMessage().token(), errorMessage);
+                    responseMessage2Consumer(waitAskTask.getRequestId(), waitAskTask.getMessage().token(), errorMessage);
                 }
             }
         }

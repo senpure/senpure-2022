@@ -5,7 +5,7 @@ import io.netty.channel.Channel;
 
 public interface GatewayConsumerMessageHandler {
 
-    void execute(Channel channel, GatewayReceiveConsumerMessage message);
+    void execute(Channel channel, GatewayReceiveConsumerMessage frame);
 
     int messageId();
 

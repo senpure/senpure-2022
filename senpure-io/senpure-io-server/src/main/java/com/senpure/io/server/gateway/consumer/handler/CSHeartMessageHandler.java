@@ -8,9 +8,9 @@ import io.netty.channel.Channel;
 public class CSHeartMessageHandler extends AbstractGatewayConsumerMessageHandler {
 
     @Override
-    public void execute(Channel channel, GatewayReceiveConsumerMessage message) {
+    public void execute(Channel channel, GatewayReceiveConsumerMessage frame) {
         SCHeartMessage heartMessage = new SCHeartMessage();
-        messageExecutor.sendMessage2Consumer(message.requestId(), message.token(), heartMessage);
+        messageExecutor.responseMessage2Consumer(frame.requestId(), frame.token(), heartMessage);
     }
 
     @Override

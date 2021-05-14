@@ -67,7 +67,7 @@ public class ProviderManager3 {
                 errorMessage.setCode(Constant.ERROR_NOT_FOUND_PROVIDER);
                 errorMessage.getArgs().add(String.valueOf(gatewayReceiveConsumerMessage.messageId()));
                 errorMessage.setMessage("没有服务器处理" + MessageIdReader.read(gatewayReceiveConsumerMessage.messageId()));
-                messageExecutor.sendMessage2Consumer(gatewayReceiveConsumerMessage.requestId(), gatewayReceiveConsumerMessage.token(), errorMessage);
+                messageExecutor.responseMessage2Consumer(gatewayReceiveConsumerMessage.requestId(), gatewayReceiveConsumerMessage.token(), errorMessage);
             } else {
                 relationAndWaitSendMessage(provider, gatewayReceiveConsumerMessage);
             }

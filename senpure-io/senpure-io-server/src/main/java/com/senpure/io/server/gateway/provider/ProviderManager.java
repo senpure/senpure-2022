@@ -101,7 +101,7 @@ public class ProviderManager extends AbstractMultipleServerManger<GatewayLocalSe
                 errorMessage.setCode(Constant.ERROR_NOT_FOUND_PROVIDER);
                 errorMessage.getArgs().add(String.valueOf(frame.messageId()));
                 errorMessage.setMessage("没有服务器处理 " + MessageIdReader.read(frame.messageId()));
-                messageExecutor.sendMessage2Consumer(frame.requestId(), frame.token(), errorMessage);
+                messageExecutor.responseMessage2Consumer(frame.requestId(), frame.token(), errorMessage);
             } else {
 
                 relationAndWaitSendMessage(provider, frame);
