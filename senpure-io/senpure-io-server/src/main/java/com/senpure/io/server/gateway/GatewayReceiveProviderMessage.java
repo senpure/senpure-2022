@@ -90,6 +90,10 @@ public class GatewayReceiveProviderMessage implements GatewaySendConsumerMessage
         this.requestId = requestId;
     }
 
+    public int getMessageLength() {
+        return messageLength;
+    }
+
     public String toString() {
 
         return "GatewayReceiveProviderMessage{" +

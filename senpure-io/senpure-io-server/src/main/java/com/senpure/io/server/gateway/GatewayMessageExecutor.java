@@ -14,12 +14,15 @@ import com.senpure.io.server.gateway.provider.ProviderManager;
 import com.senpure.io.server.gateway.provider.handler.GatewayProviderMessageHandler;
 import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
 import com.senpure.io.server.remoting.AbstractMessageExecutor;
+import com.senpure.io.server.remoting.ChannelService;
 import com.senpure.io.server.support.MessageIdReader;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -50,6 +53,8 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
     private final Map<Integer, GatewayProviderMessageHandler> provider2GatewayHandlerMap = new HashMap<>();
     private final Map<Integer, GatewayConsumerMessageHandler> consumer2GatewayHandlerMap = new HashMap<>();
     private boolean init = false;
+
+    private ProviderManager verifyProviderManager;
 
     public GatewayMessageExecutor() {
         this(new DefaultTaskLoopGroup(Runtime.getRuntime().availableProcessors() * 2,
@@ -145,6 +150,25 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
 
             if (consumerChannel.isWritable()) {
                 consumerChannel.writeAndFlush(frame);
+            }
+
+        }
+    }
+
+    public void sendMessage2ConsumerWithoutFramework(Long token, int messageId, byte[] data) {
+        Channel consumerChannel = tokenChannel.get(token);
+        if (consumerChannel == null) {
+            logger.warn("没有找到channel token {}", token);
+        } else {
+            if (ChannelAttributeUtil.isFramework(consumerChannel)) {
+                return;
+            }
+            GatewayReceiveProviderMessage m = new GatewayReceiveProviderMessage(data.length, data);
+            m.setRequestId(0);
+            m.setToken(token);
+            m.setMessageId(messageId);
+            if (consumerChannel.isWritable()) {
+                consumerChannel.writeAndFlush(m);
             }
 
         }
@@ -317,7 +341,7 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
 
         SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
 
-       // ChannelAttributeUtil.setFramework(channel, false);
+        // ChannelAttributeUtil.setFramework(channel, false);
     }
 
     public GatewayLocalSendProviderMessage createMessage(Message message) {
@@ -369,6 +393,40 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
         }
     }
 
+    public Provider createProvider(String serverKey) {
+
+        Provider provider = new Provider(service);
+        provider.setChannelService(new ChannelService.SingleChannelService(serverKey));
+        provider.setRemoteServerKey(serverKey);
+        provider.setFutureService(this);
+        provider.verifyWorkable();
+        return provider;
+    }
+
+    @Nullable
+    public ProviderManager getProviderManager(String serverName) {
+        return providerManagerMap.get(serverName);
+    }
+
+    @Nonnull
+    public ProviderManager addProviderManager(ProviderManager providerManager) {
+        providerManagerMap.putIfAbsent(providerManager.getServerName(), providerManager);
+        return providerManagerMap.get(providerManager.getServerName());
+    }
+
+    @Nonnull
+    public synchronized ProviderManager addFrameworkVerifyProviderManager(ProviderManager providerManager) {
+        providerManagerMap.putIfAbsent(providerManager.getServerName(), providerManager);
+        ProviderManager r = providerManagerMap.get(providerManager.getServerName());
+        verifyProviderManager = r;
+        return r;
+    }
+
+    @Nullable
+    public ProviderManager getFrameworkVerifyProviderManager() {
+        return verifyProviderManager;
+    }
+
     private void startCheck() {
         service.scheduleWithFixedDelay(() -> {
             checkTimeoutFuture();
@@ -407,5 +465,13 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
 
     public void setGatewayProperties(ServerProperties.GatewayProperties gatewayProperties) {
         this.gatewayProperties = gatewayProperties;
+    }
+
+    public ProviderManager getVerifyProviderManager() {
+        return verifyProviderManager;
+    }
+
+    public void setVerifyProviderManager(ProviderManager verifyProviderManager) {
+        this.verifyProviderManager = verifyProviderManager;
     }
 }

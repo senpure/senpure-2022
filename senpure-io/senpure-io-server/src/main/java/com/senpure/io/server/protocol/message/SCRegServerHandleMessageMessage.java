@@ -11,15 +11,19 @@ import java.util.ArrayList;
  * 服务器注册消息处理器到网关
  * 
  * @author senpure
- * @time 2021-5-6 19:44:19
+ * @time 2021-5-15 15:39:34
  */
 public class SCRegServerHandleMessageMessage extends CompressMessage {
 
-    public static final int MESSAGE_ID = 102;
+    public static final int MESSAGE_ID = 104;
     //服务名
     private String serverName;
     //服务实例唯一标识
     private String serverKey;
+    //服务类型
+    private String serverType;
+    //服务扩展字段
+    private String serverOption;
     //服务名
     private String readableServerName;
     //可以处理的消息
@@ -28,6 +32,8 @@ public class SCRegServerHandleMessageMessage extends CompressMessage {
     public void copy(SCRegServerHandleMessageMessage source) {
         this.serverName = source.getServerName();
         this.serverKey = source.getServerKey();
+        this.serverType = source.getServerType();
+        this.serverOption = source.getServerOption();
         this.readableServerName = source.getReadableServerName();
         this.messages.clear();
         for (HandleMessage handleMessage : source.getMessages()) {
@@ -50,13 +56,21 @@ public class SCRegServerHandleMessageMessage extends CompressMessage {
         if (serverKey != null) {
             writeString(buf, 19, serverKey);
         }
+        //服务类型
+        if (serverType != null) {
+            writeString(buf, 35, serverType);
+        }
+        //服务扩展字段
+        if (serverOption != null) {
+            writeString(buf, 43, serverOption);
+        }
         //服务名
         if (readableServerName != null) {
-            writeString(buf, 27, readableServerName);
+            writeString(buf, 51, readableServerName);
         }
         //可以处理的消息
         for (HandleMessage value : messages) {
-             writeBean(buf, 35, value);
+             writeBean(buf, 59, value);
         }
     }
 
@@ -78,12 +92,20 @@ public class SCRegServerHandleMessageMessage extends CompressMessage {
                 case 19:// 2 << 3 | 3
                     serverKey = readString(buf);
                     break;
+                //服务类型
+                case 35:// 4 << 3 | 3
+                    serverType = readString(buf);
+                    break;
+                //服务扩展字段
+                case 43:// 5 << 3 | 3
+                    serverOption = readString(buf);
+                    break;
                 //服务名
-                case 27:// 3 << 3 | 3
+                case 51:// 6 << 3 | 3
                     readableServerName = readString(buf);
                     break;
                 //可以处理的消息
-                case 35:// 4 << 3 | 3
+                case 59:// 7 << 3 | 3
                     HandleMessage tempMessagesBean = new HandleMessage();
                     readBean(buf,tempMessagesBean);
                     messages.add(tempMessagesBean);
@@ -114,9 +136,19 @@ public class SCRegServerHandleMessageMessage extends CompressMessage {
              //tag size 19
              size += computeStringSize(1, serverKey);
         }
+        //服务类型
+        if (serverType != null) {
+             //tag size 35
+             size += computeStringSize(1, serverType);
+        }
+        //服务扩展字段
+        if (serverOption != null) {
+             //tag size 43
+             size += computeStringSize(1, serverOption);
+        }
         //服务名
         if (readableServerName != null) {
-             //tag size 27
+             //tag size 51
              size += computeStringSize(1, readableServerName);
         }
         //可以处理的消息
@@ -158,6 +190,40 @@ public class SCRegServerHandleMessageMessage extends CompressMessage {
      */
     public SCRegServerHandleMessageMessage setServerKey(String serverKey) {
         this.serverKey = serverKey;
+        return this;
+    }
+
+    /**
+     * get 服务类型
+     *
+     * @return
+     */
+    public String getServerType() {
+        return serverType;
+    }
+
+    /**
+     * set 服务类型
+     */
+    public SCRegServerHandleMessageMessage setServerType(String serverType) {
+        this.serverType = serverType;
+        return this;
+    }
+
+    /**
+     * get 服务扩展字段
+     *
+     * @return
+     */
+    public String getServerOption() {
+        return serverOption;
+    }
+
+    /**
+     * set 服务扩展字段
+     */
+    public SCRegServerHandleMessageMessage setServerOption(String serverOption) {
+        this.serverOption = serverOption;
         return this;
     }
 
@@ -206,14 +272,16 @@ public class SCRegServerHandleMessageMessage extends CompressMessage {
 
     @Override
     public int messageId() {
-        return 102;
+        return 104;
     }
 
     @Override
     public String toString() {
-        return "SCRegServerHandleMessageMessage[102]{"
+        return "SCRegServerHandleMessageMessage[104]{"
                 + "serverName=" + serverName
                 + ",serverKey=" + serverKey
+                + ",serverType=" + serverType
+                + ",serverOption=" + serverOption
                 + ",readableServerName=" + readableServerName
                 + ",messages=" + messages
                 + "}";
@@ -226,13 +294,19 @@ public class SCRegServerHandleMessageMessage extends CompressMessage {
         //最长字段长度 18
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("SCRegServerHandleMessageMessage").append("[102]").append("{");
+        sb.append("SCRegServerHandleMessageMessage").append("[104]").append("{");
         //服务名
         sb.append("\n");
         sb.append(indent).append("serverName         = ").append(serverName);
         //服务实例唯一标识
         sb.append("\n");
         sb.append(indent).append("serverKey          = ").append(serverKey);
+        //服务类型
+        sb.append("\n");
+        sb.append(indent).append("serverType         = ").append(serverType);
+        //服务扩展字段
+        sb.append("\n");
+        sb.append(indent).append("serverOption       = ").append(serverOption);
         //服务名
         sb.append("\n");
         sb.append(indent).append("readableServerName = ").append(readableServerName);

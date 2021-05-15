@@ -29,6 +29,7 @@ public class ProviderManager extends AbstractMultipleServerManger<GatewayLocalSe
     private final Map<Integer, Boolean> handleIdsMap = new HashMap<>();
     private final GatewayMessageExecutor messageExecutor;
     private String serverName;
+    private  boolean registerMessageId;
 
     public ProviderManager(GatewayMessageExecutor messageExecutor) {
         this.messageExecutor = messageExecutor;
@@ -45,6 +46,8 @@ public class ProviderManager extends AbstractMultipleServerManger<GatewayLocalSe
         frame.setRequestId(requestId);
         return frame;
     }
+
+
 
 
     @Nullable
@@ -64,7 +67,7 @@ public class ProviderManager extends AbstractMultipleServerManger<GatewayLocalSe
     }
 
     @Nonnull
-    public  Provider addProvider(Provider provider) {
+    public Provider addProvider(Provider provider) {
         lock.writeLock().lock();
         try {
             for (Provider temp : useProviders) {
@@ -143,14 +146,14 @@ public class ProviderManager extends AbstractMultipleServerManger<GatewayLocalSe
                 ProviderRelation providerRelation = entry.getValue();
                 Provider provider = providerRelation.provider;
                 if (provider.getRemoteServerKey().equals(serverKey)) {
-                    messageExecutor.sendMessage2Consumer(userToken, messageId, data);
+                    messageExecutor.sendMessage2ConsumerWithoutFramework(userToken, messageId, data);
                     break;
                 }
             }
         } else {
             for (Map.Entry<Long, ProviderRelation> entry : tokenProviderMap.entrySet()) {
                 Long userToken = entry.getKey();
-                messageExecutor.sendMessage2Consumer(userToken, messageId, data);
+                messageExecutor.sendMessage2ConsumerWithoutFramework(userToken, messageId, data);
 
 
             }
@@ -189,7 +192,7 @@ public class ProviderManager extends AbstractMultipleServerManger<GatewayLocalSe
         return handleIdsMap.get(messageId) != null;
     }
 
-    public  void prepStopOldInstance() {
+    public void prepStopOldInstance() {
         lock.writeLock().lock();
         try {
             prepStopOldInstance.addAll(useProviders);
@@ -323,6 +326,14 @@ public class ProviderManager extends AbstractMultipleServerManger<GatewayLocalSe
 
     public List<Provider> getUseProviders() {
         return useProviders;
+    }
+
+    public boolean isRegisterMessageId() {
+        return registerMessageId;
+    }
+
+    public void setRegisterMessageId(boolean registerMessageId) {
+        this.registerMessageId = registerMessageId;
     }
 
     private static class ProviderRelation {

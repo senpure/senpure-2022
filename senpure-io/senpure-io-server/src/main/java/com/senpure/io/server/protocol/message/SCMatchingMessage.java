@@ -7,11 +7,11 @@ import io.netty.buffer.ByteBuf;
  * 加入匹配
  * 
  * @author senpure
- * @time 2021-5-6 19:44:19
+ * @time 2021-5-15 15:39:34
  */
 public class SCMatchingMessage extends CompressMessage {
 
-    public static final int MESSAGE_ID = 120;
+    public static final int MESSAGE_ID = 122;
     private boolean success;
 
     public void copy(SCMatchingMessage source) {
@@ -78,12 +78,12 @@ public class SCMatchingMessage extends CompressMessage {
 
     @Override
     public int messageId() {
-        return 120;
+        return 122;
     }
 
     @Override
     public String toString() {
-        return "SCMatchingMessage[120]{"
+        return "SCMatchingMessage[122]{"
                 + "success=" + success
                 + "}";
     }
@@ -93,7 +93,7 @@ public class SCMatchingMessage extends CompressMessage {
         //最长字段长度 7
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("SCMatchingMessage").append("[120]").append("{");
+        sb.append("SCMatchingMessage").append("[122]").append("{");
         sb.append("\n");
         sb.append(indent).append("success = ").append(success);
         sb.append("\n");

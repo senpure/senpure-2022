@@ -18,8 +18,7 @@ import java.util.concurrent.ConcurrentMap;
 public class SCRegServerHandleMessageMessageHandler extends AbstractGatewayProviderMessageHandler {
 
     @Override
-    public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
-        //todo 没有加锁 线程安全问题
+    public synchronized void execute(Channel channel, GatewayReceiveProviderMessage frame) {
         //todo 一个服务只允许一个ask id
         StringBuilder sb = new StringBuilder();
         try {
@@ -33,17 +32,22 @@ public class SCRegServerHandleMessageMessageHandler extends AbstractGatewayProvi
             for (HandleMessage handleMessage : handleMessages) {
                 logger.info("{}", handleMessage);
             }
-            ConcurrentMap<String, ProviderManager> producerManagerMap = messageExecutor.providerManagerMap;
+            ConcurrentMap<String, ProviderManager> providerManagerMap = messageExecutor.providerManagerMap;
             ConcurrentMap<Integer, ProviderManager> messageHandleMap = messageExecutor.messageHandleMap;
-            ProviderManager providerManager = producerManagerMap.get(message.getServerName());
+            ProviderManager providerManager = providerManagerMap.get(message.getServerName());
             if (providerManager == null) {
                 providerManager = new ProviderManager(messageExecutor);
-                producerManagerMap.put(message.getServerName(), providerManager);
+                providerManager.setServerName(message.getServerName());
+                providerManagerMap.putIfAbsent(message.getServerName(), providerManager);
+                providerManager=providerManagerMap.get(message.getServerName());
+            }
+            if (!providerManager.isRegisterMessageId()) {
+
                 for (HandleMessage handleMessage : handleMessages) {
                     providerManager.markHandleId(handleMessage.getHandleMessageId());
                     messageHandleMap.putIfAbsent(handleMessage.getHandleMessageId(), providerManager);
                 }
-                providerManager.setServerName(message.getServerName());
+                providerManager.setRegisterMessageId(true);
             }
             //如果同一个服务处理消息id不一致，旧得实例停止接收新的连接
             for (HandleMessage handleMessage : handleMessages) {

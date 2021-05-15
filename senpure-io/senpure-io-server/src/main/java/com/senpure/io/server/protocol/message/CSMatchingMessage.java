@@ -11,11 +11,11 @@ import java.util.ArrayList;
  * 加入匹配
  * 
  * @author senpure
- * @time 2021-5-6 19:44:19
+ * @time 2021-5-15 15:39:34
  */
 public class CSMatchingMessage extends CompressMessage {
 
-    public static final int MESSAGE_ID = 119;
+    public static final int MESSAGE_ID = 121;
     private List<Consumer> consumers = new ArrayList<>(16);
 
     public void copy(CSMatchingMessage source) {
@@ -95,12 +95,12 @@ public class CSMatchingMessage extends CompressMessage {
 
     @Override
     public int messageId() {
-        return 119;
+        return 121;
     }
 
     @Override
     public String toString() {
-        return "CSMatchingMessage[119]{"
+        return "CSMatchingMessage[121]{"
                 + "consumers=" + consumers
                 + "}";
     }
@@ -112,7 +112,7 @@ public class CSMatchingMessage extends CompressMessage {
         //最长字段长度 9
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("CSMatchingMessage").append("[119]").append("{");
+        sb.append("CSMatchingMessage").append("[121]").append("{");
         sb.append("\n");
         sb.append(indent).append("consumers = ");
         appendBeans(sb,consumers,indent,nextIndent);

@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public interface ChannelService {
     void addChannel(Channel channel);
@@ -30,6 +32,9 @@ public interface ChannelService {
 
         @Override
         public void addChannel(Channel channel) {
+            if (channel == null) {
+                return;
+            }
             if (this.channel != null) {
                 Assert.error(remoteServerKey + "该模式只允许同时存在一个channel");
             }
@@ -63,36 +68,56 @@ public interface ChannelService {
         private final String remoteServerKey;
         private final Logger logger = LoggerFactory.getLogger(getClass());
 
+        private final ReadWriteLock lock = new ReentrantReadWriteLock();
+
         public MultipleChannelService(String remoteServerKey) {
             this.remoteServerKey = remoteServerKey;
         }
 
         @Override
         public void addChannel(Channel channel) {
-            if (channels.contains(channel)) {
+            if (channel == null) {
                 return;
             }
-            channels.add(channel);
+            lock.writeLock().lock();
+            try {
+                if (channels.contains(channel)) {
+                    return;
+                }
+                channels.add(channel);
+            } finally {
+                lock.writeLock().unlock();
+            }
         }
 
         @Override
         public boolean removeChannel(Channel channel) {
-            return channels.remove(channel);
+            lock.writeLock().lock();
+            try {
+                return channels.remove(channel);
+            } finally {
+                lock.writeLock().unlock();
+            }
         }
 
         @Override
         public Channel nextChannel() {
-            if (channels.size() == 0) {
-                logger.warn("{}没有可用得channel ", remoteServerKey);
-                return null;
-            }
-            for (int i = 0; i < channels.size(); i++) {
-                Channel channel = channels.get(nextIndex());
-                if (channel.isWritable()) {
-                    return channel;
+            lock.readLock().lock();
+            try {
+                if (channels.size() == 0) {
+                    logger.warn("{}没有可用得channel ", remoteServerKey);
+                    return null;
                 }
+                for (int i = 0; i < channels.size(); i++) {
+                    Channel channel = channels.get(nextIndex());
+                    if (channel.isWritable()) {
+                        return channel;
+                    }
+                }
+                return null;
+            } finally {
+                lock.readLock().unlock();
             }
-            return null;
         }
 
         @Override

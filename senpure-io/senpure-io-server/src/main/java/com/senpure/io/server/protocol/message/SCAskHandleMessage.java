@@ -5,11 +5,11 @@ import io.netty.buffer.ByteBuf;
 
 /**
  * @author senpure
- * @time 2021-5-6 19:44:19
+ * @time 2021-5-15 15:39:34
  */
 public class SCAskHandleMessage extends CompressMessage {
 
-    public static final int MESSAGE_ID = 112;
+    public static final int MESSAGE_ID = 114;
     //是否可以处理
     private boolean handle;
     //token
@@ -159,12 +159,12 @@ public class SCAskHandleMessage extends CompressMessage {
 
     @Override
     public int messageId() {
-        return 112;
+        return 114;
     }
 
     @Override
     public String toString() {
-        return "SCAskHandleMessage[112]{"
+        return "SCAskHandleMessage[114]{"
                 + "handle=" + handle
                 + ",askToken=" + askToken
                 + ",fromMessageId=" + fromMessageId
@@ -177,7 +177,7 @@ public class SCAskHandleMessage extends CompressMessage {
         //最长字段长度 13
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("SCAskHandleMessage").append("[112]").append("{");
+        sb.append("SCAskHandleMessage").append("[114]").append("{");
         //是否可以处理
         sb.append("\n");
         sb.append(indent).append("handle        = ").append(handle);

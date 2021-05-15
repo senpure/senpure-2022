@@ -7,11 +7,11 @@ import io.netty.buffer.ByteBuf;
  * 断开用户与网关
  * 
  * @author senpure
- * @time 2021-5-6 19:44:19
+ * @time 2021-5-15 15:39:34
  */
 public class SCBreakUserGatewayMessage extends CompressMessage {
 
-    public static final int MESSAGE_ID = 110;
+    public static final int MESSAGE_ID = 112;
 
     public void copy(SCBreakUserGatewayMessage source) {
     }
@@ -62,12 +62,12 @@ public class SCBreakUserGatewayMessage extends CompressMessage {
 
     @Override
     public int messageId() {
-        return 110;
+        return 112;
     }
 
     @Override
     public String toString() {
-        return "SCBreakUserGatewayMessage[110]{"
+        return "SCBreakUserGatewayMessage[112]{"
                 + "}";
     }
 
@@ -75,7 +75,7 @@ public class SCBreakUserGatewayMessage extends CompressMessage {
     public String toString(String indent) {
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("SCBreakUserGatewayMessage").append("[110]").append("{");
+        sb.append("SCBreakUserGatewayMessage").append("[112]").append("{");
         sb.append("\n");
         sb.append(indent).append("}");
         return sb.toString();

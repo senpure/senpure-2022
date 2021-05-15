@@ -5,11 +5,11 @@ import io.netty.buffer.ByteBuf;
 
 /**
  * @author senpure
- * @time 2021-5-6 19:44:19
+ * @time 2021-5-15 15:39:34
  */
 public class CSAskHandleMessage extends CompressMessage {
 
-    public static final int MESSAGE_ID = 111;
+    public static final int MESSAGE_ID = 113;
     //askToken
     private long askToken;
     private int fromMessageId;
@@ -130,12 +130,12 @@ public class CSAskHandleMessage extends CompressMessage {
 
     @Override
     public int messageId() {
-        return 111;
+        return 113;
     }
 
     @Override
     public String toString() {
-        return "CSAskHandleMessage[111]{"
+        return "CSAskHandleMessage[113]{"
                 + "askToken=" + askToken
                 + ",fromMessageId=" + fromMessageId
                 + ",data=" + bytesToString(data)
@@ -147,7 +147,7 @@ public class CSAskHandleMessage extends CompressMessage {
         //最长字段长度 13
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("CSAskHandleMessage").append("[111]").append("{");
+        sb.append("CSAskHandleMessage").append("[113]").append("{");
         //askToken
         sb.append("\n");
         sb.append(indent).append("askToken      = ").append(askToken);

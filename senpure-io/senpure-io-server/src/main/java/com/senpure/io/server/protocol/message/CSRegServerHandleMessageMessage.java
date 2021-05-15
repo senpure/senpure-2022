@@ -7,11 +7,11 @@ import io.netty.buffer.ByteBuf;
  * 网关注册处理消息返回
  * 
  * @author senpure
- * @time 2021-5-6 19:44:19
+ * @time 2021-5-15 15:39:34
  */
 public class CSRegServerHandleMessageMessage extends CompressMessage {
 
-    public static final int MESSAGE_ID = 101;
+    public static final int MESSAGE_ID = 103;
     private boolean success;
     private String message;
 
@@ -99,12 +99,12 @@ public class CSRegServerHandleMessageMessage extends CompressMessage {
 
     @Override
     public int messageId() {
-        return 101;
+        return 103;
     }
 
     @Override
     public String toString() {
-        return "CSRegServerHandleMessageMessage[101]{"
+        return "CSRegServerHandleMessageMessage[103]{"
                 + "success=" + success
                 + ",message=" + message
                 + "}";
@@ -115,7 +115,7 @@ public class CSRegServerHandleMessageMessage extends CompressMessage {
         //最长字段长度 7
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("CSRegServerHandleMessageMessage").append("[101]").append("{");
+        sb.append("CSRegServerHandleMessageMessage").append("[103]").append("{");
         sb.append("\n");
         sb.append(indent).append("success = ").append(success);
         sb.append("\n");

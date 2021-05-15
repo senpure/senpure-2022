@@ -8,14 +8,14 @@ import java.util.List;
 import java.util.ArrayList;
 
 /**
- * 数字id与字符串的关联
+ * 通知网关数字id与字符串的关联
  * 
  * @author senpure
- * @time 2021-5-6 19:44:19
+ * @time 2021-5-15 15:39:34
  */
 public class SCIdNameMessage extends CompressMessage {
 
-    public static final int MESSAGE_ID = 106;
+    public static final int MESSAGE_ID = 108;
     private List<IdName> idNames = new ArrayList<>(16);
 
     public void copy(SCIdNameMessage source) {
@@ -95,12 +95,12 @@ public class SCIdNameMessage extends CompressMessage {
 
     @Override
     public int messageId() {
-        return 106;
+        return 108;
     }
 
     @Override
     public String toString() {
-        return "SCIdNameMessage[106]{"
+        return "SCIdNameMessage[108]{"
                 + "idNames=" + idNames
                 + "}";
     }
@@ -112,7 +112,7 @@ public class SCIdNameMessage extends CompressMessage {
         //最长字段长度 7
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("SCIdNameMessage").append("[106]").append("{");
+        sb.append("SCIdNameMessage").append("[108]").append("{");
         sb.append("\n");
         sb.append(indent).append("idNames = ");
         appendBeans(sb,idNames,indent,nextIndent);
