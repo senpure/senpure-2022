@@ -4,18 +4,41 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties("server.io")
 public class ServerProperties {
-    private String name;
+
+    /**
+     * 服务名
+     */
+    private String serverName;
+    /**
+     * 服务实例唯一标识
+     */
+
+    private String serverKey;
+    /**
+     * 服务类型
+     */
+
+    private String serverType;
+    /**
+     * 服务扩展字段
+     */
+
+    private String serverOption;
+    /**
+     * 认证信息
+     */
+    private Verify verify = new Verify();
     private ConsumerProperties consumer = new ConsumerProperties();
     private GatewayProperties gateway = new GatewayProperties();
     private ProviderProperties provider = new ProviderProperties();
 
 
-    public String getName() {
-        return name;
+    public String getServerName() {
+        return serverName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setServerName(String serverName) {
+        this.serverName = serverName;
     }
 
     public ConsumerProperties getConsumer() {
@@ -42,6 +65,37 @@ public class ServerProperties {
         this.provider = provider;
     }
 
+    public String getServerKey() {
+        return serverKey;
+    }
+
+    public void setServerKey(String serverKey) {
+        this.serverKey = serverKey;
+    }
+
+    public String getServerType() {
+        return serverType;
+    }
+
+    public void setServerType(String serverType) {
+        this.serverType = serverType;
+    }
+
+    public String getServerOption() {
+        return serverOption;
+    }
+
+    public void setServerOption(String serverOption) {
+        this.serverOption = serverOption;
+    }
+
+    public Verify getVerify() {
+        return verify;
+    }
+
+    public void setVerify(Verify verify) {
+        this.verify = verify;
+    }
 
     public static class ProviderProperties {
         public static enum MODEL {
@@ -55,6 +109,10 @@ public class ServerProperties {
             CONSUMER
         }
 
+        /**
+         * 框架验证者
+         */
+        private boolean frameworkVerifyProvider;
         /**
          * 服务器名
          */
@@ -82,32 +140,19 @@ public class ServerProperties {
          * 关联id与类名的包名多个用,逗号分割
          */
         private String idNamesPackage;
-        /**
-         * 使用简单认证模式
-         */
-        private boolean simpleVerify;
-        /**
-         * 认证token
-         */
-        private String verifyToken = "senpure.io.server.framework.simple.token";
+
+
         private GatewayProperties gateway = new GatewayProperties();
         private ConsumerProperties consumer = new ConsumerProperties();
 
-        public boolean isSimpleVerify() {
-            return simpleVerify;
+        public boolean isFrameworkVerifyProvider() {
+            return frameworkVerifyProvider;
         }
 
-        public void setSimpleVerify(boolean simpleVerify) {
-            this.simpleVerify = simpleVerify;
+        public void setFrameworkVerifyProvider(boolean frameworkVerifyProvider) {
+            this.frameworkVerifyProvider = frameworkVerifyProvider;
         }
 
-        public String getVerifyToken() {
-            return verifyToken;
-        }
-
-        public void setVerifyToken(String verifyToken) {
-            this.verifyToken = verifyToken;
-        }
 
         public String getReadableName() {
             return readableName;
@@ -515,8 +560,11 @@ public class ServerProperties {
         /**
          * 认证token
          */
-        private String verifyToken = "senpure.io.server.framework.simple.token";
-
+        private String simpleToken = "senpure.io.server.framework.simple.token";
+        /**
+         * 认证完成后的id
+         */
+        private long simpleUserId = 1;
         public ConsumerProperties getConsumer() {
             return consumer;
         }
@@ -539,6 +587,14 @@ public class ServerProperties {
 
         public void setReadableName(String readableName) {
             this.readableName = readableName;
+        }
+
+        public long getSimpleUserId() {
+            return simpleUserId;
+        }
+
+        public void setSimpleUserId(long simpleUserId) {
+            this.simpleUserId = simpleUserId;
         }
 
         public int getExecutorThreadPoolSize() {
@@ -621,12 +677,12 @@ public class ServerProperties {
             this.simpleVerify = simpleVerify;
         }
 
-        public String getVerifyToken() {
-            return verifyToken;
+        public String getSimpleToken() {
+            return simpleToken;
         }
 
-        public void setVerifyToken(String verifyToken) {
-            this.verifyToken = verifyToken;
+        public void setSimpleToken(String simpleToken) {
+            this.simpleToken = simpleToken;
         }
 
         public static class ProviderProperties {
@@ -830,6 +886,75 @@ public class ServerProperties {
         }
     }
 
+    /**
+     * 认证信息
+     */
+    public static class Verify {
+        /**
+         * 使用简单认证模式
+         */
+        private boolean simple;
+        /**
+         * 认证token
+         */
+        private String token = "senpure.io.server.framework.simple.token";
+        /**
+         * username
+         */
+
+        private String userName;
+        /**
+         * 账号类型
+         */
+
+        private String userType;
+        /**
+         * 账号密码
+         */
+
+        private String password;
+
+        public boolean isSimple() {
+            return simple;
+        }
+
+        public void setSimple(boolean simple) {
+            this.simple = simple;
+        }
+
+        public String getToken() {
+            return token;
+        }
+
+        public void setToken(String token) {
+            this.token = token;
+        }
+
+        public String getUserName() {
+            return userName;
+        }
+
+        public void setUserName(String userName) {
+            this.userName = userName;
+        }
+
+        public String getUserType() {
+            return userType;
+        }
+
+        public void setUserType(String userType) {
+            this.userType = userType;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
+    }
+
     public static class ConsumerProperties {
         public enum MODEL {
             /**
@@ -930,31 +1055,8 @@ public class ServerProperties {
          * 服务器返回错误消息id 多个用逗号,隔开
          */
         private String scErrorMessageId = "1000500";
-        /**
-         * 使用简单认证模式
-         */
-        private boolean simpleVerify;
-        /**
-         * 认证token
-         */
-        private String verifyToken = "senpure.io.server.framework.simple.token";
 
 
-        public boolean isSimpleVerify() {
-            return simpleVerify;
-        }
-
-        public void setSimpleVerify(boolean simpleVerify) {
-            this.simpleVerify = simpleVerify;
-        }
-
-        public String getVerifyToken() {
-            return verifyToken;
-        }
-
-        public void setVerifyToken(String verifyToken) {
-            this.verifyToken = verifyToken;
-        }
 
         public String getReadableName() {
             return readableName;

@@ -6,7 +6,7 @@ import com.senpure.io.server.gateway.provider.Provider;
 import com.senpure.io.server.gateway.provider.ProviderManager;
 import com.senpure.io.server.protocol.message.CSFrameworkVerifyProviderMessage;
 import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
-import com.senpure.io.server.protocol.message.SCFrameworkVerifyMessage;
+import com.senpure.io.server.protocol.message.SCSuccessMessage;
 import io.netty.channel.Channel;
 
 public class CSFrameworkVerifyProviderMessageHandler extends AbstractGatewayProviderMessageHandler {
@@ -49,9 +49,8 @@ public class CSFrameworkVerifyProviderMessageHandler extends AbstractGatewayProv
         }
         provider.addChannel(channel);
 
-        SCFrameworkVerifyMessage verifyMessage = new SCFrameworkVerifyMessage();
-        verifyMessage.setSuccess(true);
-        messageExecutor.responseMessage2Producer(frame.requestId(), channel, verifyMessage);
+        SCSuccessMessage successMessage = new SCSuccessMessage();
+        messageExecutor.responseMessage2Producer(frame.requestId(), channel, successMessage);
 
     }
 

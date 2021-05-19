@@ -18,6 +18,7 @@ import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
@@ -26,14 +27,14 @@ public class ProviderGatewayServer {
     protected static Logger logger = LoggerFactory.getLogger(ProviderGatewayServer.class);
 
 
-
     private static EventLoopGroup group;
     private static Bootstrap bootstrap;
     private static final Object groupLock = new Object();
 
     private static int serverRefCont = 0;
     private static int firstPort;
-    private ServerProperties.ProviderProperties properties;
+    private ServerProperties properties;
+
 
     private ChannelFuture channelFuture;
     private String serverName = "ProviderServer";
@@ -46,16 +47,18 @@ public class ProviderGatewayServer {
     private GatewayManager gatewayManager;
     private MessageDecoderContext decoderContext;
 
-    private  volatile boolean closed;
+    private volatile boolean closed;
+
     public final boolean start(String remoteHost, int remotePort) {
 
         Assert.notNull(gatewayManager);
         Assert.notNull(properties);
-        Assert.notNull(properties.getGateway());
+
         Assert.notNull(messageExecutor);
         Assert.notNull(decoderContext);
         // Configure SSL.
-        ServerProperties.ProviderProperties.GatewayProperties gateway = properties.getGateway();
+        ServerProperties.ProviderProperties providerProperties = properties.getProvider();
+        ServerProperties.ProviderProperties.GatewayProperties gateway = providerProperties.getGateway();
         if (group == null || group.isShuttingDown() || group.isShutdown()) {
             synchronized (groupLock) {
                 if (group == null || group.isShuttingDown() || group.isShutdown()) {
@@ -98,8 +101,8 @@ public class ProviderGatewayServer {
         }
         // Start the client.
         try {
-            logger.debug("启动{}，网关地址 {}", properties.getReadableName(), remoteHost + ":" + remotePort);
-            readableServerName = properties.getReadableName() + "->[" + remoteHost + ":" + remotePort + "]";
+            logger.debug("启动{}，网关地址 {}", providerProperties.getReadableName(), remoteHost + ":" + remotePort);
+            readableServerName = providerProperties.getReadableName() + "->[" + remoteHost + ":" + remotePort + "]";
             channelFuture = bootstrap.connect(remoteHost, remotePort).sync();
             channel = channelFuture.channel();
             channel.closeFuture().addListener((ChannelFutureListener) channelFuture -> {
@@ -122,7 +125,11 @@ public class ProviderGatewayServer {
 //            } else {
 //                path = AppEvn.getClassRootPath();
 //            }
-            String serverKey = serverName + " " + address.getAddress().getHostAddress() + ":" + (httpPort > 0 ? httpPort : firstPort);
+            String serverKey = properties.getServerKey();
+            if (!StringUtils.hasText(serverKey)) {
+                serverKey = serverName + " " + address.getAddress().getHostAddress() + ":" + (httpPort > 0 ? httpPort : firstPort);
+
+            }
             ChannelAttributeUtil.setRemoteServerKey(channel, gatewayKey);
             ChannelAttributeUtil.setLocalServerKey(channel, serverKey);
             logger.info("{}启动完成 localServerKey {} address {}", getReadableServerName(), serverKey, address);
@@ -174,9 +181,6 @@ public class ProviderGatewayServer {
         this.addLoggingHandler = addLoggingHandler;
     }
 
-    public void setProperties(ServerProperties.ProviderProperties properties) {
-        this.properties = properties;
-    }
 
     public void setGatewayManager(GatewayManager gatewayManager) {
         this.gatewayManager = gatewayManager;
@@ -186,6 +190,9 @@ public class ProviderGatewayServer {
         this.messageExecutor = messageExecutor;
     }
 
+    public void setProperties(ServerProperties properties) {
+        this.properties = properties;
+    }
 
     private static synchronized void markFirstPort(int port) {
         if (firstPort > 0) {

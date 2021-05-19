@@ -161,7 +161,7 @@ public class ProviderManager extends AbstractMultipleServerManger<GatewayLocalSe
 
     }
 
-    protected Provider nextProvider() {
+    public Provider nextProvider() {
         lock.readLock().lock();
         try {
             int size = useProviders.size();

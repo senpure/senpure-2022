@@ -38,22 +38,26 @@ public class ProviderAutoConfiguration {
     }
 
     private void check(Environment env, ServerProperties properties) {
-        if (!StringUtils.hasText(properties.getName())) {
+        if (!StringUtils.hasText(properties.getServerName())) {
             String name = env.getProperty("spring.application.name");
             if (StringUtils.hasText(name)) {
                 logger.debug("使用 name {}", name);
-                properties.setName(name);
+                properties.setServerName(name);
             } else {
                 logger.warn("spring.application.name 值为空");
             }
         }
-        if (!StringUtils.hasText(properties.getName())) {
-            properties.setName("provider");
+        if (!StringUtils.hasText(properties.getServerName())) {
+            properties.setServerName("provider");
+        }
+
+        if (!StringUtils.hasText(properties.getServerType())) {
+            properties.setServerType(properties.getServerName());
         }
         ServerProperties.ProviderProperties provider = properties.getProvider();
 
         if (!StringUtils.hasText(provider.getReadableName()) || provider.getReadableName().equals(new ServerProperties.ProviderProperties().getReadableName())) {
-            provider.setReadableName(properties.getName());
+            provider.setReadableName(properties.getServerName());
         }
 
     }

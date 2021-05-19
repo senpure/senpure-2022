@@ -7,7 +7,7 @@ import io.netty.buffer.ByteBuf;
  * 关联用户与网关
  * 
  * @author senpure
- * @time 2021-5-15 15:39:34
+ * @time 2021-5-17 10:55:33
  */
 public class CSRelationUserGatewayMessage extends CompressMessage {
 

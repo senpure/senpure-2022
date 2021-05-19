@@ -2,13 +2,11 @@ package com.senpure.io.server.support;
 
 import com.senpure.executor.TaskLoopGroup;
 import com.senpure.io.protocol.Message;
-import com.senpure.io.server.ChannelAttributeUtil;
-import com.senpure.io.server.Constant;
-import com.senpure.io.server.MessageDecoderContext;
-import com.senpure.io.server.ServerProperties;
+import com.senpure.io.server.*;
 import com.senpure.io.server.protocol.bean.HandleMessage;
 import com.senpure.io.server.protocol.bean.IdName;
-import com.senpure.io.server.protocol.message.CSMatchingMessage;
+import com.senpure.io.server.protocol.message.CSFrameworkVerifyMessage;
+import com.senpure.io.server.protocol.message.CSFrameworkVerifyProviderMessage;
 import com.senpure.io.server.protocol.message.SCIdNameMessage;
 import com.senpure.io.server.protocol.message.SCRegServerHandleMessageMessage;
 import com.senpure.io.server.provider.ProviderMessageExecutor;
@@ -20,7 +18,7 @@ import com.senpure.io.server.provider.gateway.ProviderGatewayServer;
 import com.senpure.io.server.provider.handler.ProviderAskMessageHandler;
 import com.senpure.io.server.provider.handler.ProviderMessageHandler;
 import com.senpure.io.server.remoting.ChannelService;
-import com.senpure.io.server.remoting.Response;
+import io.netty.channel.Channel;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,12 +68,15 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
 
     }
 
+    private final List<HandleMessage> handleMessages = new ArrayList<>();
+    private List<IdName> idNames = new ArrayList<>();
+
     @Override
     public void run(ApplicationArguments args) {
         List<Integer> ids = handlerContext.registerMessageIds();
 
         logger.debug("ids {}", ids.size());
-        List<HandleMessage> handleMessages = new ArrayList<>();
+
 
         for (Integer id : ids) {
             HandleMessage handleMessage = new HandleMessage();
@@ -101,7 +102,7 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
         }
         ServerProperties.ProviderProperties providerProperties = properties.getProvider();
         ServerProperties.ProviderProperties.GatewayProperties providerGateway = properties.getProvider().getGateway();
-        List<IdName> idNames = null;
+
         if (StringUtils.isNoneEmpty(providerProperties.getIdNamesPackage())) {
             idNames = MessageScanner.scan(providerProperties.getIdNamesPackage());
 
@@ -170,11 +171,11 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
                             gateway.setConnecting(true);
                             ProviderGatewayServer providerGatewayServer = new ProviderGatewayServer();
                             providerGatewayServer.setGatewayManager(gatewayManager);
-                            providerGatewayServer.setProperties(providerProperties);
+                            providerGatewayServer.setProperties(properties);
                             providerGatewayServer.setMessageExecutor(messageExecutor);
                             providerGatewayServer.setDecoderContext(decoderContext);
 
-                            providerGatewayServer.setServerName(properties.getName());
+                            providerGatewayServer.setServerName(properties.getServerName());
                             providerGatewayServer.setHttpPort(httpPort);
                             providerGatewayServer.setReadableServerName(providerProperties.getReadableName());
                             if (providerGatewayServer.start(instance.getHost(), port)) {
@@ -188,13 +189,15 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
                                     }
                                 }
                                 servers.add(providerGatewayServer);
-                                registerProvider(providerGatewayServer, gateway, handleMessages);
                                 if (gateway.getChannelSize() == 0) {
                                     gateway.setDefaultWaitSendTimeout(providerGateway.getMessageWaitSendTimeout());
-                                    if (finalIdNames != null && finalIdNames.size() > 0) {
-                                        registerIdNames(providerGatewayServer, finalIdNames);
-                                    }
+
                                 }
+
+                                Context context = new Context();
+                                context.gateway = gateway;
+                                context.server = providerGatewayServer;
+                                frameworkVerifyProvider(context);
 
                                 //认证
                                 gateway.addChannel(providerGatewayServer.getChannel());
@@ -203,8 +206,9 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
                             } else {
                                 logger.warn("{}  socket {}:{} 连接失败", providerGateway.getName(), instance.getHost(), port);
                                 failGatewayMap.put(gatewayKey, now);
+                                gateway.setConnecting(false);
                             }
-                            gateway.setConnecting(false);
+
                         }
                     }
                 }
@@ -215,11 +219,85 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
         }, 2000, 50, TimeUnit.MILLISECONDS);
     }
 
-    public void registerProvider(ProviderGatewayServer server, Gateway gateway, List<HandleMessage> handleMessages) {
+    private void frameworkVerifyProvider(Context context) {
+        Gateway gateway = context.gateway;
+        Channel channel = context.server.getChannel();
+
+        if (properties.getProvider().isFrameworkVerifyProvider()) {
+            if (gateway.isFrameworkVerifyProviderPassed()) {
+                frameworkVerify(context);
+            } else {
+                CSFrameworkVerifyProviderMessage message = new CSFrameworkVerifyProviderMessage();
+                message.setServerName(properties.getServerName());
+                MessageFrame frame = gatewayManager.createMessageByToken(0L, message);
+
+                gateway.sendMessage(channel, frame, response -> {
+                    if (response.isSuccess()) {
+                        gateway.setFrameworkVerifyProviderPassed(true);
+                        logger.info("向网关表明自己可以提供认证功能成功");
+                        frameworkVerify(context);
+                    } else {
+                        logger.error("向网关表明自己可以提供认证功能失败");
+                        logger.error(response.getMessage().toString());
+                        gateway.setConnecting(false);
+                        channel.close();
+                    }
+                });
+            }
+        } else {
+
+            frameworkVerify(context);
+        }
+
+
+    }
+
+
+    private void frameworkVerify(Context context) {
+        Gateway gateway = context.gateway;
+        Channel channel = context.server.getChannel();
+        if (gateway.isFrameworkVerifyPassed()) {
+            registerProvider(context);
+            return;
+        }
+        CSFrameworkVerifyMessage message = new CSFrameworkVerifyMessage();
+        ServerProperties.Verify verify = properties.getVerify();
+        message.setUserName(verify.getUserName());
+        message.setUserType(verify.getUserType());
+        message.setPassword(verify.getPassword());
+        message.setToken(verify.getToken());
+
+        MessageFrame frame = gatewayManager.createMessageByToken(0L, message);
+
+        gateway.sendMessage(channel, frame, response -> {
+            if (response.isSuccess()) {
+                logger.info("框架内部认证成功");
+                gateway.setFrameworkVerifyPassed(true);
+                gateway.addChannel(channel);
+                gateway.setConnecting(false);
+                registerProvider(context);
+            } else {
+                logger.error("框架认证失败");
+                logger.error(response.getMessage().toString());
+
+                channel.close();
+                gateway.setConnecting(false);
+            }
+        });
+
+
+    }
+
+    public void registerProvider(Context context) {
+        Gateway gateway = context.gateway;
+
+        ProviderGatewayServer server = context.server;
         SCRegServerHandleMessageMessage message = new SCRegServerHandleMessageMessage();
-        message.setServerName(properties.getName());
+        message.setServerName(properties.getServerName());
         message.setReadableServerName(server.getReadableServerName());
         message.setServerKey(ChannelAttributeUtil.getLocalServerKey(server.getChannel()));
+        message.setServerType(properties.getServerType());
+        message.setServerOption(properties.getServerOption());
         message.setMessages(handleMessages);
         ProviderSendMessage frame = gatewayManager.createMessageByToken(0L, message);
 
@@ -231,33 +309,32 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
 
         gateway.sendMessage(server.getChannel(), frame);
 
-        CSMatchingMessage matchingMessage = new CSMatchingMessage();
-        Response response = gatewayManager.sendSyncMessage(gateway, matchingMessage);
+        registerIdNames(gateway, server.getChannel());
 
-        if (response.isSuccess()) {
-            logger.info("=========Sync Message");
-        }
-
-        // server.getChannel().writeAndFlush(frame);
     }
 
-    public void registerIdNames(ProviderGatewayServer server, List<IdName> idNames) {
+    public void registerIdNames(Gateway gateway, Channel channel) {
         SCIdNameMessage message = new SCIdNameMessage();
         for (int i = 0; i < idNames.size(); i++) {
             if (i > 0 && i % 100 == 0) {
-                registerIdNames(server, message);
+                registerIdNames(gateway, channel, message);
                 message = new SCIdNameMessage();
             }
             message.getIdNames().add(idNames.get(i));
         }
         if (message.getIdNames().size() > 0) {
-            registerIdNames(server, message);
+            registerIdNames(gateway, channel, message);
         }
     }
 
-    private void registerIdNames(ProviderGatewayServer server, SCIdNameMessage message) {
+    private void registerIdNames(Gateway gateway, Channel channel, SCIdNameMessage message) {
         ProviderSendMessage frame = gatewayManager.createMessageByToken(0L, message);
+        gateway.sendMessage(channel, frame);
 
-        server.getChannel().writeAndFlush(frame);
+    }
+
+    private static class Context {
+        private ProviderGatewayServer server;
+        private Gateway gateway;
     }
 }

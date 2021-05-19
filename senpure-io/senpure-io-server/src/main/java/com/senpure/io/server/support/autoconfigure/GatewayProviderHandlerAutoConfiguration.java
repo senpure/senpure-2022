@@ -58,4 +58,8 @@ public class GatewayProviderHandlerAutoConfiguration {
     }
 
 
+    @Bean
+    public CSFrameworkVerifyProviderMessageHandler csFrameworkVerifyProviderMessageHandler() {
+        return new CSFrameworkVerifyProviderMessageHandler();
+    }
 }

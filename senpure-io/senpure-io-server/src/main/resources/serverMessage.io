@@ -30,7 +30,7 @@ message CS FrameworkVerify 101 {
     String userName     = 6;              //账号名
     String userType     = 7;              //账号类型
     String password     = 8;              //账号密码
-    String token        = 9;              //账号token
+    String token        = 9;              //认证token
 }
 
 //框架内部验证结果
@@ -62,6 +62,9 @@ message CS FrameworkVerifyProvider 105 {
     String serverKey    = 2;              //服务实例唯一标识
     String serverType   = 4;              //服务类型
     String serverOption = 5;              //服务扩展字段
+}
+
+message SC FrameworkVerifyProvider 106 {
 }
 
 //通知网关数字id与字符串的关联
@@ -134,6 +137,10 @@ message SC Matching 122 {
     boolean success = 1;
 }
 
+//成功消息
+message SC Success 200 {
+}
+
 #以下是客户端会用到的
 
 //心跳
@@ -145,7 +152,7 @@ message SC Heart 66 {
 }
 
 //框架错误提示
-message SC FrameworkError 100 {
+message SC FrameworkError 500 {
     String    code;                       //错误码
     String    message;                    //提示内容
     String [] args;                       //参数

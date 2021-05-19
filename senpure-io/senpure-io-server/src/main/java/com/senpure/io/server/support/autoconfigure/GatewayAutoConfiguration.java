@@ -74,21 +74,25 @@ public class GatewayAutoConfiguration {
 
 
     private void check(Environment env, ServerProperties properties) {
-        if (!StringUtils.hasText(properties.getName())) {
+        if (!StringUtils.hasText(properties.getServerName())) {
             String name = env.getProperty("spring.application.name");
             if (StringUtils.hasText(name)) {
                 logger.debug("使用 name {}", name);
-                properties.setName(name);
+                properties.setServerName(name);
             } else {
                 logger.warn("spring.application.name 值为空");
             }
         }
-        if (!StringUtils.hasText(properties.getName())) {
-            properties.setName("gateway");
+        if (!StringUtils.hasText(properties.getServerName())) {
+            properties.setServerName("gateway");
+        }
+
+        if (!StringUtils.hasText(properties.getServerType())) {
+            properties.setServerType(properties.getServerName());
         }
         ServerProperties.GatewayProperties gateway = properties.getGateway();
         if (!StringUtils.hasText(gateway.getReadableName()) || gateway.getReadableName().equals(new ServerProperties.GatewayProperties().getReadableName())) {
-            gateway.setReadableName(properties.getName());
+            gateway.setReadableName(properties.getServerName());
         }
 //
         //io *2 logic *1 综合1.5
@@ -130,7 +134,7 @@ public class GatewayAutoConfiguration {
     public GatewayMessageExecutor messageExecutor() {
         ServerProperties.GatewayProperties gateway = properties.getGateway();
         TaskLoopGroup service = new DefaultTaskLoopGroup(gateway.getExecutorThreadPoolSize(),
-                new DefaultThreadFactory(properties.getName() + "-executor"));
+                new DefaultThreadFactory(properties.getServerName() + "-executor"));
         GatewayMessageExecutor messageExecutor = new GatewayMessageExecutor(service, new IDGenerator(gateway.getSnowflakeDataCenterId(), gateway.getSnowflakeWorkId()));
         messageExecutor.setCsLoginMessageId(gateway.getCsLoginMessageId());
         messageExecutor.setScLoginMessageId(gateway.getScLoginMessageId());
@@ -159,7 +163,7 @@ public class GatewayAutoConfiguration {
 
                 String url = "http://" + properties.getGateway().getSnowflakeDispatcherName() + "/snowflake/dispatch?serverName={serverName}&serverKey={serverKey}";
                 Map<String, String> params = new LinkedHashMap<>();
-                params.put("serverName", properties.getName());
+                params.put("serverName", properties.getServerName());
                 String serverKey;
 //            if (AppEvn.classInJar(AppEvn.getStartClass())) {
 //                serverKey = AppEvn.getClassPath(AppEvn.getStartClass());
@@ -171,7 +175,7 @@ public class GatewayAutoConfiguration {
                     Assert.error("本机地址为空");
 
                 }
-                serverKey = properties.getName() + " " + inetAddress.getHostAddress() + ":" + (httpPort > 0 ? httpPort : properties.getGateway().getConsumer().getPort());
+                serverKey = properties.getServerName() + " " + inetAddress.getHostAddress() + ":" + (httpPort > 0 ? httpPort : properties.getGateway().getConsumer().getPort());
                 params.put("serverKey", serverKey);
                 //  ObjectNode nodes = restTemplate.getForObject(url, ObjectNode.class, params);
                 // logger.debug("雪花调度返回 {}", JSON.toJSONString(nodes));

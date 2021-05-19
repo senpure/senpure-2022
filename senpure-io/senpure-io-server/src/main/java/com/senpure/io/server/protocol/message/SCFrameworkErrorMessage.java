@@ -10,11 +10,11 @@ import java.util.ArrayList;
  * 框架错误提示
  * 
  * @author senpure
- * @time 2021-5-15 15:39:34
+ * @time 2021-5-17 10:55:33
  */
 public class SCFrameworkErrorMessage extends CompressMessage {
 
-    public static final int MESSAGE_ID = 100;
+    public static final int MESSAGE_ID = 500;
     //错误码
     private String code;
     //提示内容
@@ -168,12 +168,12 @@ public class SCFrameworkErrorMessage extends CompressMessage {
 
     @Override
     public int messageId() {
-        return 100;
+        return 500;
     }
 
     @Override
     public String toString() {
-        return "SCFrameworkErrorMessage[100]{"
+        return "SCFrameworkErrorMessage[500]{"
                 + "code=" + code
                 + ",message=" + message
                 + ",args=" + args
@@ -187,7 +187,7 @@ public class SCFrameworkErrorMessage extends CompressMessage {
         //最长字段长度 7
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("SCFrameworkErrorMessage").append("[100]").append("{");
+        sb.append("SCFrameworkErrorMessage").append("[500]").append("{");
         //错误码
         sb.append("\n");
         sb.append(indent).append("code    = ").append(code);

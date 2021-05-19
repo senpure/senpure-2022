@@ -24,6 +24,10 @@ public abstract class AbstractRemoteServer extends AbstractMultipleServer implem
     private boolean connecting = false;
     private final ReadWriteLock connectLock = new ReentrantReadWriteLock();
 
+    /**
+     * 认证通过
+     */
+    private boolean frameworkVerifyPassed;
 
     public AbstractRemoteServer() {
     }
@@ -297,6 +301,14 @@ public abstract class AbstractRemoteServer extends AbstractMultipleServer implem
         this.channelService = channelService;
     }
 
+    public boolean isFrameworkVerifyPassed() {
+        return frameworkVerifyPassed;
+    }
+
+    public void setFrameworkVerifyPassed(boolean frameworkVerifyPassed) {
+        this.frameworkVerifyPassed = frameworkVerifyPassed;
+    }
+
     protected static class WaitSendMessage {
         private MessageFrame frame;
         private long firstSendTime;
@@ -354,6 +366,7 @@ public abstract class AbstractRemoteServer extends AbstractMultipleServer implem
             this.waitSendTimeout = waitSendTimeout;
         }
     }
+
 
     protected static class Synchronizer {
         private final Lock lock = new ReentrantLock();

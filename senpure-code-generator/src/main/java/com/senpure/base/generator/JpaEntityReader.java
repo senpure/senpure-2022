@@ -172,6 +172,9 @@ public class JpaEntityReader {
      * @param entityClassFiles
      */
     private void readComment(List<File> entityClassFiles) {
+        if (entityClassFiles.isEmpty()) {
+            return;
+        }
         List<String> javaSourceFiles = new ArrayList<>();
         for (File entity : entityClassFiles) {
             String path = entity.getAbsolutePath();

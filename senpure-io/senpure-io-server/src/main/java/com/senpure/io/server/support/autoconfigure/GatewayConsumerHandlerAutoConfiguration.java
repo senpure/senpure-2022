@@ -12,7 +12,7 @@ public class GatewayConsumerHandlerAutoConfiguration {
     @Bean
     public CSFrameworkVerifyMessageHandler csConsumerVerifyMessageHandler(ServerProperties properties) {
         ServerProperties.GatewayProperties gatewayProperties = properties.getGateway();
-        return new CSFrameworkVerifyMessageHandler(gatewayProperties.isSimpleVerify(), gatewayProperties.getVerifyToken());
+        return new CSFrameworkVerifyMessageHandler(gatewayProperties.isSimpleVerify(), gatewayProperties.getSimpleToken());
     }
 
     @Bean

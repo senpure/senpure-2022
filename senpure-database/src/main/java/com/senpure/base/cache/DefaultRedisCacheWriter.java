@@ -16,6 +16,8 @@ package com.senpure.base.cache;/*
 
 
 import org.springframework.dao.PessimisticLockingFailureException;
+import org.springframework.data.redis.cache.CacheStatistics;
+import org.springframework.data.redis.cache.CacheStatisticsCollector;
 import org.springframework.data.redis.cache.RedisCacheWriter;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -197,6 +199,16 @@ class DefaultRedisCacheWriter implements RedisCacheWriter {
         });
     }
 
+    @Override
+    public void clearStatistics(String s) {
+
+    }
+
+    @Override
+    public RedisCacheWriter withStatisticsCollector(CacheStatisticsCollector cacheStatisticsCollector) {
+        return null;
+    }
+
     /**
      * Explicitly set a write lock on a cache.
      *
@@ -284,5 +296,10 @@ class DefaultRedisCacheWriter implements RedisCacheWriter {
 
     private static byte[] createCacheLockKey(String name) {
         return (name + "~lock").getBytes(StandardCharsets.UTF_8);
+    }
+
+    @Override
+    public CacheStatistics getCacheStatistics(String s) {
+        return null;
     }
 }

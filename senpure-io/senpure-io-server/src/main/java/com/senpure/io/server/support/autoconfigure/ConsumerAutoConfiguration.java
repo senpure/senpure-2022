@@ -8,7 +8,6 @@ import com.senpure.io.server.MessageDecoderContext;
 import com.senpure.io.server.ServerProperties;
 import com.senpure.io.server.consumer.*;
 import com.senpure.io.server.consumer.handler.ConsumerMessageHandler;
-import com.senpure.io.server.consumer.SuccessCallback;
 import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
 import com.senpure.io.server.protocol.message.SCHeartMessage;
 import com.senpure.io.server.support.ConsumerServerStarter;
@@ -34,8 +33,9 @@ import javax.annotation.Resource;
 
 
 public class ConsumerAutoConfiguration {
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final ServerProperties.ConsumerProperties DEFAULT_CONSUMER_PROPERTIES = new ServerProperties.ConsumerProperties();
 
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final ServerProperties properties;
 
@@ -48,21 +48,25 @@ public class ConsumerAutoConfiguration {
     }
 
     private void check(Environment env, ServerProperties properties) {
-        if (!StringUtils.hasText(properties.getName())) {
+        if (!StringUtils.hasText(properties.getServerName())) {
             String name = env.getProperty("spring.application.name");
             if (StringUtils.hasText(name)) {
                 logger.debug("使用 name {}", name);
-                properties.setName(name);
+                properties.setServerName(name);
             } else {
                 logger.warn("spring.application.name 值为空");
             }
         }
-        if (!StringUtils.hasText(properties.getName())) {
-            properties.setName("consumer");
+        if (!StringUtils.hasText(properties.getServerName())) {
+            properties.setServerName("consumer");
+        }
+        if (!StringUtils.hasText(properties.getServerType())) {
+            properties.setServerType(properties.getServerName());
         }
         ServerProperties.ConsumerProperties consumer = properties.getConsumer();
-        if (!StringUtils.hasText(consumer.getReadableName()) || consumer.getReadableName().equals(new ServerProperties.ConsumerProperties().getReadableName())) {
-            consumer.setReadableName(properties.getName());
+
+        if (!StringUtils.hasText(consumer.getReadableName()) || consumer.getReadableName().equals(DEFAULT_CONSUMER_PROPERTIES.getReadableName())) {
+            consumer.setReadableName(properties.getServerName());
         }
 
         //io *2 logic *1 综合1.5
@@ -83,7 +87,7 @@ public class ConsumerAutoConfiguration {
     @ConditionalOnMissingBean(TaskLoopGroup.class)
     public TaskLoopGroup taskLoopGroup() {
         TaskLoopGroup service = new DefaultTaskLoopGroup(properties.getConsumer().getExecutorThreadPoolSize(),
-                new DefaultThreadFactory(properties.getName() + "-executor"));
+                new DefaultThreadFactory(properties.getServerName() + "-executor"));
         this.taskLoopGroup = service;
         return service;
 
@@ -104,10 +108,8 @@ public class ConsumerAutoConfiguration {
 
     @Bean
     public ConsumerMessageHandlerContext consumerMessageHandlerContext() {
-        ConsumerMessageHandlerContext handlerContext = new DefaultConsumerMessageHandlerContext();
-        SuccessCallback.setHandlerContext(handlerContext);
 
-        return handlerContext;
+        return new DefaultConsumerMessageHandlerContext();
     }
 
     // @Bean

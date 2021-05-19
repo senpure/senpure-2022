@@ -50,7 +50,7 @@ public class ProviderConsumerAutoConfiguration {
     public TaskLoopGroup taskLoopGroup() {
 
         TaskLoopGroup service = new DefaultTaskLoopGroup(properties.getProvider().getExecutorThreadPoolSize(),
-                new DefaultThreadFactory(properties.getName() + "-executor"));
+                new DefaultThreadFactory(properties.getServerName() + "-executor"));
         this.taskLoopGroup = service;
         return service;
 
