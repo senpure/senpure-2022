@@ -4,6 +4,7 @@ package com.senpure.base.autoconfigure;
 import com.senpure.base.util.IDGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -17,6 +18,7 @@ import javax.annotation.Resource;
         , matchIfMissing = true
 )
 @EnableConfigurationProperties(IDGeneratorAutoConfiguration.SnowflakeProperties.class)
+@ConditionalOnMissingBean(IDGenerator.class)
 public class IDGeneratorAutoConfiguration {
     protected Logger logger = LoggerFactory.getLogger(IDGeneratorAutoConfiguration.class);
     @Resource
