@@ -25,7 +25,7 @@ public class SCBreakUserGatewayMessageHandler extends AbstractGatewayProviderMes
             userId = userId == null ? 0 : userId;
             Long token = ChannelAttributeUtil.getToken(userChannel);
             String serverName = ChannelAttributeUtil.getRemoteServerName(channel);
-            ProviderManager serverManager = messageExecutor.providerManagerMap.get(serverName);
+            ProviderManager serverManager = messageExecutor.getProviderManager(serverName);
             if (serverManager != null) {
                 serverManager.consumerLeaveProducer(userChannel, token, userId);
                 // serverManager.breakUserGateway(userChannel, token, userId, Constant.BREAK_TYPE_ERROR);

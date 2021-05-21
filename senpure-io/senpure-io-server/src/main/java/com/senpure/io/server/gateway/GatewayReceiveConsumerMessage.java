@@ -96,6 +96,10 @@ public class GatewayReceiveConsumerMessage implements GatewaySendProviderMessage
         this.userId = userId;
     }
 
+    public int getMessageLength() {
+        return messageLength;
+    }
+
     @Override
     public String toString() {
         return "GatewayReceiveConsumerMessage{" +

@@ -13,19 +13,19 @@ public class SCStatisticMessageHandler  extends AbstractGatewayProviderMessageHa
     public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
         SCStatisticMessage message = new SCStatisticMessage();
         messageExecutor.readMessage(message, frame);
-        String producerKey = ChannelAttributeUtil.getRemoteServerKey(channel);
-        String producerName = ChannelAttributeUtil.getRemoteServerName(channel);
-        ProviderManager providerManager =   messageExecutor.providerManagerMap.get(producerName);
+        String serverKey = ChannelAttributeUtil.getRemoteServerKey(channel);
+        String serverName = ChannelAttributeUtil.getRemoteServerName(channel);
+        ProviderManager providerManager =   messageExecutor.getProviderManager(serverName);
         if (providerManager != null) {
-            Provider provider = providerManager.getProvider(producerKey);
+            Provider provider = providerManager.getProvider(serverKey);
             if (provider != null) {
                 provider.updateScore(message.getStatistic().getScore());
             } else {
-                logger.warn("{} producer is null", producerKey);
+                logger.warn("{} producer is null", serverKey);
             }
         } else {
 
-            logger.warn("{} producerManager is null", producerName);
+            logger.warn("{} producerManager is null", serverName);
         }
 
     }

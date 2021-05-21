@@ -41,6 +41,15 @@ public class ProviderManager extends AbstractMultipleServerManger<GatewayLocalSe
     }
 
     @Override
+    public GatewayLocalSendProviderMessage createMessage(Message message, boolean requestId) {
+        GatewayLocalSendProviderMessage frame = new GatewayLocalSendProviderMessage(message);
+        if (requestId) {
+            frame.setRequestId(nextRequestId());
+        }
+        return frame;
+    }
+
+    @Override
     public GatewayLocalSendProviderMessage createMessage(Message message, int requestId) {
         GatewayLocalSendProviderMessage frame = new GatewayLocalSendProviderMessage(message);
         frame.setRequestId(requestId);

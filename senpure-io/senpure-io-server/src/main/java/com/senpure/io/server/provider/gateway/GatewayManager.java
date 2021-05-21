@@ -31,13 +31,22 @@ public class GatewayManager extends AbstractMultipleServerManger<ProviderSendMes
 
 
     @Override
-    public  ProviderSendMessage createMessage(Message message) {
+    public ProviderSendMessage createMessage(Message message) {
 
         return createMessage(0L, message);
     }
 
     @Override
-    public  ProviderSendMessage createMessage(Message message, int requestId) {
+    public ProviderSendMessage createMessage(Message message, boolean requestId) {
+        ProviderSendMessage frame = createMessage(0L, message);
+        if (requestId) {
+            frame.setRequestId(nextRequestId());
+        }
+        return frame;
+    }
+
+    @Override
+    public ProviderSendMessage createMessage(Message message, int requestId) {
         ProviderSendMessage frame = createMessage(0L, message);
         frame.setRequestId(requestId);
 
@@ -45,9 +54,10 @@ public class GatewayManager extends AbstractMultipleServerManger<ProviderSendMes
     }
 
     @Override
-    public  int requestId() {
+    public int requestId() {
         return REQUEST_ID.get();
     }
+
 
     @Nonnull
     public Gateway getGateway(String gatewayKey, Function<String, Gateway> mappingFunction) {
@@ -71,6 +81,7 @@ public class GatewayManager extends AbstractMultipleServerManger<ProviderSendMes
             logger.debug("{} {}", entry.getKey(), entry.getValue().toString());
         }
     }
+
 
     public void sendMessage(Long userId, Message message, boolean tryAllGateway) {
 

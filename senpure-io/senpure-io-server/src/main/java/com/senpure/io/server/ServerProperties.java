@@ -565,6 +565,7 @@ public class ServerProperties {
          * 认证完成后的id
          */
         private long simpleUserId = 1;
+
         public ConsumerProperties getConsumer() {
             return consumer;
         }
@@ -1055,7 +1056,6 @@ public class ServerProperties {
          * 服务器返回错误消息id 多个用逗号,隔开
          */
         private String scErrorMessageId = "1000500";
-
 
 
         public String getReadableName() {

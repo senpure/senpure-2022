@@ -4,7 +4,6 @@ package com.senpure.io.server.support.autoconfigure;
 import com.senpure.io.server.provider.handler.*;
 import com.senpure.io.server.provider.handler.CSHeartMessageHandler;
 import com.senpure.io.server.provider.handler.CSHeartMessageHandlerImpl;
-import com.senpure.io.server.provider.handler.CSRegServerHandleMessageMessageHandler;
 import com.senpure.io.server.provider.handler.CSRelationUserGatewayMessageHandler;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -30,22 +29,24 @@ public class ProviderMessageHandlerAutoConfiguration {
         return new CSRelationUserGatewayMessageHandler();
     }
 
-    @Bean
-    public CSRegServerHandleMessageMessageHandler csRegServerHandleMessageMessageHandler() {
-        return new CSRegServerHandleMessageMessageHandler();
-    }
-
 
     @Bean
     public CSAskHandleMessageHandler csAskHandleMessageHandler() {
         return new CSAskHandleMessageHandler();
     }
 
-    @Bean
+    @Bean("providerConsumerCSHeartMessageHandler")
     @ConditionalOnMissingBean(CSHeartMessageHandler.class)
-    CSHeartMessageHandler csHeartMessageHandler() {
+    public CSHeartMessageHandler csHeartMessageHandler() {
         return new CSHeartMessageHandlerImpl();
 
+    }
+
+    @Bean("providerSCFrameworkErrorMessageHandler")
+    @ConditionalOnMissingBean(SCFrameworkErrorMessageHandler.class)
+    public SCFrameworkErrorMessageHandler scFrameworkErrorMessageHandler()
+    {
+        return new SCFrameworkErrorMessageHandlerImpl();
     }
 
 }

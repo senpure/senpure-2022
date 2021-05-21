@@ -1,5 +1,6 @@
 package com.senpure.io.server.provider;
 
+import com.senpure.io.server.MessageFrame;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.logging.LogLevel;
@@ -56,10 +57,11 @@ public class ProviderLoggingHandler extends LoggingHandler {
 
         if (this.logger.isEnabled(this.internalLevel)) {
             if (msg instanceof ProviderReceivedMessage) {
+
                 if (inFormat) {
                     ProviderReceivedMessage frame = (ProviderReceivedMessage) msg;
-                    this.logger.log(this.internalLevel, "{} requestId:{} token:{} userId:{}{}{}",
-                            "RECEIVED",frame.requestId(), frame.getToken(), frame.getUserId(), "\n", frame.getMessage().toString(null));
+                    this.logger.log(this.internalLevel, "{} {}[{}] requestId:{} token:{} userId:{}{}{}",
+                            "RECEIVED",frame.messageType== MessageFrame.MESSAGE_TYPE_CS?"CS":"SC", frame.messageType, frame.requestId(), frame.getToken(), frame.getUserId(), "\n", frame.getMessage().toString(null));
                     // this.logger.log(this.internalLevel, this.format(ctx, ChannelAttributeUtil.getChannelPlayerStr(ctx.channel()) + " RECEIVED", "\n" + ((Message) msg).toString(null)));
 
                 } else {

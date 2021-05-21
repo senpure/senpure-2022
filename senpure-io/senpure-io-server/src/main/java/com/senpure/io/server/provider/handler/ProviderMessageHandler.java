@@ -4,7 +4,8 @@ import com.senpure.io.protocol.Message;
 import com.senpure.io.server.MessageHandler;
 import io.netty.channel.Channel;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
+
 
 public interface ProviderMessageHandler<T extends Message> extends MessageHandler<T> {
     /**
@@ -24,7 +25,7 @@ public interface ProviderMessageHandler<T extends Message> extends MessageHandle
 
     /**
      * 是否向网关注册该handler
-     * 内部请求不要注册到网关
+     * 框架内部必须的不要注册到网关
      */
     boolean registerToGateway();
 
@@ -32,6 +33,7 @@ public interface ProviderMessageHandler<T extends Message> extends MessageHandle
      * new 一个空对象
      */
 
-    @NotNull T newEmptyMessage();
+    @Nonnull
+    T newEmptyMessage();
 
 }

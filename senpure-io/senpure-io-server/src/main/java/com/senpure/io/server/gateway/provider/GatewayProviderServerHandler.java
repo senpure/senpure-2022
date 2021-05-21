@@ -17,7 +17,7 @@ public class GatewayProviderServerHandler extends SimpleChannelInboundHandler<Ga
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final GatewayMessageExecutor messageExecutor;
 
-  //  private SourceOffline sourceOffline;
+    //  private SourceOffline sourceOffline;
 
     public GatewayProviderServerHandler(GatewayMessageExecutor messageExecutor) {
         this.messageExecutor = messageExecutor;
@@ -40,8 +40,11 @@ public class GatewayProviderServerHandler extends SimpleChannelInboundHandler<Ga
         String serverName = ChannelAttributeUtil.getRemoteServerName(channel);
         logger.debug("{} {} {} 断开连接", serverName, ChannelAttributeUtil.getRemoteServerKey(channel), channel);
         if (serverName != null) {
-            ProviderManager providerManager = messageExecutor.providerManagerMap.get(serverName);
-            messageExecutor.execute(() -> providerManager.providerOffLine(channel));
+            ProviderManager providerManager = messageExecutor.getProviderManager(serverName);
+            if (providerManager != null) {
+                messageExecutor.execute(() -> providerManager.providerOffLine(channel));
+            }
+
         }
 
     }

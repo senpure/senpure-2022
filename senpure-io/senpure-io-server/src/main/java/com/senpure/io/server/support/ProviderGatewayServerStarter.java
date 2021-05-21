@@ -1,14 +1,12 @@
 package com.senpure.io.server.support;
 
+import com.senpure.base.util.Spring;
 import com.senpure.executor.TaskLoopGroup;
 import com.senpure.io.protocol.Message;
 import com.senpure.io.server.*;
 import com.senpure.io.server.protocol.bean.HandleMessage;
 import com.senpure.io.server.protocol.bean.IdName;
-import com.senpure.io.server.protocol.message.CSFrameworkVerifyMessage;
-import com.senpure.io.server.protocol.message.CSFrameworkVerifyProviderMessage;
-import com.senpure.io.server.protocol.message.SCIdNameMessage;
-import com.senpure.io.server.protocol.message.SCRegServerHandleMessageMessage;
+import com.senpure.io.server.protocol.message.*;
 import com.senpure.io.server.provider.ProviderMessageExecutor;
 import com.senpure.io.server.provider.ProviderMessageHandlerContext;
 import com.senpure.io.server.provider.ProviderSendMessage;
@@ -108,7 +106,6 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
 
         }
         ServerProperties.GatewayProperties gatewayProperties = new ServerProperties.GatewayProperties();
-        List<IdName> finalIdNames = idNames;
         service.scheduleWithFixedDelay(() -> {
             try {
                 boolean log = false;
@@ -147,69 +144,52 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
                         gateway.setRemoteServerKey(gatewayKey);
 
                         gateway.verifyWorkable();
+                        gateway.setDefaultWaitSendTimeout(providerGateway.getMessageWaitSendTimeout());
+
                         gateway = gatewayManager.addGateway(gateway);
                     }
 
                     if (gateway.isConnecting()) {
                         continue;
                     }
-                    if (gateway.getChannelSize() < providerGateway.getChannel()) {
+                    if (gateway.getChannelSize() < providerGateway.getChannel() && now >= gateway.getNextConnectTime()) {
                         logger.debug("{} channel 数量 {}/{} {}", gatewayKey, gateway.getChannelSize(), providerGateway.getChannel(), gateway);
-                        Long lastFailTime = failGatewayMap.get(gatewayKey);
-                        boolean start = false;
-                        if (lastFailTime == null) {
-                            start = true;
+                        if (useDefault) {
+                            logger.info("网关 [{}] {} {} 没有 没有配置provider socket端口,使用默认端口 {}", providerGateway.getName(), instance.getHost(), instance.getUri(), gatewayProperties.getProvider().getPort());
+                        }
+                        gateway.setConnecting(true);
+                        ProviderGatewayServer providerGatewayServer = new ProviderGatewayServer();
+                        providerGatewayServer.setGatewayManager(gatewayManager);
+                        providerGatewayServer.setProperties(properties);
+                        providerGatewayServer.setMessageExecutor(messageExecutor);
+                        providerGatewayServer.setDecoderContext(decoderContext);
+                        providerGatewayServer.setServerName(properties.getServerName());
+                        providerGatewayServer.setHttpPort(httpPort);
+                        providerGatewayServer.setReadableServerName(providerProperties.getReadableName());
+                        if (providerGatewayServer.start(instance.getHost(), port)) {
+                            Iterator<ProviderGatewayServer> iterator = servers.iterator();
+                            while (iterator.hasNext()) {
+                                ProviderGatewayServer server = iterator.next();
+                                if (server.isClosed()) {
+                                    iterator.remove();
+                                    server.destroy();
+                                }
+                            }
+                            servers.add(providerGatewayServer);
+                            Context context = new Context();
+                            context.gateway = gateway;
+                            context.server = providerGatewayServer;
+                            start(context);
+                            gateway.setStreakFailTimes(0);
+
+
                         } else {
-                            if (now - lastFailTime >= providerGateway.getConnectFailInterval()) {
-                                start = true;
-                            }
+                            logger.warn("{}  socket {}:{} 连接失败", providerGateway.getName(), instance.getHost(), port);
+                            gateway.streakFailTimesIncr();
+                            gateway.setNextConnectTime(now + providerGateway.getConnectFailInterval());
+                            gateway.setConnecting(false);
                         }
-                        if (start) {
-                            if (useDefault) {
-                                logger.info("网关 [{}] {} {} 没有 没有配置provider socket端口,使用默认端口 {}", providerGateway.getName(), instance.getHost(), instance.getUri(), gatewayProperties.getProvider().getPort());
-                            }
-                            gateway.setConnecting(true);
-                            ProviderGatewayServer providerGatewayServer = new ProviderGatewayServer();
-                            providerGatewayServer.setGatewayManager(gatewayManager);
-                            providerGatewayServer.setProperties(properties);
-                            providerGatewayServer.setMessageExecutor(messageExecutor);
-                            providerGatewayServer.setDecoderContext(decoderContext);
 
-                            providerGatewayServer.setServerName(properties.getServerName());
-                            providerGatewayServer.setHttpPort(httpPort);
-                            providerGatewayServer.setReadableServerName(providerProperties.getReadableName());
-                            if (providerGatewayServer.start(instance.getHost(), port)) {
-
-                                Iterator<ProviderGatewayServer> iterator = servers.iterator();
-                                while (iterator.hasNext()) {
-                                    ProviderGatewayServer server = iterator.next();
-                                    if (server.isClosed()) {
-                                        iterator.remove();
-                                        server.destroy();
-                                    }
-                                }
-                                servers.add(providerGatewayServer);
-                                if (gateway.getChannelSize() == 0) {
-                                    gateway.setDefaultWaitSendTimeout(providerGateway.getMessageWaitSendTimeout());
-
-                                }
-
-                                Context context = new Context();
-                                context.gateway = gateway;
-                                context.server = providerGatewayServer;
-                                frameworkVerifyProvider(context);
-
-                                //认证
-                                gateway.addChannel(providerGatewayServer.getChannel());
-                                logger.debug("新增channel {} {}", providerGatewayServer.getChannel(), gateway.getChannelSize());
-
-                            } else {
-                                logger.warn("{}  socket {}:{} 连接失败", providerGateway.getName(), instance.getHost(), port);
-                                failGatewayMap.put(gatewayKey, now);
-                                gateway.setConnecting(false);
-                            }
-
-                        }
                     }
                 }
             } catch (Exception e) {
@@ -219,17 +199,26 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
         }, 2000, 50, TimeUnit.MILLISECONDS);
     }
 
+    private void start(Context context) {
+
+        frameworkVerifyProvider(context);
+    }
+
     private void frameworkVerifyProvider(Context context) {
         Gateway gateway = context.gateway;
         Channel channel = context.server.getChannel();
 
         if (properties.getProvider().isFrameworkVerifyProvider()) {
-            if (gateway.isFrameworkVerifyProviderPassed()) {
+            //防止网关重启
+            if (gateway.getChannelSize() > 0 && gateway.isFrameworkVerifyProviderPassed()) {
                 frameworkVerify(context);
             } else {
                 CSFrameworkVerifyProviderMessage message = new CSFrameworkVerifyProviderMessage();
                 message.setServerName(properties.getServerName());
-                MessageFrame frame = gatewayManager.createMessageByToken(0L, message);
+                message.setServerKey(ChannelAttributeUtil.getLocalServerKey(channel));
+                message.setServerType(properties.getServerType());
+                message.setServerOption(properties.getServerOption());
+                MessageFrame frame = gatewayManager.createMessage(message, true);
 
                 gateway.sendMessage(channel, frame, response -> {
                     if (response.isSuccess()) {
@@ -239,8 +228,8 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
                     } else {
                         logger.error("向网关表明自己可以提供认证功能失败");
                         logger.error(response.getMessage().toString());
-                        gateway.setConnecting(false);
                         channel.close();
+                        error(context);
                     }
                 });
             }
@@ -256,32 +245,29 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
     private void frameworkVerify(Context context) {
         Gateway gateway = context.gateway;
         Channel channel = context.server.getChannel();
-        if (gateway.isFrameworkVerifyPassed()) {
-            registerProvider(context);
-            return;
-        }
+
+        //每个channel都需要认证
+        logger.info("{} 准备认证 {}", gateway.getRemoteServerKey(),channel);
         CSFrameworkVerifyMessage message = new CSFrameworkVerifyMessage();
         ServerProperties.Verify verify = properties.getVerify();
         message.setUserName(verify.getUserName());
         message.setUserType(verify.getUserType());
         message.setPassword(verify.getPassword());
         message.setToken(verify.getToken());
-
-        MessageFrame frame = gatewayManager.createMessageByToken(0L, message);
+        ProviderSendMessage frame = gatewayManager.createMessage(message, true);
 
         gateway.sendMessage(channel, frame, response -> {
             if (response.isSuccess()) {
                 logger.info("框架内部认证成功");
                 gateway.setFrameworkVerifyPassed(true);
+                logger.debug("新增channel {} {}", context, gateway.getChannelSize());
                 gateway.addChannel(channel);
-                gateway.setConnecting(false);
                 registerProvider(context);
             } else {
                 logger.error("框架认证失败");
                 logger.error(response.getMessage().toString());
-
                 channel.close();
-                gateway.setConnecting(false);
+                error(context);
             }
         });
 
@@ -290,26 +276,38 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
 
     public void registerProvider(Context context) {
         Gateway gateway = context.gateway;
+        if (gateway.getChannelSize() <= 1) {
+            ProviderGatewayServer server = context.server;
+            CSRegisterProviderMessage message = new CSRegisterProviderMessage();
+            message.setServerName(properties.getServerName());
+            message.setReadableServerName(server.getReadableServerName());
+            message.setServerKey(ChannelAttributeUtil.getLocalServerKey(server.getChannel()));
+            message.setServerType(properties.getServerType());
+            message.setServerOption(properties.getServerOption());
+            message.setMessages(handleMessages);
+            ProviderSendMessage frame = gatewayManager.createMessage(message, true);
+            logger.debug("向{}注册服务", ChannelAttributeUtil.getRemoteServerKey(server.getChannel()));
+            for (HandleMessage handleMessage : handleMessages) {
+                logger.debug(handleMessage.toString());
+            }
+            Channel channel = context.server.getChannel();
+            gateway.sendMessage(frame, response -> {
+                if (response.isSuccess()) {
+                    logger.info("{} 注册服务成功 {}", ChannelAttributeUtil.getLocalServerKey(channel), channel);
+                    SCRegisterProviderMessage scRegisterProviderMessage = response.getMessage();
+                    if (scRegisterProviderMessage.getMessage() != null) {
+                        logger.info("{}", scRegisterProviderMessage.getMessage());
 
-        ProviderGatewayServer server = context.server;
-        SCRegServerHandleMessageMessage message = new SCRegServerHandleMessageMessage();
-        message.setServerName(properties.getServerName());
-        message.setReadableServerName(server.getReadableServerName());
-        message.setServerKey(ChannelAttributeUtil.getLocalServerKey(server.getChannel()));
-        message.setServerType(properties.getServerType());
-        message.setServerOption(properties.getServerOption());
-        message.setMessages(handleMessages);
-        ProviderSendMessage frame = gatewayManager.createMessageByToken(0L, message);
-
-
-        logger.debug("向{}注册服务", ChannelAttributeUtil.getRemoteServerKey(server.getChannel()));
-        for (HandleMessage handleMessage : handleMessages) {
-            logger.debug(handleMessage.toString());
+                    }
+                } else {
+                    logger.error("{} 注册服务失败 {}", ChannelAttributeUtil.getLocalServerKey(channel), channel);
+                    logger.error(response.getMessage());
+                    Spring.exit();
+                }
+            });
+            registerIdNames(gateway, server.getChannel());
         }
-
-        gateway.sendMessage(server.getChannel(), frame);
-
-        registerIdNames(gateway, server.getChannel());
+        stop(context);
 
     }
 
@@ -331,6 +329,18 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
         ProviderSendMessage frame = gatewayManager.createMessageByToken(0L, message);
         gateway.sendMessage(channel, frame);
 
+    }
+
+    private void stop(Context context) {
+
+        context.gateway.setConnecting(false);
+    }
+
+    private void error(Context context) {
+        Gateway gateway = context.gateway;
+        gateway.streakFailTimesIncr();
+        gateway.setNextConnectTime(System.currentTimeMillis() + properties.getProvider().getGateway().getConnectFailInterval());
+        stop(context);
     }
 
     private static class Context {

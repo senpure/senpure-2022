@@ -21,13 +21,16 @@ public class SCAskHandleMessageHandler extends AbstractGatewayProviderMessageHan
                 String serverKey = ChannelAttributeUtil.getRemoteServerKey(channel);
                 logger.debug("{} {} 可以处理 {} 值位 {} 的请求", serverName, serverKey,
                         MessageIdReader.read(waitAskTask.getFromMessageId()), message.getAskValue());
-                ProviderManager providerManager = messageExecutor.providerManagerMap.get(serverName);
-                for (Provider useProvider : providerManager.getUseProviders()) {
-                    if (useProvider.getRemoteServerKey().equalsIgnoreCase(serverKey)) {
-                        waitAskTask.answer(providerManager, useProvider, true);
-                        return;
+                ProviderManager providerManager = messageExecutor.getProviderManager(serverName);
+                if (providerManager != null) {
+                    for (Provider useProvider : providerManager.getUseProviders()) {
+                        if (useProvider.getRemoteServerKey().equalsIgnoreCase(serverKey)) {
+                            waitAskTask.answer(providerManager, useProvider, true);
+                            return;
+                        }
                     }
                 }
+
             }
             if (logger.isDebugEnabled()) {
                 String serverName = ChannelAttributeUtil.getRemoteServerName(channel);

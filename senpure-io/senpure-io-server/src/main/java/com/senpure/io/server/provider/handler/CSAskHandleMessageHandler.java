@@ -9,6 +9,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 
+import javax.annotation.Nonnull;
 import java.util.Arrays;
 
 /**
@@ -17,7 +18,7 @@ import java.util.Arrays;
  * @author senpure
  * @time 2018-10-17 14:59:15
  */
-public class CSAskHandleMessageHandler extends AbstractFrameworkMessageHandler<CSAskHandleMessage> {
+public class CSAskHandleMessageHandler extends AbstractFrameworkNecessaryMessageHandler<CSAskHandleMessage> {
 
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -63,6 +64,7 @@ public class CSAskHandleMessageHandler extends AbstractFrameworkMessageHandler<C
     /**
      * new 一个空对象
      */
+    @Nonnull
     @Override
     public CSAskHandleMessage newEmptyMessage() {
         return new CSAskHandleMessage();

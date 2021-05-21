@@ -10,7 +10,7 @@ import io.netty.channel.Channel;
  * @author senpure
  * @time 2019-07-02 17:02:44
  */
-public class SCInnerErrorMessageHandlerImpl extends AbstractConsumerMessageHandler<SCFrameworkErrorMessage> implements SCInnerErrorMessageHandler {
+public class SCFrameworkMessageHandlerImpl extends AbstractConsumerMessageHandler<SCFrameworkErrorMessage> implements SCFrameworkMessageHandler {
     @Override
     public void execute(Channel channel, SCFrameworkErrorMessage message) throws Exception {
         logger.error(message.toString());

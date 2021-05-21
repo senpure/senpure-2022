@@ -1,26 +1,33 @@
 package com.senpure.io.server.gateway.provider.handler;
 
 import com.senpure.io.server.ChannelAttributeUtil;
+import com.senpure.io.server.Constant;
 import com.senpure.io.server.gateway.GatewayReceiveProviderMessage;
-import com.senpure.io.server.gateway.provider.ProviderManager;
+import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
 import io.netty.channel.Channel;
-
-import java.util.Map;
 
 public class SCLoginMessageHandler extends SCFrameworkVerifyMessageHandler {
 
     @Override
     public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
         long userId = frame.getUserIds()[0];
+        if (userId <= Constant.MAX_FRAMEWORK_USER_ID) {
+
+            SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
+            errorMessage.setCode(Constant.ERROR_VERIFY_FAILURE);
+            errorMessage.setMessage("外部玩家认证id必须大于" + Constant.MAX_FRAMEWORK_USER_ID + "请修改相关程序");
+            messageExecutor.sendMessage2Producer(channel, errorMessage);
+            //todo tongzhi diaoyoufang
+          //  messageExecutor.sendMessage2Consumer(frame.getToken(), errorMessage);
+            return;
+        }
         Channel consumerChannel = messageExecutor.prepLoginChannels.remove(frame.getToken());
         if (consumerChannel != null) {
             Long token = ChannelAttributeUtil.getToken(consumerChannel);
             Long oldUserId = ChannelAttributeUtil.getUserId(consumerChannel);
             if (oldUserId == null) {
-                for (Map.Entry<String, ProviderManager> entry : messageExecutor.providerManagerMap.entrySet()) {
-                    ProviderManager providerManager = entry.getValue();
-                    providerManager.afterUserAuthorize(token, userId);
-                }
+                messageExecutor.providerManagerForEach(providerManager -> providerManager.afterUserAuthorize(token, userId));
+
             }
             else {
                 if (oldUserId == userId) {

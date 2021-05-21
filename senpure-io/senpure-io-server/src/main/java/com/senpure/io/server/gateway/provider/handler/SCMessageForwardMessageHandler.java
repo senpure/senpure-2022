@@ -5,26 +5,23 @@ import com.senpure.io.server.gateway.provider.ProviderManager;
 import com.senpure.io.server.protocol.message.SCMessageForwardMessage;
 import io.netty.channel.Channel;
 
-import java.util.Map;
-
 public class SCMessageForwardMessageHandler extends AbstractGatewayProviderMessageHandler {
     @Override
     public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
         SCMessageForwardMessage message = new SCMessageForwardMessage();
         messageExecutor.readMessage(message, frame);
         if (message.getServerName() != null) {
-            ProviderManager providerManager = messageExecutor.providerManagerMap.get(message.getServerName());
+            ProviderManager providerManager = messageExecutor.getProviderManager(message.getServerName());
             if (providerManager != null) {
                 providerManager.sendMessage2Consumer(message.getServerKey(), message.getId(), message.getData());
             } else {
-                for (Map.Entry<String, ProviderManager> entry : messageExecutor.providerManagerMap.entrySet()) {
-                    entry.getValue().sendMessage2Consumer(message.getServerKey(), message.getId(), message.getData());
-                }
+                messageExecutor.providerManagerForEach(each -> each.sendMessage2Consumer(message.getServerKey(), message.getId(), message.getData()));
+
             }
         } else {
-            for (Map.Entry<String, ProviderManager> entry : messageExecutor.providerManagerMap.entrySet()) {
-                entry.getValue().sendMessage2Consumer(message.getServerKey(), message.getId(), message.getData());
-            }
+
+            messageExecutor.providerManagerForEach(providerManager -> providerManager.sendMessage2Consumer(message.getServerKey(), message.getId(), message.getData()));
+
         }
     }
 

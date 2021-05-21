@@ -2,7 +2,7 @@ package com.senpure.io.server.support.autoconfigure;
 
 
 import com.senpure.io.server.consumer.handler.SCHeartMessageHandler;
-import com.senpure.io.server.consumer.handler.SCInnerErrorMessageHandler;
+import com.senpure.io.server.consumer.handler.SCFrameworkMessageHandler;
 import com.senpure.io.server.support.annotation.EnableConsumer;
 import org.springframework.context.annotation.ImportSelector;
 import org.springframework.core.annotation.AnnotationAttributes;
@@ -27,7 +27,7 @@ public class ConsumerSelector implements ImportSelector {
         List<String> values = new ArrayList<>(16);
         if (attributes.getBoolean("innerError")) {
             // return new String[]{SCInnerErrorMessageHandler.class.getName()};
-            values.add(SCInnerErrorMessageHandler.class.getName());
+            values.add(SCFrameworkMessageHandler.class.getName());
         }
         if (attributes.getBoolean("heart")) {
             values.add(SCHeartMessageHandler.class.getName());

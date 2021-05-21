@@ -61,4 +61,6 @@ public class Constant {
 
     public static final String GATEWAY_METADATA_PROVIDER_PORT = "provider.port";
     public static final String GATEWAY_METADATA_CONSUMER_PORT = "consumer.port";
+
+    public static final int MAX_FRAMEWORK_USER_ID = 99999;
 }

@@ -7,7 +7,7 @@ import io.netty.buffer.ByteBuf;
  * 框架内部验证
  * 
  * @author senpure
- * @time 2021-5-17 10:55:32
+ * @time 2021-5-20 17:05:32
  */
 public class CSFrameworkVerifyMessage extends CompressMessage {
 
@@ -28,7 +28,7 @@ public class CSFrameworkVerifyMessage extends CompressMessage {
     private String userType;
     //账号密码
     private String password;
-    //账号token
+    //认证token
     private String token;
 
     public void copy(CSFrameworkVerifyMessage source) {
@@ -81,7 +81,7 @@ public class CSFrameworkVerifyMessage extends CompressMessage {
         if (password != null) {
             writeString(buf, 67, password);
         }
-        //账号token
+        //认证token
         if (token != null) {
             writeString(buf, 75, token);
         }
@@ -129,7 +129,7 @@ public class CSFrameworkVerifyMessage extends CompressMessage {
                 case 67:// 8 << 3 | 3
                     password = readString(buf);
                     break;
-                //账号token
+                //认证token
                 case 75:// 9 << 3 | 3
                     token = readString(buf);
                     break;
@@ -189,7 +189,7 @@ public class CSFrameworkVerifyMessage extends CompressMessage {
              //tag size 67
              size += computeStringSize(1, password);
         }
-        //账号token
+        //认证token
         if (token != null) {
              //tag size 75
              size += computeStringSize(1, token);
@@ -335,7 +335,7 @@ public class CSFrameworkVerifyMessage extends CompressMessage {
     }
 
     /**
-     * get 账号token
+     * get 认证token
      *
      * @return
      */
@@ -344,7 +344,7 @@ public class CSFrameworkVerifyMessage extends CompressMessage {
     }
 
     /**
-     * set 账号token
+     * set 认证token
      */
     public CSFrameworkVerifyMessage setToken(String token) {
         this.token = token;
@@ -406,7 +406,7 @@ public class CSFrameworkVerifyMessage extends CompressMessage {
         //账号密码
         sb.append("\n");
         sb.append(indent).append("password     = ").append(password);
-        //账号token
+        //认证token
         sb.append("\n");
         sb.append(indent).append("token        = ").append(token);
         sb.append("\n");

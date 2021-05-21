@@ -6,13 +6,15 @@ import com.senpure.io.server.protocol.message.CSRelationUserGatewayMessage;
 import com.senpure.io.server.protocol.message.SCRelationUserGatewayMessage;
 import io.netty.channel.Channel;
 
+import javax.annotation.Nonnull;
+
 /**
  * 关联用户与网关处理器
  *
  * @author senpure
  * @time 2018-10-17 14:59:15
  */
-public class CSRelationUserGatewayMessageHandler extends AbstractFrameworkMessageHandler<CSRelationUserGatewayMessage> {
+public class CSRelationUserGatewayMessageHandler extends AbstractFrameworkNecessaryMessageHandler<CSRelationUserGatewayMessage> {
 
 
 
@@ -42,6 +44,7 @@ public class CSRelationUserGatewayMessageHandler extends AbstractFrameworkMessag
     /**
      * new 一个空对象
      */
+    @Nonnull
     @Override
     public CSRelationUserGatewayMessage newEmptyMessage() {
         return new CSRelationUserGatewayMessage();

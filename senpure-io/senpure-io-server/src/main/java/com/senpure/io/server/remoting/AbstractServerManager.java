@@ -12,7 +12,7 @@ public abstract class AbstractServerManager<T extends MessageFrame> implements R
     protected final AtomicInteger atomicRequestId = new AtomicInteger(1);
 
 
-    protected int nextRequestId() {
+    public int nextRequestId() {
         int requestId = atomicRequestId.getAndIncrement();
         //为了编码效率将负数提高为正数
         if (requestId < 0) {
@@ -31,12 +31,14 @@ public abstract class AbstractServerManager<T extends MessageFrame> implements R
         return requestId;
     }
 
-    protected abstract T createMessage(Message message);
+    public abstract T createMessage(Message message);
 
-    protected abstract T createMessage(Message message, int requestId);
+    public abstract T createMessage(Message message, boolean requestId);
+
+    public abstract T createMessage(Message message, int requestId);
 
 
-    protected int requestId() {
+    public int requestId() {
         return REQUEST_ID.get();
     }
 }

@@ -4,18 +4,14 @@ import com.senpure.io.protocol.CompressMessage;
 import io.netty.buffer.ByteBuf;
 
 /**
- * 加入匹配
- * 
  * @author senpure
  * @time 2021-5-20 17:05:32
  */
-public class SCMatchingMessage extends CompressMessage {
+public class SCFrameworkVerifyProviderMessage extends CompressMessage {
 
-    public static final int MESSAGE_ID = 122;
-    private boolean success;
+    public static final int MESSAGE_ID = 106;
 
-    public void copy(SCMatchingMessage source) {
-        this.success = source.isSuccess();
+    public void copy(SCFrameworkVerifyProviderMessage source) {
     }
 
     /**
@@ -24,7 +20,6 @@ public class SCMatchingMessage extends CompressMessage {
     @Override
     public void write(ByteBuf buf) {
         serializedSize();
-        writeBoolean(buf, 8, success);
     }
 
     /**
@@ -37,9 +32,6 @@ public class SCMatchingMessage extends CompressMessage {
             switch (tag) {
                 case 0://end
                     return;
-                case 8:// 1 << 3 | 0
-                    success = readBoolean(buf);
-                    break;
                 default://skip
                     skip(buf, tag);
                     break;
@@ -56,20 +48,10 @@ public class SCMatchingMessage extends CompressMessage {
             return size;
         }
         size = 0;
-        //tag size 8
-        size += computeBooleanSize(1, success);
         serializedSize = size ;
         return size ;
     }
 
-    public boolean isSuccess() {
-        return success;
-    }
-
-    public SCMatchingMessage setSuccess(boolean success) {
-        this.success = success;
-        return this;
-    }
 
     @Override
     public int messageType() {
@@ -78,24 +60,20 @@ public class SCMatchingMessage extends CompressMessage {
 
     @Override
     public int messageId() {
-        return 122;
+        return 106;
     }
 
     @Override
     public String toString() {
-        return "SCMatchingMessage[122]{"
-                + "success=" + success
+        return "SCFrameworkVerifyProviderMessage[106]{"
                 + "}";
     }
 
     @Override
     public String toString(String indent) {
-        //最长字段长度 7
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("SCMatchingMessage").append("[122]").append("{");
-        sb.append("\n");
-        sb.append(indent).append("success = ").append(success);
+        sb.append("SCFrameworkVerifyProviderMessage").append("[106]").append("{");
         sb.append("\n");
         sb.append(indent).append("}");
         return sb.toString();

@@ -8,14 +8,14 @@ import java.util.List;
 import java.util.ArrayList;
 
 /**
- * 服务器注册消息处理器到网关
+ * 注册provider
  * 
  * @author senpure
- * @time 2021-5-17 10:55:33
+ * @time 2021-5-20 17:05:32
  */
-public class SCRegServerHandleMessageMessage extends CompressMessage {
+public class CSRegisterProviderMessage extends CompressMessage {
 
-    public static final int MESSAGE_ID = 104;
+    public static final int MESSAGE_ID = 103;
     //服务名
     private String serverName;
     //服务实例唯一标识
@@ -29,7 +29,7 @@ public class SCRegServerHandleMessageMessage extends CompressMessage {
     //可以处理的消息
     private List<HandleMessage> messages = new ArrayList<>(16);
 
-    public void copy(SCRegServerHandleMessageMessage source) {
+    public void copy(CSRegisterProviderMessage source) {
         this.serverName = source.getServerName();
         this.serverKey = source.getServerKey();
         this.serverType = source.getServerType();
@@ -171,7 +171,7 @@ public class SCRegServerHandleMessageMessage extends CompressMessage {
     /**
      * set 服务名
      */
-    public SCRegServerHandleMessageMessage setServerName(String serverName) {
+    public CSRegisterProviderMessage setServerName(String serverName) {
         this.serverName = serverName;
         return this;
     }
@@ -188,7 +188,7 @@ public class SCRegServerHandleMessageMessage extends CompressMessage {
     /**
      * set 服务实例唯一标识
      */
-    public SCRegServerHandleMessageMessage setServerKey(String serverKey) {
+    public CSRegisterProviderMessage setServerKey(String serverKey) {
         this.serverKey = serverKey;
         return this;
     }
@@ -205,7 +205,7 @@ public class SCRegServerHandleMessageMessage extends CompressMessage {
     /**
      * set 服务类型
      */
-    public SCRegServerHandleMessageMessage setServerType(String serverType) {
+    public CSRegisterProviderMessage setServerType(String serverType) {
         this.serverType = serverType;
         return this;
     }
@@ -222,7 +222,7 @@ public class SCRegServerHandleMessageMessage extends CompressMessage {
     /**
      * set 服务扩展字段
      */
-    public SCRegServerHandleMessageMessage setServerOption(String serverOption) {
+    public CSRegisterProviderMessage setServerOption(String serverOption) {
         this.serverOption = serverOption;
         return this;
     }
@@ -239,7 +239,7 @@ public class SCRegServerHandleMessageMessage extends CompressMessage {
     /**
      * set 服务名
      */
-    public SCRegServerHandleMessageMessage setReadableServerName(String readableServerName) {
+    public CSRegisterProviderMessage setReadableServerName(String readableServerName) {
         this.readableServerName = readableServerName;
         return this;
     }
@@ -256,7 +256,7 @@ public class SCRegServerHandleMessageMessage extends CompressMessage {
      /**
       * set 可以处理的消息
       */
-    public SCRegServerHandleMessageMessage setMessages(List<HandleMessage> messages) {
+    public CSRegisterProviderMessage setMessages(List<HandleMessage> messages) {
         if (messages == null) {
             this.messages = new ArrayList<>(16);
             return this;
@@ -267,17 +267,17 @@ public class SCRegServerHandleMessageMessage extends CompressMessage {
 
     @Override
     public int messageType() {
-        return MESSAGE_TYPE_SC;
+        return MESSAGE_TYPE_CS;
     }
 
     @Override
     public int messageId() {
-        return 104;
+        return 103;
     }
 
     @Override
     public String toString() {
-        return "SCRegServerHandleMessageMessage[104]{"
+        return "CSRegisterProviderMessage[103]{"
                 + "serverName=" + serverName
                 + ",serverKey=" + serverKey
                 + ",serverType=" + serverType
@@ -294,7 +294,7 @@ public class SCRegServerHandleMessageMessage extends CompressMessage {
         //最长字段长度 18
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("SCRegServerHandleMessageMessage").append("[104]").append("{");
+        sb.append("CSRegisterProviderMessage").append("[103]").append("{");
         //服务名
         sb.append("\n");
         sb.append(indent).append("serverName         = ").append(serverName);

@@ -4,6 +4,8 @@ package com.senpure.io.server.provider.handler;
 import com.senpure.io.server.protocol.message.CSBreakUserGatewayMessage;
 import io.netty.channel.Channel;
 
+import javax.annotation.Nonnull;
+
 
 /**
  * 断开用户与网关处理器
@@ -11,7 +13,7 @@ import io.netty.channel.Channel;
  * @author senpure
  * @time 2018-10-19 16:14:32
  */
-public class CSBreakUserGatewayMessageHandlerImpl extends AbstractFrameworkMessageHandler<CSBreakUserGatewayMessage>
+public class CSBreakUserGatewayMessageHandlerImpl extends AbstractFrameworkNecessaryMessageHandler<CSBreakUserGatewayMessage>
         implements CSBreakUserGatewayMessageHandler {
 
 
@@ -28,6 +30,7 @@ public class CSBreakUserGatewayMessageHandlerImpl extends AbstractFrameworkMessa
     /**
      * new 一个空对象
      */
+    @Nonnull
     @Override
     public CSBreakUserGatewayMessage newEmptyMessage() {
         return new CSBreakUserGatewayMessage();

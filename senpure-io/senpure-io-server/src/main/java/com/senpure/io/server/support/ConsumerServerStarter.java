@@ -1,6 +1,7 @@
 package com.senpure.io.server.support;
 
 import com.senpure.executor.TaskLoopGroup;
+import com.senpure.io.server.Constant;
 import com.senpure.io.server.MessageDecoderContext;
 import com.senpure.io.server.ServerProperties;
 import com.senpure.io.server.consumer.ConsumerMessageExecutor;
@@ -105,7 +106,7 @@ public class ConsumerServerStarter implements ApplicationRunner {
                                 instance = serviceInstances.get(random.nextInt(serviceInstances.size()));
                             }
 
-                            String portStr = instance.getMetadata().get("consumer.port");
+                            String portStr = instance.getMetadata().get(Constant.GATEWAY_METADATA_CONSUMER_PORT);
 
                             if (portStr == null) {
                                 port = gateway.getConsumer().getPort();
@@ -193,5 +194,10 @@ public class ConsumerServerStarter implements ApplicationRunner {
 
             }, 500, 50, TimeUnit.MILLISECONDS);
         }
+    }
+
+    public  void verify()
+    {
+
     }
 }

@@ -5,6 +5,7 @@ import com.senpure.io.protocol.Message;
 import com.senpure.io.server.Constant;
 import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
 import io.netty.channel.Channel;
+import io.netty.util.concurrent.ScheduledFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractMessageExecutor implements FutureService {
     private final Map<Integer, DefaultFuture> futureMap = new ConcurrentHashMap<>();
@@ -30,15 +32,40 @@ public abstract class AbstractMessageExecutor implements FutureService {
     public ResponseFuture future(Channel channel, int requestId, Message message, int timeout) {
         DefaultFuture future = new DefaultFuture(channel, requestId, message, timeout);
         futureMap.put(requestId, future);
+
+        ScheduledFuture<?> scheduledFuture = service.schedule(() -> {
+            SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
+            errorMessage.setCode(Constant.ERROR_TIMEOUT);
+            errorMessage.setMessage("同步请求超时[" + future.getMessage().messageId() + "][" + future.getRequestId() + "]:" + future.getTimeout());
+            errorMessage.getArgs().add(String.valueOf(future.getMessage().messageId()));
+            errorMessage.getArgs().add(String.valueOf(future.getRequestId()));
+            receive(channel, requestId, errorMessage, false);
+        }, timeout, TimeUnit.MICROSECONDS);
+        future.setScheduledFuture(scheduledFuture);
+
         return future;
     }
 
     public void receive(Channel channel, int requestId, Message message) {
+        receive(channel, requestId, message, true);
+    }
+
+    public void receive(Channel channel, int requestId, Message message, boolean cancel) {
         DefaultFuture future = futureMap.remove(requestId);
         if (future != null) {
-            boolean success = !isErrorMessage(message);
-            DefaultResponse response = new DefaultResponse(success, channel, message);
-            future.doReceived(response);
+            if (cancel) {
+                if (future.getScheduledFuture().cancel(false)) {
+                    boolean success = !isErrorMessage(message);
+                    DefaultResponse response = new DefaultResponse(success, channel, message);
+                    future.doReceived(response);
+                }
+
+            } else {
+                boolean success = !isErrorMessage(message);
+                DefaultResponse response = new DefaultResponse(success, channel, message);
+                future.doReceived(response);
+            }
+
 
         } else {
             logger.warn("远程服务器返回时间过长,服务器已经做了超时处理 {} {}", requestId, message);
@@ -50,7 +77,8 @@ public abstract class AbstractMessageExecutor implements FutureService {
         return errorMessageIds.contains(message.messageId());
     }
 
-    public void checkTimeoutFuture() {
+    public void checkTimeoutFuture(){}
+    public void checkTimeoutFuture2() {
 
         long now = System.currentTimeMillis();
         for (DefaultFuture future : futureMap.values()) {
@@ -64,7 +92,7 @@ public abstract class AbstractMessageExecutor implements FutureService {
                 errorMessage.getArgs().add(String.valueOf(future.getMessage().messageId()));
                 errorMessage.getArgs().add(String.valueOf(future.getRequestId()));
 
-                service.execute(() -> receive(future.getChannel(), future.getRequestId(), errorMessage));
+                service.execute(() -> receive(future.getChannel(), future.getRequestId(), errorMessage, false));
             }
         }
     }

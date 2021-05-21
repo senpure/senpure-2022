@@ -11,7 +11,7 @@ import java.util.ArrayList;
  * 通知网关数字id与字符串的关联
  * 
  * @author senpure
- * @time 2021-5-17 10:55:33
+ * @time 2021-5-20 17:05:32
  */
 public class SCIdNameMessage extends CompressMessage {
 

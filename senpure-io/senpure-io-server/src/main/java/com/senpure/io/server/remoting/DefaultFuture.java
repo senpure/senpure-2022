@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -28,7 +29,7 @@ public class DefaultFuture implements ResponseFuture {
     private Response response;
     private ResponseCallback callback;
     private final long sendTime;
-
+    private ScheduledFuture<?> scheduledFuture;
     public DefaultFuture(Channel channel, int requestId, Message message, int timeout) {
 
         this.channel = channel;
@@ -144,5 +145,13 @@ public class DefaultFuture implements ResponseFuture {
 
     public Message getMessage() {
         return message;
+    }
+
+    public ScheduledFuture<?> getScheduledFuture() {
+        return scheduledFuture;
+    }
+
+    public void setScheduledFuture(ScheduledFuture<?> scheduledFuture) {
+        this.scheduledFuture = scheduledFuture;
     }
 }

@@ -9,13 +9,13 @@ import org.springframework.context.annotation.Bean;
 
 public class GatewayConsumerHandlerAutoConfiguration {
 
-    @Bean
+    @Bean("gatewayConsumerFrameworkVerifyMessageHandler")
     public CSFrameworkVerifyMessageHandler csConsumerVerifyMessageHandler(ServerProperties properties) {
         ServerProperties.GatewayProperties gatewayProperties = properties.getGateway();
-        return new CSFrameworkVerifyMessageHandler(gatewayProperties.isSimpleVerify(), gatewayProperties.getSimpleToken());
+        return new CSFrameworkVerifyMessageHandler(gatewayProperties.isSimpleVerify(), gatewayProperties.getSimpleToken(), gatewayProperties.getSimpleUserId());
     }
 
-    @Bean
+    @Bean("gatewayConsumerHeartMessageHandler")
     public CSHeartMessageHandler csHeartMessageHandler() {
         return new CSHeartMessageHandler();
     }

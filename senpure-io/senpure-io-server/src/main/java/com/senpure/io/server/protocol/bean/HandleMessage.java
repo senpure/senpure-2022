@@ -5,7 +5,7 @@ import io.netty.buffer.ByteBuf;
 
 /**
  * @author senpure
- * @time 2021-5-17 10:55:32
+ * @time 2021-5-20 17:05:32
  */
 public class HandleMessage extends CompressBean {
     //可以处理的消息ID

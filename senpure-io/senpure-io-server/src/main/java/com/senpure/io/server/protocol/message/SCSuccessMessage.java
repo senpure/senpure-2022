@@ -7,7 +7,7 @@ import io.netty.buffer.ByteBuf;
  * 成功消息
  * 
  * @author senpure
- * @time 2021-5-17 10:55:33
+ * @time 2021-5-20 17:05:32
  */
 public class SCSuccessMessage extends CompressMessage {
 

@@ -9,13 +9,22 @@ import java.util.Set;
 public class ProviderManager  extends AbstractSingleServerManager<ConsumerMessage,Provider> {
 
     @Override
-    protected ConsumerMessage createMessage(Message message) {
+    public ConsumerMessage createMessage(Message message) {
 
         return new ConsumerMessage(message);
     }
 
     @Override
-    protected ConsumerMessage createMessage(Message message, int requestId) {
+    public ConsumerMessage createMessage(Message message, boolean requestId) {
+        ConsumerMessage frame = new ConsumerMessage(message);
+        if (requestId) {
+            frame.setRequestId(nextRequestId());
+        }
+        return frame;
+    }
+
+    @Override
+    public ConsumerMessage createMessage(Message message, int requestId) {
         ConsumerMessage frame = new ConsumerMessage(message);
         frame.setRequestId(requestId);
         return frame;

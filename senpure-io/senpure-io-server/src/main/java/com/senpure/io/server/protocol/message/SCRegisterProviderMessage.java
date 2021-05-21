@@ -4,19 +4,17 @@ import com.senpure.io.protocol.CompressMessage;
 import io.netty.buffer.ByteBuf;
 
 /**
- * 网关注册处理消息返回
+ * 注册provider返回
  * 
  * @author senpure
- * @time 2021-5-17 10:55:33
+ * @time 2021-5-20 17:05:32
  */
-public class CSRegServerHandleMessageMessage extends CompressMessage {
+public class SCRegisterProviderMessage extends CompressMessage {
 
-    public static final int MESSAGE_ID = 103;
-    private boolean success;
+    public static final int MESSAGE_ID = 104;
     private String message;
 
-    public void copy(CSRegServerHandleMessageMessage source) {
-        this.success = source.isSuccess();
+    public void copy(SCRegisterProviderMessage source) {
         this.message = source.getMessage();
     }
 
@@ -26,9 +24,8 @@ public class CSRegServerHandleMessageMessage extends CompressMessage {
     @Override
     public void write(ByteBuf buf) {
         serializedSize();
-        writeBoolean(buf, 8, success);
         if (message != null) {
-            writeString(buf, 19, message);
+            writeString(buf, 11, message);
         }
     }
 
@@ -42,10 +39,7 @@ public class CSRegServerHandleMessageMessage extends CompressMessage {
             switch (tag) {
                 case 0://end
                     return;
-                case 8:// 1 << 3 | 0
-                    success = readBoolean(buf);
-                    break;
-                case 19:// 2 << 3 | 3
+                case 11:// 1 << 3 | 3
                     message = readString(buf);
                     break;
                 default://skip
@@ -64,49 +58,37 @@ public class CSRegServerHandleMessageMessage extends CompressMessage {
             return size;
         }
         size = 0;
-        //tag size 8
-        size += computeBooleanSize(1, success);
         if (message != null) {
-             //tag size 19
+             //tag size 11
              size += computeStringSize(1, message);
         }
         serializedSize = size ;
         return size ;
     }
 
-    public boolean isSuccess() {
-        return success;
-    }
-
-    public CSRegServerHandleMessageMessage setSuccess(boolean success) {
-        this.success = success;
-        return this;
-    }
-
     public String getMessage() {
         return message;
     }
 
-    public CSRegServerHandleMessageMessage setMessage(String message) {
+    public SCRegisterProviderMessage setMessage(String message) {
         this.message = message;
         return this;
     }
 
     @Override
     public int messageType() {
-        return MESSAGE_TYPE_CS;
+        return MESSAGE_TYPE_SC;
     }
 
     @Override
     public int messageId() {
-        return 103;
+        return 104;
     }
 
     @Override
     public String toString() {
-        return "CSRegServerHandleMessageMessage[103]{"
-                + "success=" + success
-                + ",message=" + message
+        return "SCRegisterProviderMessage[104]{"
+                + "message=" + message
                 + "}";
     }
 
@@ -115,9 +97,7 @@ public class CSRegServerHandleMessageMessage extends CompressMessage {
         //最长字段长度 7
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("CSRegServerHandleMessageMessage").append("[103]").append("{");
-        sb.append("\n");
-        sb.append(indent).append("success = ").append(success);
+        sb.append("SCRegisterProviderMessage").append("[104]").append("{");
         sb.append("\n");
         sb.append(indent).append("message = ").append(message);
         sb.append("\n");

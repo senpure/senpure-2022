@@ -5,6 +5,7 @@ import com.senpure.io.server.ChannelAttributeUtil;
 import com.senpure.io.server.remoting.AbstractRemoteServer;
 import com.senpure.io.server.remoting.ChannelService;
 import io.netty.channel.Channel;
+import io.netty.util.AttributeKey;
 
 public class Provider extends AbstractRemoteServer {
     private final Statistic statistic = new Statistic();
@@ -13,7 +14,15 @@ public class Provider extends AbstractRemoteServer {
         super(service);
     }
 
+    public static AttributeKey<Boolean> providerAddChannel = AttributeKey.valueOf("providerAddChannel'");
+
     public synchronized void addChannel(Channel channel) {
+
+        Boolean add = ChannelAttributeUtil.get(channel, providerAddChannel);
+        if (add != null && add) {
+            logger.info("{}已经加入了关管理",channel);
+            return;
+        }
         if (getChannelSize() == 1 && channelService instanceof ChannelService.SingleChannelService) {
             ChannelService m = new ChannelService.MultipleChannelService(getRemoteServerKey());
             logger.info("升级channelService ---》》 ChannelService.MultipleChannelService");
@@ -24,6 +33,7 @@ public class Provider extends AbstractRemoteServer {
         }
 
         super.addChannel(channel);
+        ChannelAttributeUtil.set(channel, providerAddChannel, true);
     }
 
     public synchronized boolean offline(Channel channel) {

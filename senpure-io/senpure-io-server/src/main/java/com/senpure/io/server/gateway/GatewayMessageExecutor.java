@@ -27,6 +27,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 
 public class GatewayMessageExecutor extends AbstractMessageExecutor {
@@ -40,7 +41,7 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
 
     public final ConcurrentMap<Long, Channel> userClientChannel = new ConcurrentHashMap<>(32768);
     public final ConcurrentMap<Long, Channel> tokenChannel = new ConcurrentHashMap<>(32768);
-    public final ConcurrentMap<String, ProviderManager> providerManagerMap = new ConcurrentHashMap<>(128);
+    private final ConcurrentMap<String, ProviderManager> providerManagerMap = new ConcurrentHashMap<>(128);
 
     public ConcurrentMap<Integer, ProviderManager> messageHandleMap = new ConcurrentHashMap<>(2048);
     public ConcurrentMap<Integer, HandleMessageManager> handleMessageManagerMap = new ConcurrentHashMap<>(2048);
@@ -417,9 +418,8 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
     @Nonnull
     public synchronized ProviderManager addFrameworkVerifyProviderManager(ProviderManager providerManager) {
         providerManagerMap.putIfAbsent(providerManager.getServerName(), providerManager);
-        ProviderManager r = providerManagerMap.get(providerManager.getServerName());
-        verifyProviderManager = r;
-        return r;
+        verifyProviderManager = providerManagerMap.get(providerManager.getServerName());
+        return verifyProviderManager;
     }
 
     @Nullable
@@ -434,6 +434,9 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
         }, 0, 10, TimeUnit.MILLISECONDS);
     }
 
+    public void providerManagerForEach(Consumer<ProviderManager> consumer) {
+        providerManagerMap.forEach((s, providerManager) -> consumer.accept(providerManager));
+    }
 
     public IDGenerator getIdGenerator() {
         return idGenerator;
@@ -467,11 +470,5 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
         this.gatewayProperties = gatewayProperties;
     }
 
-    public ProviderManager getVerifyProviderManager() {
-        return verifyProviderManager;
-    }
 
-    public void setVerifyProviderManager(ProviderManager verifyProviderManager) {
-        this.verifyProviderManager = verifyProviderManager;
-    }
 }

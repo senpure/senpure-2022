@@ -399,12 +399,21 @@ public class ConsumerManager extends AbstractServerManager<ProviderSendMessage> 
     }
 
     @Override
-    protected ProviderSendMessage createMessage(Message message) {
+    public ProviderSendMessage createMessage(Message message) {
         return createMessage(0L, message);
     }
 
     @Override
-    protected ProviderSendMessage createMessage(Message message, int requestId) {
+    public ProviderSendMessage createMessage(Message message, boolean requestId) {
+        ProviderSendMessage frame = createMessage(0L, message);
+        if (requestId) {
+            frame.setRequestId(nextRequestId());
+        }
+        return frame;
+    }
+
+    @Override
+    public ProviderSendMessage createMessage(Message message, int requestId) {
         ProviderSendMessage frame = createMessage(0L, message);
         frame.setRequestId(requestId);
 

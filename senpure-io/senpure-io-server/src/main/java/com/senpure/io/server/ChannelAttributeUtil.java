@@ -17,6 +17,7 @@ public class ChannelAttributeUtil {
     private static final String REMOTE_SERVER_KEY = "remoteServerKeyKey";
     private static final String LOCAL_SERVER_KEY = "localServerKeyKey";
     private static final String FRAMEWORK_KEY = "frameworkKey";
+    private static final String FRAMEWORK_VERIFY_KEY = "frameworkVerifyKey";
     public static AttributeKey<Long> userIdKey = AttributeKey.valueOf(USER_ID);
     public static AttributeKey<Long> tokenKey = AttributeKey.valueOf(TOKEN);
     public static AttributeKey<String> userNameKey = AttributeKey.valueOf(USER_NAME);
@@ -26,6 +27,7 @@ public class ChannelAttributeUtil {
     public static AttributeKey<String> remoteServerKeyKey = AttributeKey.valueOf(REMOTE_SERVER_KEY);
     public static AttributeKey<String> localServerKeyKey = AttributeKey.valueOf(LOCAL_SERVER_KEY);
     public static AttributeKey<Boolean> frameworkKey = AttributeKey.valueOf(FRAMEWORK_KEY);
+    public static AttributeKey<Boolean> frameworkVerifyKey = AttributeKey.valueOf(FRAMEWORK_VERIFY_KEY);
     // public static AttributeKey<ChannelPlayer> channelPlayerKey = AttributeKey.valueOf(CHANNEL_USER);
     // public static AttributeKey<OffLineHandler> offlineHandlerKey = AttributeKey.valueOf(OFFLINE_HANDLER);
 

@@ -5,15 +5,15 @@ import com.senpure.io.protocol.Message;
 public class AbstractMessageFrame implements MessageFrame {
 
     protected int requestId;
-    protected  final int messageId;
-    protected  final int messageType;
-    protected  final Message message;
+    protected final int messageId;
+    protected final int messageType;
+    protected final Message message;
 
     public AbstractMessageFrame(Message message) {
 
         this.message = message;
         this.messageId = message.messageId();
-        this.messageType = messageType();
+        this.messageType = message.messageType();
     }
 
     @Override

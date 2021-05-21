@@ -38,7 +38,7 @@ public abstract class AbstractProviderMessageHandler<T extends Message> implemen
 
     /**
      * 是否向网关注册该handler
-     * 内部请求不要注册到网关
+     * 框架内部必须的不要注册到网关
      */
     @Override
     public boolean registerToGateway() {

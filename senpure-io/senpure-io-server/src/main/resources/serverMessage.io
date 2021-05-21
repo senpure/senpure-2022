@@ -35,25 +35,22 @@ message CS FrameworkVerify 101 {
 
 //框架内部验证结果
 message SC FrameworkVerify 102 {
-    boolean success = 1;                  //
-    String  message = 2;                  //message
-    String  userId  = 3;                  //认证分配的id
+    long userId = 1;                      //认证分配的id
 }
 
-//网关注册处理消息返回
-message CS RegServerHandleMessage 103 {
-    boolean success = 1;
-    String  message = 2;
-}
-
-//服务器注册消息处理器到网关
-message SC RegServerHandleMessage 104 {
+//注册provider
+message CS RegisterProvider 103 {
     String           serverName         = 1; //服务名
     String           serverKey          = 2; //服务实例唯一标识
     String           serverType         = 4; //服务类型
     String           serverOption       = 5; //服务扩展字段
     String           readableServerName = 6; //服务名
     HandleMessage [] messages           = 7; //可以处理的消息
+}
+
+//注册provider返回
+message SC RegisterProvider 104 {
+    String message;
 }
 
 //向网关表示自己可以提供框架内部验证功能
