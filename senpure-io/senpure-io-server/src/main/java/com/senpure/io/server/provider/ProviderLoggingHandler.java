@@ -61,7 +61,7 @@ public class ProviderLoggingHandler extends LoggingHandler {
                 if (inFormat) {
                     ProviderReceivedMessage frame = (ProviderReceivedMessage) msg;
                     this.logger.log(this.internalLevel, "{} {}[{}] requestId:{} token:{} userId:{}{}{}",
-                            "RECEIVED",frame.messageType== MessageFrame.MESSAGE_TYPE_CS?"CS":"SC", frame.messageType, frame.requestId(), frame.getToken(), frame.getUserId(), "\n", frame.getMessage().toString(null));
+                            "RECEIVED",frame.messageType== MessageFrame.MESSAGE_TYPE_SC?"SC":"CS", frame.messageType, frame.requestId(), frame.getToken(), frame.getUserId(), "\n", frame.getMessage().toString(null));
                     // this.logger.log(this.internalLevel, this.format(ctx, ChannelAttributeUtil.getChannelPlayerStr(ctx.channel()) + " RECEIVED", "\n" + ((Message) msg).toString(null)));
 
                 } else {

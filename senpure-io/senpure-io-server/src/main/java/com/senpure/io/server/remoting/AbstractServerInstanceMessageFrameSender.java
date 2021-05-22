@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.*;
 
-public abstract class AbstractRemoteServer extends AbstractSimpleMessageSender implements ServerMessageSender {
+public abstract class AbstractServerInstanceMessageFrameSender extends AbstractMessageFrameSender implements ServerInstanceMessageFrameSender {
 
     protected TaskLoopGroup service;
     protected int defaultWaitSendTimeout = 10000;
@@ -29,10 +29,10 @@ public abstract class AbstractRemoteServer extends AbstractSimpleMessageSender i
      */
     private boolean frameworkVerifyPassed;
 
-    public AbstractRemoteServer() {
+    public AbstractServerInstanceMessageFrameSender() {
     }
 
-    public AbstractRemoteServer(TaskLoopGroup service) {
+    public AbstractServerInstanceMessageFrameSender(TaskLoopGroup service) {
         this.service = service;
     }
 

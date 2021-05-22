@@ -7,7 +7,7 @@ import com.senpure.io.server.ServerProperties;
 import com.senpure.io.server.consumer.ConsumerMessageExecutor;
 import com.senpure.io.server.consumer.ConsumerServer;
 import com.senpure.io.server.consumer.Provider;
-import com.senpure.io.server.consumer.ProviderManager;
+import com.senpure.io.server.consumer.ProviderSingleInstanceMessageSender;
 import com.senpure.io.server.remoting.ChannelService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +38,7 @@ public class ConsumerServerStarter implements ApplicationRunner {
     @Resource
     private ServerProperties properties;
     @Resource
-    private ProviderManager remoteServerManager;
+    private ProviderSingleInstanceMessageSender remoteServerManager;
 
     @Resource
     private ConsumerMessageExecutor messageExecutor;

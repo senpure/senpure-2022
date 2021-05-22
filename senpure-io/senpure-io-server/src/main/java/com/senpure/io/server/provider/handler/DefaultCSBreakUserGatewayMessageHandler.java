@@ -19,7 +19,7 @@ public class DefaultCSBreakUserGatewayMessageHandler extends AbstractFrameworkNe
 
 
     @Override
-    public void execute(Channel channel,CSBreakUserGatewayMessage message) {
+    public void execute(Channel channel, CSBreakUserGatewayMessage message) {
         if (message.getToken() != 0) {
             messageSender.breakToken(message.getToken(), message.getRelationToken());
         }

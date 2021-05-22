@@ -19,7 +19,7 @@ public class CSRelationUserGatewayMessageHandler extends AbstractFrameworkNecess
 
 
     @Override
-    public void execute(Channel channel, CSRelationUserGatewayMessage message) {
+    public void execute(Channel channel,  CSRelationUserGatewayMessage message) {
         String gatewayKey = ChannelAttributeUtil.getRemoteServerKey(channel);
         logger.debug("关联网关 与用户 gatewayKey :{}  token :{}  userId :{}", gatewayKey, message.getToken(), message.getUserId());
         if (message.getUserId() > 0) {

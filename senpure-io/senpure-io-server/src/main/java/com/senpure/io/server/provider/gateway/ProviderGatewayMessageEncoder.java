@@ -1,6 +1,7 @@
 package com.senpure.io.server.provider.gateway;
 
 import com.senpure.io.protocol.CompressBean;
+import com.senpure.io.protocol.Message;
 import com.senpure.io.server.provider.ProviderSendMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -14,8 +15,10 @@ public class ProviderGatewayMessageEncoder extends MessageToByteEncoder<Provider
 
     @Override
     protected void encode(ChannelHandlerContext ctx, ProviderSendMessage frame, ByteBuf out) {
-        int dataLength = frame.message().serializedSize();
-        int headLength = CompressBean.computeVar32Size(frame.requestId());
+        Message message = frame.message();
+        int dataLength = message.serializedSize();
+        int headLength = CompressBean.computeVar32Size(frame.messageType());
+        headLength += CompressBean.computeVar32Size(frame.requestId());
         headLength += CompressBean.computeVar32Size(frame.messageId());
         headLength += CompressBean.computeVar64Size(frame.getToken());
         headLength += CompressBean.computeVar32Size(frame.getUserIds().length);
@@ -26,6 +29,7 @@ public class ProviderGatewayMessageEncoder extends MessageToByteEncoder<Provider
         out.ensureWritable(CompressBean.computeVar32Size(packageLength) + packageLength);
 
         CompressBean.writeVar32(out, packageLength);
+        CompressBean.writeVar32(out, frame.messageType());
         CompressBean.writeVar32(out, frame.requestId());
         CompressBean.writeVar32(out, frame.messageId());
         CompressBean.writeVar64(out, frame.getToken());
@@ -33,6 +37,6 @@ public class ProviderGatewayMessageEncoder extends MessageToByteEncoder<Provider
         for (Long userId : frame.getUserIds()) {
             CompressBean.writeVar64(out, userId);
         }
-        frame.message().write(out);
+        message.write(out);
     }
 }

@@ -33,6 +33,7 @@ public class GatewayProviderMessageDecoder extends ByteToMessageDecoder {
             this.logger.info("数据不够一个数据包 packageLength ={} ,readableBytes={}", packageLength, in.readableBytes());
             in.resetReaderIndex();
         } else {
+            int messageType = CompressBean.readVar32(in);
             int requestId = CompressBean.readVar32(in);
             int messageId = CompressBean.readVar32(in);
             long token = CompressBean.readVar64(in);
@@ -41,7 +42,8 @@ public class GatewayProviderMessageDecoder extends ByteToMessageDecoder {
             for (int i = 0; i < userLen; i++) {
                 userIds[i] = CompressBean.readVar64(in);
             }
-            int headLength = CompressBean.computeVar32Size(requestId);
+            int headLength = CompressBean.computeVar32Size(messageType);
+            headLength += CompressBean.computeVar32Size(requestId);
             headLength += CompressBean.computeVar32Size(messageId);
 
             headLength += CompressBean.computeVar64Size(token);
@@ -54,13 +56,13 @@ public class GatewayProviderMessageDecoder extends ByteToMessageDecoder {
             byte[] data = new byte[messageLength];
             in.readBytes(data);
 
-            GatewayReceiveProviderMessage frame = new GatewayReceiveProviderMessage(messageLength,data);
+            GatewayReceiveProviderMessage frame = new GatewayReceiveProviderMessage(messageLength, data);
             frame.setRequestId(requestId);
             frame.setMessageId(messageId);
             frame.setToken(token);
-
-          //  frame.setData(data);
-           // frame.setToken(token);
+            frame.setMessageType(messageType);
+            //  frame.setData(data);
+            // frame.setToken(token);
             frame.setUserIds(userIds);
 
             out.add(frame);

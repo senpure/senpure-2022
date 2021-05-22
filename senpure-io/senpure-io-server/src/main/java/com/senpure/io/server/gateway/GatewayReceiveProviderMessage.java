@@ -98,6 +98,7 @@ public class GatewayReceiveProviderMessage implements GatewaySendConsumerMessage
 
         return "GatewayReceiveProviderMessage{" +
                 "messageId=" + MessageIdReader.read(messageId) +
+                ",messageType =" + messageType +
                 ",requestId =" + requestId +
                 ",token=" + token +
                 ", userIds=" + Arrays.toString(userIds) +

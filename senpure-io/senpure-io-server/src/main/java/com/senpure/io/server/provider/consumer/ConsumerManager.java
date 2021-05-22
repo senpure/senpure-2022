@@ -4,8 +4,9 @@ import com.senpure.io.protocol.Message;
 import com.senpure.io.server.ChannelAttributeUtil;
 import com.senpure.io.server.provider.MessageSender;
 import com.senpure.io.server.provider.ProviderSendMessage;
-import com.senpure.io.server.remoting.AbstractMultipleServerManger;
+import com.senpure.io.server.remoting.AbstractSameServerMultipleInstanceMessageSender;
 import com.senpure.io.server.remoting.FutureService;
+import com.senpure.io.server.remoting.MessageFrameSender;
 import com.senpure.io.server.remoting.ResponseCallback;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
@@ -15,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ConsumerManager extends AbstractMultipleServerManger<ProviderSendMessage> implements MessageSender {
+public class ConsumerManager extends AbstractSameServerMultipleInstanceMessageSender<ProviderSendMessage> implements MessageSender {
 
     private final Map<Long, ConsumerRelation> userChannelMap = new ConcurrentHashMap<>();
     private final Map<Long, ConsumerRelation> tokenChannelMap = new ConcurrentHashMap<>();
@@ -412,12 +413,19 @@ public class ConsumerManager extends AbstractMultipleServerManger<ProviderSendMe
         return frame;
     }
 
+
+
     @Override
     public ProviderSendMessage createMessage(Message message, int requestId) {
         ProviderSendMessage frame = createMessage(0L, message);
         frame.setRequestId(requestId);
 
         return frame;
+    }
+
+    @Override
+    public MessageFrameSender getFrameSender(Channel channel) {
+        return consumer;
     }
 
 

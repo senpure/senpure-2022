@@ -34,6 +34,7 @@ public abstract class AbstractMessageExecutor implements FutureService {
         futureMap.put(requestId, future);
 
         ScheduledFuture<?> scheduledFuture = service.schedule(() -> {
+            logger.debug("{} {} {} 同步请求超时 ", requestId, timeout, message);
             SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
             errorMessage.setMessage("同步请求超时[" + future.getMessage().messageId() + "][" + future.getRequestId() + "]:" + future.getTimeout());
             errorMessage.getArgs().add(String.valueOf(future.getMessage().messageId()));
@@ -58,6 +59,8 @@ public abstract class AbstractMessageExecutor implements FutureService {
                     boolean success = !isErrorMessage(message);
                     DefaultResponse response = new DefaultResponse(success, channel, message);
                     future.doReceived(response);
+                } else {
+                    logger.warn("远程服务器返回时间过长,服务器已经做了超时处理 {} {}", requestId, message);
                 }
 
             } else {
@@ -68,7 +71,7 @@ public abstract class AbstractMessageExecutor implements FutureService {
 
 
         } else {
-            logger.warn("远程服务器返回时间过长,服务器已经做了超时处理 {} {}", requestId, message);
+            logger.warn("远程服务器返回时间过长,服务器已经做了超时处理 {} cancel{} {} ", requestId, cancel, message);
         }
     }
 

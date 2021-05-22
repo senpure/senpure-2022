@@ -7,10 +7,12 @@ import com.senpure.io.server.protocol.message.SCKickOffMessage;
 import com.senpure.io.server.protocol.message.SCMessageForwardMessage;
 import com.senpure.io.server.provider.MessageSender;
 import com.senpure.io.server.provider.ProviderSendMessage;
-import com.senpure.io.server.remoting.AbstractMultipleServerManger;
+import com.senpure.io.server.remoting.AbstractSameServerMultipleInstanceMessageSender;
+import com.senpure.io.server.remoting.MessageFrameSender;
 import com.senpure.io.server.remoting.ResponseCallback;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -22,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 
-public class GatewayManager extends AbstractMultipleServerManger<ProviderSendMessage> implements MessageSender {
+public class GatewayManager extends AbstractSameServerMultipleInstanceMessageSender<ProviderSendMessage> implements MessageSender {
 
     private final ConcurrentMap<String, Gateway> gatewayMap = new ConcurrentHashMap<>();
     private final ConcurrentMap<Long, GatewayRelation> userGatewayMap = new ConcurrentHashMap<>();
@@ -389,6 +391,27 @@ public class GatewayManager extends AbstractMultipleServerManger<ProviderSendMes
             }
         }
         return false;
+    }
+
+    @Override
+    public void respondMessage(Channel channel, Message message) {
+
+        MessageFrame frame = createMessage(message, requestId());
+        channel.writeAndFlush(frame);
+    }
+
+    @Override
+    public void respondMessage(Channel channel, Message message,int requestId) {
+
+        MessageFrame frame = createMessage(message, requestId);
+        channel.writeAndFlush(frame);
+    }
+
+    @Override
+    public MessageFrameSender getFrameSender(Channel channel) {
+//        String serverKey = ChannelAttributeUtil.getRemoteServerKey(channel);
+//        return getGateway(serverKey);
+        throw new RuntimeException("gatewayManager不允许调用该方法");
     }
 
     private static class GatewayUsers {

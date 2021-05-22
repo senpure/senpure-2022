@@ -73,9 +73,11 @@ public class CSFrameworkVerifyMessageHandler extends AbstractGatewayProviderMess
             if (response.isSuccess()) {
                 ChannelAttributeUtil.setFramework(channel, true);
                 GatewayReceiveConsumerMessage returnMessage = new GatewayReceiveConsumerMessage(frame.getMessageLength(), frame.getData());
+                returnMessage.setMessageId(frame.messageId());
+                returnMessage.setMessageType(frame.messageType());
                 messageExecutor.responseMessage2Producer(requestId, channel, returnMessage);
             } else {
-                logger.debug("{} provider 框架认证失败 {}", channel,response.getMessage());
+                logger.debug("{} provider 框架认证失败 {}", channel, response.getMessage());
                 SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
                 errorMessage.setCode(Constant.ERROR_VERIFY_FAILURE);
                 errorMessage.setMessage("框架内部认证失败");

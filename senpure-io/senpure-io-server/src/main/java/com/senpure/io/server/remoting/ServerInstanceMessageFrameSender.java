@@ -10,7 +10,7 @@ import java.util.List;
  * 一个具体的服务实例
  * 可能有多个channel
  */
-public interface ServerMessageSender extends SimpleMessageSender {
+public interface ServerInstanceMessageFrameSender extends MessageFrameSender {
 
     /**
      * 向服务器发送消息

@@ -1,9 +1,9 @@
 package com.senpure.io.server.provider.gateway;
 
 import com.senpure.executor.TaskLoopGroup;
-import com.senpure.io.server.remoting.AbstractRemoteServer;
+import com.senpure.io.server.remoting.AbstractServerInstanceMessageFrameSender;
 
-public class Gateway extends AbstractRemoteServer {
+public class Gateway extends AbstractServerInstanceMessageFrameSender {
 
     private boolean frameworkVerifyProviderPassed;
 

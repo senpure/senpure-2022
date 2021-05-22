@@ -2,10 +2,11 @@ package com.senpure.io.server.remoting;
 
 import com.senpure.io.protocol.Message;
 import com.senpure.io.server.MessageFrame;
+import io.netty.channel.Channel;
 
 import javax.annotation.Nonnull;
 
-public abstract class AbstractSingleServerManager<T extends MessageFrame, R extends ServerMessageSender> extends AbstractMultipleServerManger<T> implements SingleServerManager {
+public abstract class AbstractSameServerSingleInstanceMessageSender<T extends MessageFrame, R extends ServerInstanceMessageFrameSender> extends AbstractSameServerMultipleInstanceMessageSender<T> implements SameServerSingleInstanceMessageSender {
 
 
     protected R defaultRemoteServer;
@@ -56,5 +57,10 @@ public abstract class AbstractSingleServerManager<T extends MessageFrame, R exte
     @Override
     public void respondMessage(Message message, int requestId) {
         defaultRemoteServer.sendMessage(createMessage(message, requestId));
+    }
+
+    @Override
+    public ServerInstanceMessageFrameSender getFrameSender(Channel channel) {
+        return defaultRemoteServer;
     }
 }

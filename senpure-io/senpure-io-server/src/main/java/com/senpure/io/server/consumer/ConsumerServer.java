@@ -41,7 +41,7 @@ public class ConsumerServer {
     private ConsumerMessageExecutor messageExecutor;
 
     private Channel channel;
-    private ProviderManager remoteServerManager;
+    private ProviderSingleInstanceMessageSender remoteServerManager;
     private boolean addLoggingHandler = true;
 
     private final List<ChannelHandler> extHandlers = new ArrayList<>();
@@ -179,7 +179,7 @@ public class ConsumerServer {
     }
 
 
-    public void setRemoteServerManager(ProviderManager remoteServerManager) {
+    public void setRemoteServerManager(ProviderSingleInstanceMessageSender remoteServerManager) {
         this.remoteServerManager = remoteServerManager;
     }
 

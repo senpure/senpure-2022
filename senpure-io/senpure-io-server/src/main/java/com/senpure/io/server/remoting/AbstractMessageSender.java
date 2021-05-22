@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public abstract class AbstractServerManager<T extends MessageFrame> implements RemoteServerManager {
+public abstract class AbstractMessageSender<T extends MessageFrame> implements MessageSender {
     protected Logger logger = LoggerFactory.getLogger(getClass());
     protected final AtomicInteger atomicRequestId = new AtomicInteger(1);
 

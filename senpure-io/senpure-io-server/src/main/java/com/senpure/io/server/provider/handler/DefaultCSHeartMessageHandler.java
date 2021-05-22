@@ -19,7 +19,7 @@ public class DefaultCSHeartMessageHandler extends AbstractFrameworkNecessaryMess
     public void execute(Channel channel,  CSHeartMessage message) {
 
 
-        messageSender.sendMessageByToken(0L, new SCHeartMessage());
+        messageSender.respondMessage(channel, new SCHeartMessage());
     }
 
 

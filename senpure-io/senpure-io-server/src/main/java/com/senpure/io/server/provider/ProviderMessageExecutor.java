@@ -6,17 +6,17 @@ import com.senpure.io.server.MessageFrame;
 import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
 import com.senpure.io.server.provider.handler.ProviderMessageHandler;
 import com.senpure.io.server.remoting.AbstractMessageExecutor;
-import com.senpure.io.server.remoting.RemoteServerManager;
+import com.senpure.io.server.remoting.MessageSender;
 import io.netty.channel.Channel;
 
 import java.util.concurrent.TimeUnit;
 
 public class ProviderMessageExecutor extends AbstractMessageExecutor {
 
-    private final MessageSender messageSender;
+    private final com.senpure.io.server.provider.MessageSender messageSender;
     private final ProviderMessageHandlerContext handlerContext;
 
-    public ProviderMessageExecutor(TaskLoopGroup service, MessageSender messageSender, ProviderMessageHandlerContext handlerContext) {
+    public ProviderMessageExecutor(TaskLoopGroup service, com.senpure.io.server.provider.MessageSender messageSender, ProviderMessageHandlerContext handlerContext) {
         super(service);
         this.messageSender = messageSender;
         this.handlerContext = handlerContext;
@@ -48,7 +48,7 @@ public class ProviderMessageExecutor extends AbstractMessageExecutor {
             } else {
                 try {
 
-                    RemoteServerManager.REQUEST_ID.set(frame.getRequestId());
+                    MessageSender.REQUEST_ID.set(frame.getRequestId());
                     handler.execute(channel, frame.getToken(), userId, frame.getMessage());
                 } catch (Exception e) {
                     logger.error("执行handler[" + handler.getClass().getName() + "]逻辑出错 ", e);
@@ -60,7 +60,7 @@ public class ProviderMessageExecutor extends AbstractMessageExecutor {
                     scFrameworkErrorMessage.getArgs().add(String.valueOf(frame.getMessageId()));
                     messageSender.sendMessageByToken(frame.getToken(), scFrameworkErrorMessage);
                 } finally {
-                    RemoteServerManager.REQUEST_ID.remove();
+                    MessageSender.REQUEST_ID.remove();
                 }
 
             }

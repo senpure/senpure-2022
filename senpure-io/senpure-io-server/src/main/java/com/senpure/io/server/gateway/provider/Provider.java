@@ -2,12 +2,12 @@ package com.senpure.io.server.gateway.provider;
 
 import com.senpure.executor.TaskLoopGroup;
 import com.senpure.io.server.ChannelAttributeUtil;
-import com.senpure.io.server.remoting.AbstractRemoteServer;
+import com.senpure.io.server.remoting.AbstractServerInstanceMessageFrameSender;
 import com.senpure.io.server.remoting.ChannelService;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
 
-public class Provider extends AbstractRemoteServer {
+public class Provider extends AbstractServerInstanceMessageFrameSender {
     private final Statistic statistic = new Statistic();
 
     public Provider(TaskLoopGroup service) {

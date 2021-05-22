@@ -8,7 +8,7 @@ import com.senpure.io.server.ServerProperties;
 import com.senpure.io.server.consumer.handler.ConsumerMessageHandler;
 import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
 import com.senpure.io.server.remoting.AbstractMessageExecutor;
-import com.senpure.io.server.remoting.RemoteServerManager;
+import com.senpure.io.server.remoting.MessageSender;
 import com.senpure.io.server.remoting.Response;
 import com.senpure.io.server.remoting.ResponseCallback;
 import io.netty.channel.Channel;
@@ -19,11 +19,11 @@ import java.util.function.Consumer;
 public class ConsumerMessageExecutor extends AbstractMessageExecutor {
     private final ConsumerMessageHandlerContext handlerContext;
 
-    private final ProviderManager providerManager;
+    private final ProviderSingleInstanceMessageSender providerManager;
 
     public ConsumerMessageExecutor(TaskLoopGroup service,
                                    ServerProperties.ConsumerProperties properties,
-                                   ConsumerMessageHandlerContext handlerContext, ProviderManager providerManager) {
+                                   ConsumerMessageHandlerContext handlerContext, ProviderSingleInstanceMessageSender providerManager) {
         super(service);
         String[] ids = StringUtils.commaDelimitedListToStringArray(properties.getScErrorMessageId());
         for (String id : ids) {
@@ -60,7 +60,7 @@ public class ConsumerMessageExecutor extends AbstractMessageExecutor {
 
             } else {
                 try {
-                    RemoteServerManager.REQUEST_ID.set(frame.requestId());
+                    MessageSender.REQUEST_ID.set(frame.requestId());
                     handler.execute(channel, frame.message());
                 } catch (Exception e) {
                     logger.error("执行handler[" + handler.getClass().getName() + "]逻辑出错 ", e);
@@ -72,7 +72,7 @@ public class ConsumerMessageExecutor extends AbstractMessageExecutor {
                     scFrameworkErrorMessage.getArgs().add(String.valueOf(frame.messageId()));
                     providerManager.sendMessage(scFrameworkErrorMessage);
                 } finally {
-                    RemoteServerManager.REQUEST_ID.remove();
+                    MessageSender.REQUEST_ID.remove();
                 }
 
             }

@@ -14,12 +14,9 @@ public abstract class AbstractFrameworkNecessaryMessageHandler<T extends Message
         execute(channel, message);
     }
 
-    public abstract void execute(Channel channel, T message);
+    //FrameworkNecessary通信没有token 和userId
+    public abstract void execute(Channel channel,  T message);
 
-    public  void responseMessage()
-    {
-
-    }
 
     @Override
     public boolean registerToGateway() {

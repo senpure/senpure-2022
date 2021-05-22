@@ -1,6 +1,7 @@
 package com.senpure.io.server.gateway.provider;
 
 import com.senpure.io.protocol.Message;
+import com.senpure.io.server.ChannelAttributeUtil;
 import com.senpure.io.server.Constant;
 import com.senpure.io.server.gateway.GatewayLocalSendProviderMessage;
 import com.senpure.io.server.gateway.GatewayMessageExecutor;
@@ -8,7 +9,8 @@ import com.senpure.io.server.gateway.GatewaySendProviderMessage;
 import com.senpure.io.server.protocol.message.CSBreakUserGatewayMessage;
 import com.senpure.io.server.protocol.message.CSRelationUserGatewayMessage;
 import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
-import com.senpure.io.server.remoting.AbstractMultipleServerManger;
+import com.senpure.io.server.remoting.AbstractSameServerMultipleInstanceMessageSender;
+import com.senpure.io.server.remoting.ServerInstanceMessageFrameSender;
 import com.senpure.io.server.support.MessageIdReader;
 import io.netty.channel.Channel;
 
@@ -20,7 +22,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class ProviderManager extends AbstractMultipleServerManger<GatewayLocalSendProviderMessage> {
+public class ProviderManager extends AbstractSameServerMultipleInstanceMessageSender<GatewayLocalSendProviderMessage> {
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
     private final List<Provider> useProviders = new ArrayList<>();
     private final ConcurrentMap<Long, ProviderRelation> tokenProviderMap = new ConcurrentHashMap<>();
@@ -29,7 +31,7 @@ public class ProviderManager extends AbstractMultipleServerManger<GatewayLocalSe
     private final Map<Integer, Boolean> handleIdsMap = new HashMap<>();
     private final GatewayMessageExecutor messageExecutor;
     private String serverName;
-    private  boolean registerMessageId;
+    private boolean registerMessageId;
 
     public ProviderManager(GatewayMessageExecutor messageExecutor) {
         this.messageExecutor = messageExecutor;
@@ -55,8 +57,6 @@ public class ProviderManager extends AbstractMultipleServerManger<GatewayLocalSe
         frame.setRequestId(requestId);
         return frame;
     }
-
-
 
 
     @Nullable
@@ -306,6 +306,12 @@ public class ProviderManager extends AbstractMultipleServerManger<GatewayLocalSe
         }
     }
 
+    @Override
+    public ServerInstanceMessageFrameSender getFrameSender(Channel channel) {
+
+        String serverKey = ChannelAttributeUtil.getRemoteServerKey(channel);
+        return getProvider(serverKey);
+    }
 
     private void clearRelation(Provider serverChannelManager) {
         logger.warn("{} {} 全部channel已经下线 清空关联列表", serverName, serverChannelManager.getRemoteServerKey());

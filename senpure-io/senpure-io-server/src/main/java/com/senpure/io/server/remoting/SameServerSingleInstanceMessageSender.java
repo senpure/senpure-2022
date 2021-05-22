@@ -7,7 +7,7 @@ import javax.annotation.Nonnull;
 /**
  * 同一个服务只会连接一个实例
  */
-public interface SingleServerManager extends MultipleServerManager {
+public interface SameServerSingleInstanceMessageSender extends SameServerMultipleInstanceMessageSender {
 
     /**
      * 发送消息

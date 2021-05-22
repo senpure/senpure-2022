@@ -1,12 +1,12 @@
 package com.senpure.io.server.consumer;
 
 import com.senpure.io.protocol.Message;
-import com.senpure.io.server.remoting.AbstractSingleServerManager;
+import com.senpure.io.server.remoting.AbstractSameServerSingleInstanceMessageSender;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class ProviderManager  extends AbstractSingleServerManager<ConsumerMessage,Provider> {
+public class ProviderSingleInstanceMessageSender extends AbstractSameServerSingleInstanceMessageSender<ConsumerMessage,Provider> {
 
     @Override
     public ConsumerMessage createMessage(Message message) {
@@ -31,7 +31,7 @@ public class ProviderManager  extends AbstractSingleServerManager<ConsumerMessag
     }
 
     public static void main(String[] args) {
-        ProviderManager providerManager = new ProviderManager();
+        ProviderSingleInstanceMessageSender providerManager = new ProviderSingleInstanceMessageSender();
         providerManager.atomicRequestId.set(Integer.MAX_VALUE -20);
 
         Set<Integer> integers = new HashSet<>();

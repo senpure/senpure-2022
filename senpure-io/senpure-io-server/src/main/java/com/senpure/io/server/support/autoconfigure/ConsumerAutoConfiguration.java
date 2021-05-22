@@ -118,15 +118,15 @@ public class ConsumerAutoConfiguration {
 //    }
 
     @Bean
-    public ProviderManager providerManager() {
+    public ProviderSingleInstanceMessageSender providerManager() {
 
-        return new ProviderManager();
+        return new ProviderSingleInstanceMessageSender();
     }
 
     @Bean
     public ConsumerMessageExecutor consumerMessageExecutor(TaskLoopGroup taskLoopGroup,
                                                            ConsumerMessageHandlerContext messageDecoderContext,
-                                                           ProviderManager providerManager) {
+                                                           ProviderSingleInstanceMessageSender providerManager) {
         return new ConsumerMessageExecutor(taskLoopGroup,
                 properties.getConsumer(),
                 messageDecoderContext, providerManager);

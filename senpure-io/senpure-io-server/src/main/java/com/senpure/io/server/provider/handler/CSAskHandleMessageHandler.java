@@ -4,7 +4,6 @@ package com.senpure.io.server.provider.handler;
 import com.senpure.io.protocol.Message;
 import com.senpure.io.server.protocol.message.CSAskHandleMessage;
 import com.senpure.io.server.protocol.message.SCAskHandleMessage;
-import com.senpure.io.server.provider.ProviderSendMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -51,11 +50,7 @@ public class CSAskHandleMessageHandler extends AbstractFrameworkNecessaryMessage
             scAskHandleMessage.setAskValue(answer.getValue());
         }
 
-       // messageSender.sendMessage(channel, scAskHandleMessage);
-        ProviderSendMessage frame = messageSender.createMessageByToken(0L, scAskHandleMessage);
-
-        channel.writeAndFlush(frame);
-       // messageSender.sendMessage(channel,scAskHandleMessage);
+        messageSender.respondMessage(channel, scAskHandleMessage);
     }
 
     @Override

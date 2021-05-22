@@ -1,6 +1,6 @@
 package com.senpure.io.server.provider;
 
-import com.senpure.io.server.remoting.RemoteServerManager;
+import com.senpure.io.server.remoting.MessageSender;
 import io.netty.util.concurrent.FastThreadLocalThread;
 
 /**
@@ -31,16 +31,16 @@ public class ProviderHelper {
 
         public RequestIdRunnable(Runnable runnable) {
             this.runnable = runnable;
-            requestId = RemoteServerManager.REQUEST_ID.get();
+            requestId = MessageSender.REQUEST_ID.get();
         }
 
         @Override
         public void run() {
-            RemoteServerManager.REQUEST_ID.set(requestId);
+            MessageSender.REQUEST_ID.set(requestId);
             try {
                 runnable.run();
             } finally {
-                RemoteServerManager.REQUEST_ID.remove();
+                MessageSender.REQUEST_ID.remove();
             }
 
         }
