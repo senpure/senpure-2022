@@ -1,6 +1,5 @@
 package com.senpure.io.server.gateway.provider.handler;
 
-import com.senpure.io.protocol.Message;
 import com.senpure.io.server.ChannelAttributeUtil;
 import com.senpure.io.server.Constant;
 import com.senpure.io.server.gateway.GatewayReceiveConsumerMessage;
@@ -73,21 +72,21 @@ public class CSFrameworkVerifyMessageHandler extends AbstractGatewayProviderMess
         providerManager.sendMessage(provider, requestMessage, response -> {
             if (response.isSuccess()) {
                 ChannelAttributeUtil.setFramework(channel, true);
-                Message message = response.getMessage();
-                GatewayReceiveConsumerMessage returnMessage = new GatewayReceiveConsumerMessage(frame.getMessageLength(), frame.getData());
-                returnMessage.setMessageId(message.messageId());
-                returnMessage.setMessageType(message.messageType());
-                messageExecutor.responseMessage2Producer(requestId, channel, returnMessage);
+//                Message message = response.getMessage();
+//                GatewayReceiveConsumerMessage returnMessage = new GatewayReceiveConsumerMessage(frame.getMessageLength(), frame.getData());
+//                returnMessage.setMessageId(message.messageId());
+//                returnMessage.setMessageType(message.messageType());
+                messageExecutor.responseMessage2Producer(requestId, channel, response.getMessage());
             } else {
                 logger.debug("{} provider 框架认证失败 {}", channel, response.getMessage());
 //                SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
 //                errorMessage.setCode(Constant.ERROR_VERIFY_FAILURE);
 //                errorMessage.setMessage("框架内部认证失败");
-                Message message = response.getMessage();
-                GatewayReceiveConsumerMessage returnMessage = new GatewayReceiveConsumerMessage(frame.getMessageLength(), frame.getData());
-                returnMessage.setMessageId(message.messageId());
-                returnMessage.setMessageType(message.messageType());
-                messageExecutor.responseMessage2Producer(frame.requestId(), channel, message);
+//                Message message = response.getMessage();
+//                GatewayReceiveConsumerMessage returnMessage = new GatewayReceiveConsumerMessage(frame.getMessageLength(), frame.getData());
+//                returnMessage.setMessageId(message.messageId());
+//                returnMessage.setMessageType(message.messageType());
+                messageExecutor.responseMessage2Producer(requestId, channel,response.getMessage());
                 channel.close();
             }
         });

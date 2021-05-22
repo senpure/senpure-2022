@@ -23,8 +23,9 @@ public class ProviderMessageHandlerAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(CSRelationUserGatewayMessageHandler.class)
     public CSRelationUserGatewayMessageHandler csRelationUserGatewayMessageHandler() {
-        return new CSRelationUserGatewayMessageHandler();
+        return new DefaultCSRelationUserGatewayMessageHandler();
     }
 
 
@@ -44,6 +45,12 @@ public class ProviderMessageHandlerAutoConfiguration {
     @ConditionalOnMissingBean(SCFrameworkErrorMessageHandler.class)
     public SCFrameworkErrorMessageHandler scFrameworkErrorMessageHandler() {
         return new DefaultSCFrameworkErrorMessageHandler();
+    }
+
+    @Bean("providerSCFrameworkVerifyMessageHandler")
+    @ConditionalOnMissingBean(SCFrameworkVerifyMessageHandler.class)
+    public SCFrameworkVerifyMessageHandler scFrameworkVerifyMessageHandler() {
+        return new DefaultSCFrameworkVerifyMessageHandler();
     }
 
     @Bean("providerSCSuccessMessageHandler")
