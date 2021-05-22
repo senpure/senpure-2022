@@ -9,14 +9,14 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import java.util.List;
 
-public class AbstractMultipleServer implements MultipleServer {
+public class AbstractSimpleMessageSender implements SimpleMessageSender {
     protected Logger logger = LoggerFactory.getLogger(getClass());
     protected FutureService futureService;
 
     protected int defaultTimeout = 500;
     protected int defaultFlushFrames = 100;
 
-    public AbstractMultipleServer() {
+    public AbstractSimpleMessageSender() {
     }
 
 

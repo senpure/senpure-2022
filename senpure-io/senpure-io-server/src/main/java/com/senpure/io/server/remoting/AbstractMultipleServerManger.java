@@ -13,41 +13,41 @@ public abstract class AbstractMultipleServerManger<T extends MessageFrame> exten
     }
 
     @Override
-    public void sendMessage(RemoteServer server, Message message) {
+    public void sendMessage(ServerMessageSender server, Message message) {
 
         server.sendMessage(createMessage(message));
     }
 
     @Override
-    public void sendMessage(RemoteServer server, Message message, ResponseCallback callback) {
+    public void sendMessage(ServerMessageSender server, Message message, ResponseCallback callback) {
         server.sendMessage(createMessage(message, nextRequestId()), callback);
     }
 
     @Override
-    public void sendMessage(RemoteServer server, Message message, ResponseCallback callback, int timeout) {
+    public void sendMessage(ServerMessageSender server, Message message, ResponseCallback callback, int timeout) {
         server.sendMessage(createMessage(message, nextRequestId()), callback, timeout);
     }
 
     @Nonnull
     @Override
-    public Response sendSyncMessage(RemoteServer server, Message message) {
+    public Response sendSyncMessage(ServerMessageSender server, Message message) {
         return server.sendSyncMessage(createMessage(message, nextRequestId()));
     }
 
     @Nonnull
     @Override
-    public Response sendSyncMessage(RemoteServer server, Message message, int timeout) {
+    public Response sendSyncMessage(ServerMessageSender server, Message message, int timeout) {
         return server.sendSyncMessage(createMessage(message, nextRequestId()), timeout);
     }
 
     @Override
-    public void respondMessage(RemoteServer server, Message message) {
+    public void respondMessage(ServerMessageSender server, Message message) {
 
         server.sendMessage(createMessage(message, requestId()));
     }
 
     @Override
-    public void respondMessage(RemoteServer server, Message message, int requestId) {
+    public void respondMessage(ServerMessageSender server, Message message, int requestId) {
         server.sendMessage(createMessage(message, requestId));
     }
 

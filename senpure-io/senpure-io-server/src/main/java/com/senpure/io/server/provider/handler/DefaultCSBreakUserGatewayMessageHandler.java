@@ -13,13 +13,13 @@ import javax.annotation.Nonnull;
  * @author senpure
  * @time 2018-10-19 16:14:32
  */
-public class CSBreakUserGatewayMessageHandlerImpl extends AbstractFrameworkNecessaryMessageHandler<CSBreakUserGatewayMessage>
+public class DefaultCSBreakUserGatewayMessageHandler extends AbstractFrameworkNecessaryMessageHandler<CSBreakUserGatewayMessage>
         implements CSBreakUserGatewayMessageHandler {
 
 
 
     @Override
-    public void execute(Channel channel, long token, long userId, CSBreakUserGatewayMessage message) {
+    public void execute(Channel channel,CSBreakUserGatewayMessage message) {
         if (message.getToken() != 0) {
             messageSender.breakToken(message.getToken(), message.getRelationToken());
         }

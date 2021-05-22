@@ -5,7 +5,7 @@ import com.senpure.io.server.MessageFrame;
 
 import javax.annotation.Nonnull;
 
-public abstract class AbstractSingleServerManager<T extends MessageFrame, R extends RemoteServer> extends AbstractMultipleServerManger<T> implements SingleServerManager {
+public abstract class AbstractSingleServerManager<T extends MessageFrame, R extends ServerMessageSender> extends AbstractMultipleServerManger<T> implements SingleServerManager {
 
 
     protected R defaultRemoteServer;

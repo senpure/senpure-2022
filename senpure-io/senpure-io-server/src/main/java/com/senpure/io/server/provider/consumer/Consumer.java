@@ -1,6 +1,6 @@
 package com.senpure.io.server.provider.consumer;
 
-import com.senpure.io.server.remoting.AbstractMultipleServer;
+import com.senpure.io.server.remoting.AbstractSimpleMessageSender;
 
-public class Consumer  extends AbstractMultipleServer {
+public class Consumer  extends AbstractSimpleMessageSender {
 }

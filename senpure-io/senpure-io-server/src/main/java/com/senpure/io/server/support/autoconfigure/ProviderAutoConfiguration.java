@@ -7,6 +7,7 @@ import com.senpure.io.server.ServerProperties;
 import com.senpure.io.server.protocol.message.CSBreakUserGatewayMessage;
 import com.senpure.io.server.protocol.message.CSFrameworkVerifyMessage;
 import com.senpure.io.server.protocol.message.CSRelationUserGatewayMessage;
+import com.senpure.io.server.protocol.message.SCFrameworkVerifyProviderMessage;
 import com.senpure.io.server.provider.DefaultProviderMessageHandlerContext;
 import com.senpure.io.server.provider.ProviderMessageHandlerContext;
 import com.senpure.io.server.provider.handler.ProviderMessageHandler;
@@ -105,6 +106,10 @@ public class ProviderAutoConfiguration {
                 handler = handlerContext.handler(CSFrameworkVerifyMessage.MESSAGE_ID);
                 if (handler == null) {
                     Assert.error("表明自己可以提供框架认证功能，但是缺少[CSFrameworkVerifyMessage]处理器");
+                }
+                handler = handlerContext.handler(SCFrameworkVerifyProviderMessage.MESSAGE_ID);
+                if (handler == null) {
+                    Assert.error("表明自己可以提供框架认证功能，但是缺少[SCFrameworkVerifyProviderMessage]处理器,无法提供消息解码器");
                 }
             }
 

@@ -103,6 +103,11 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
         logger.debug("{} 绑定 token {}", channel, token);
     }
 
+    public long nextToken() {
+        return
+                idGenerator.nextId();
+    }
+
     //将客户端消息转发给具体的服务器
     public void execute(final Channel channel, final GatewayReceiveConsumerMessage message) {
         long token = message.token();
@@ -317,6 +322,9 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
             Long userId = ChannelAttributeUtil.getUserId(channel);
             userId = userId == null ? 0 : userId;
             tokenChannel.remove(token);
+            if (userId == 0) {
+                prepLoginChannels.remove(token);
+            }
             consumerOffline(channel, token, userId);
         });
     }

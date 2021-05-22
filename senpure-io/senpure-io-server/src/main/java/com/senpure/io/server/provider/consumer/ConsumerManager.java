@@ -4,7 +4,7 @@ import com.senpure.io.protocol.Message;
 import com.senpure.io.server.ChannelAttributeUtil;
 import com.senpure.io.server.provider.MessageSender;
 import com.senpure.io.server.provider.ProviderSendMessage;
-import com.senpure.io.server.remoting.AbstractServerManager;
+import com.senpure.io.server.remoting.AbstractMultipleServerManger;
 import com.senpure.io.server.remoting.FutureService;
 import com.senpure.io.server.remoting.ResponseCallback;
 import io.netty.channel.Channel;
@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ConsumerManager extends AbstractServerManager<ProviderSendMessage> implements MessageSender {
+public class ConsumerManager extends AbstractMultipleServerManger<ProviderSendMessage> implements MessageSender {
 
     private final Map<Long, ConsumerRelation> userChannelMap = new ConcurrentHashMap<>();
     private final Map<Long, ConsumerRelation> tokenChannelMap = new ConcurrentHashMap<>();

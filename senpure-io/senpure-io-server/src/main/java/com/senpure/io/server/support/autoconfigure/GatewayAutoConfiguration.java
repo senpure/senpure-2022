@@ -149,12 +149,14 @@ public class GatewayAutoConfiguration {
     public GatewayServerStarter gatewayServer(GatewayMessageExecutor messageExecutor) {
 
         if (!properties.getGateway().isSnowflakeUseCode()) {
+            logger.debug("通过远程服务[{}]获取雪花算法参数", properties.getGateway().getSnowflakeDispatcherName());
             ServiceInstance serviceInstance = loadBalancerClient.choose(properties.getGateway().getSnowflakeDispatcherName());
             boolean readRemote = true;
             if (serviceInstance == null) {
                 if (!properties.getGateway().isNotFoundSnowflakeUseCode()) {
                     Assert.error(properties.getGateway().getSnowflakeDispatcherName() + "雪花调度服务没有启动");
                 } else {
+                    logger.warn("雪花调度服务没有启动 降级使用配置数据  dataCenterId {} workId {}", properties.getGateway().getSnowflakeDataCenterId(), properties.getGateway().getSnowflakeWorkId());
                     readRemote = false;
                 }
                 // logger.error("{} 雪花调度服务没有启动", properties.getGateway().getSnowflakeDispatcherName());

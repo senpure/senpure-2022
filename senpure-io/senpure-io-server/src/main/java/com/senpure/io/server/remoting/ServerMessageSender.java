@@ -1,7 +1,6 @@
 package com.senpure.io.server.remoting;
 
 import com.senpure.io.server.MessageFrame;
-import io.netty.channel.Channel;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -11,7 +10,7 @@ import java.util.List;
  * 一个具体的服务实例
  * 可能有多个channel
  */
-public interface RemoteServer extends MultipleServer {
+public interface ServerMessageSender extends SimpleMessageSender {
 
     /**
      * 向服务器发送消息
@@ -29,13 +28,6 @@ public interface RemoteServer extends MultipleServer {
 
 
 
-    /**
-     * 使用指定的channel 向服务器发送消息
-     *
-     * @param channel channel
-     * @param frames  消息列表
-     */
-    void sendMessage(Channel channel, List<MessageFrame> frames);
 
     /**
      * 向服务器发送消息
@@ -67,15 +59,7 @@ public interface RemoteServer extends MultipleServer {
     @Nonnull
     Response sendSyncMessage(MessageFrame frame);
 
-    /**
-     * 使用指定的channel 向服务器发送同步消息
-     *
-     * @param channel channel
-     * @param frame   消息
-     * @return Response
-     */
-    @Nonnull
-    Response sendSyncMessage(Channel channel, MessageFrame frame);
+
 
     /**
      * 向服务器发送同步消息

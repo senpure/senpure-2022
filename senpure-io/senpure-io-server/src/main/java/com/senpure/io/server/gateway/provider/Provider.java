@@ -20,7 +20,7 @@ public class Provider extends AbstractRemoteServer {
 
         Boolean add = ChannelAttributeUtil.get(channel, providerAddChannel);
         if (add != null && add) {
-            logger.info("{}已经加入了关管理",channel);
+            logger.info("{}已经加入了关管理", channel);
             return;
         }
         if (getChannelSize() == 1 && channelService instanceof ChannelService.SingleChannelService) {
@@ -31,9 +31,16 @@ public class Provider extends AbstractRemoteServer {
             m.addChannel(channelService.nextChannel());
             setChannelService(m);
         }
+        if (channel.isOpen() && channel.isActive() && channel.isWritable()) {
+            logger.info("add Channel {}  {} {}", channel, ChannelAttributeUtil.getRemoteServerName(channel), ChannelAttributeUtil.getRemoteServerKey(channel));
 
-        super.addChannel(channel);
-        ChannelAttributeUtil.set(channel, providerAddChannel, true);
+            super.addChannel(channel);
+            ChannelAttributeUtil.set(channel, providerAddChannel, true);
+        } else {
+            logger.info("Channel不可用 skip  {}  {} {}", channel, ChannelAttributeUtil.getRemoteServerName(channel), ChannelAttributeUtil.getRemoteServerKey(channel));
+
+        }
+
     }
 
     public synchronized boolean offline(Channel channel) {

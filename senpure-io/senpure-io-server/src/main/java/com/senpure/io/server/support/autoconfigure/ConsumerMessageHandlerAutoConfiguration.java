@@ -1,9 +1,6 @@
 package com.senpure.io.server.support.autoconfigure;
 
-import com.senpure.io.server.consumer.handler.SCHeartMessageHandler;
-import com.senpure.io.server.consumer.handler.SCHeartMessageHandlerImpl;
-import com.senpure.io.server.consumer.handler.SCFrameworkMessageHandler;
-import com.senpure.io.server.consumer.handler.SCFrameworkMessageHandlerImpl;
+import com.senpure.io.server.consumer.handler.*;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 
@@ -15,15 +12,21 @@ import org.springframework.context.annotation.Bean;
  */
 public class ConsumerMessageHandlerAutoConfiguration {
 
-    @Bean
-    @ConditionalOnMissingBean(SCFrameworkMessageHandler.class)
-    public SCFrameworkMessageHandler scInnerErrorMessageHandler() {
-        return new SCFrameworkMessageHandlerImpl();
+    @Bean("consumerSCFrameworkMessageHandler")
+    @ConditionalOnMissingBean(SCFrameworkErrorMessageHandler.class)
+    public SCFrameworkErrorMessageHandler scFrameworkErrorMessageHandler() {
+        return new DefaultSCFrameworkErrorMessageHandler();
     }
 
-    @Bean
+    @Bean("consumerSCHeartMessageHandler")
     @ConditionalOnMissingBean(SCHeartMessageHandler.class)
     public SCHeartMessageHandler scHeartMessageHandler() {
-        return new SCHeartMessageHandlerImpl();
+        return new DefaultSCHeartMessageHandler();
+    }
+
+    @Bean("consumerSCSuccessMessageHandler")
+    @ConditionalOnMissingBean(SCSuccessMessageHandler.class)
+    public SCSuccessMessageHandler scSuccessMessageHandler() {
+        return new DefaultSCSuccessMessageHandler();
     }
 }

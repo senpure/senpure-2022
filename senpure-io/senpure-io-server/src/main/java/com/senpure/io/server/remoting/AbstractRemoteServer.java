@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.*;
 
-public abstract class AbstractRemoteServer extends AbstractMultipleServer implements RemoteServer {
+public abstract class AbstractRemoteServer extends AbstractSimpleMessageSender implements ServerMessageSender {
 
     protected TaskLoopGroup service;
     protected int defaultWaitSendTimeout = 10000;

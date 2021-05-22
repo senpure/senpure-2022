@@ -10,7 +10,7 @@ import io.netty.channel.Channel;
  * @author senpure
  * @time 2019-03-19 14:59:03
  */
-public class SCHeartMessageHandlerImpl extends AbstractConsumerMessageHandler<SCHeartMessage> implements SCHeartMessageHandler {
+public class DefaultSCHeartMessageHandler extends AbstractConsumerMessageHandler<SCHeartMessage> implements SCHeartMessageHandler {
     @Override
     public void execute(Channel channel, SCHeartMessage message) throws Exception {
         logger.trace("heartMessage {}", message.toString());

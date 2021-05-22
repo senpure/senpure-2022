@@ -14,7 +14,7 @@ public interface MultipleServerManager  extends  RemoteServerManager {
      * @param server  服务实例
      * @param message 消息
      */
-    void sendMessage(RemoteServer server, Message message);
+    void sendMessage(ServerMessageSender server, Message message);
 
     /**
      * 向服务实例发送异步回调消息
@@ -23,7 +23,7 @@ public interface MultipleServerManager  extends  RemoteServerManager {
      * @param message  消息
      * @param callback 回调
      */
-    void sendMessage(RemoteServer server, Message message, ResponseCallback callback);
+    void sendMessage(ServerMessageSender server, Message message, ResponseCallback callback);
 
     /**
      * 向服务实例发送异步回调消息
@@ -33,7 +33,7 @@ public interface MultipleServerManager  extends  RemoteServerManager {
      * @param callback 回调
      * @param timeout  超时毫秒
      */
-    void sendMessage(RemoteServer server, Message message, ResponseCallback callback, int timeout);
+    void sendMessage(ServerMessageSender server, Message message, ResponseCallback callback, int timeout);
 
 
     /**
@@ -44,7 +44,7 @@ public interface MultipleServerManager  extends  RemoteServerManager {
      * @return {@link Response}
      */
     @Nonnull
-    Response sendSyncMessage(RemoteServer server, Message message);
+    Response sendSyncMessage(ServerMessageSender server, Message message);
 
     /**
      * 向服务实例发发送同步步回调消息
@@ -55,7 +55,7 @@ public interface MultipleServerManager  extends  RemoteServerManager {
      * @return {@link Response}
      */
     @Nonnull
-    Response sendSyncMessage(RemoteServer server, Message message, int timeout);
+    Response sendSyncMessage(ServerMessageSender server, Message message, int timeout);
 
     /**
      * 向服务实例响应消息
@@ -63,7 +63,7 @@ public interface MultipleServerManager  extends  RemoteServerManager {
      * @param server  服务实例
      * @param message 消息
      */
-    void respondMessage(RemoteServer server, Message message);
+    void respondMessage(ServerMessageSender server, Message message);
 
     /**
      * 向服务实例响应消息
@@ -72,5 +72,5 @@ public interface MultipleServerManager  extends  RemoteServerManager {
      * @param message   消息
      * @param requestId 请求唯一标识
      */
-    void respondMessage(RemoteServer server, Message message, int requestId);
+    void respondMessage(ServerMessageSender server, Message message, int requestId);
 }

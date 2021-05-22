@@ -1,12 +1,13 @@
 package com.senpure.io.server.gateway.provider.handler;
 
+import com.senpure.io.server.ChannelAttributeUtil;
 import com.senpure.io.server.Constant;
 import com.senpure.io.server.gateway.GatewayReceiveProviderMessage;
 import com.senpure.io.server.gateway.provider.Provider;
 import com.senpure.io.server.gateway.provider.ProviderManager;
 import com.senpure.io.server.protocol.message.CSFrameworkVerifyProviderMessage;
 import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
-import com.senpure.io.server.protocol.message.SCSuccessMessage;
+import com.senpure.io.server.protocol.message.SCFrameworkVerifyProviderMessage;
 import io.netty.channel.Channel;
 
 public class CSFrameworkVerifyProviderMessageHandler extends AbstractGatewayProviderMessageHandler {
@@ -23,7 +24,14 @@ public class CSFrameworkVerifyProviderMessageHandler extends AbstractGatewayProv
         CSFrameworkVerifyProviderMessage message = new CSFrameworkVerifyProviderMessage();
         messageExecutor.readMessage(message, frame);
 
+        if (message.getServerName() == null||message.getServerKey()==null) {
 
+            SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
+            errorMessage.setCode(Constant.ERROR_VERIFY_FAILURE);
+            errorMessage.setMessage("参数错误");
+            messageExecutor.responseMessage2Producer(frame.requestId(), channel, errorMessage);
+            return;
+        }
         ProviderManager providerManager = messageExecutor.getFrameworkVerifyProviderManager();
 
         if (providerManager == null) {
@@ -47,10 +55,14 @@ public class CSFrameworkVerifyProviderMessageHandler extends AbstractGatewayProv
             provider = messageExecutor.createProvider(serverKey);
             provider = providerManager.addProvider(provider);
         }
+
+
+        ChannelAttributeUtil.setRemoteServerName(channel,message.getServerName());
+        ChannelAttributeUtil.setRemoteServerKey(channel, message.getServerKey());
         provider.addChannel(channel);
 
-        SCSuccessMessage successMessage = new SCSuccessMessage();
-        messageExecutor.responseMessage2Producer(frame.requestId(), channel, successMessage);
+        SCFrameworkVerifyProviderMessage providerMessage = new SCFrameworkVerifyProviderMessage();
+        messageExecutor.responseMessage2Producer(frame.requestId(), channel,providerMessage);
 
     }
 

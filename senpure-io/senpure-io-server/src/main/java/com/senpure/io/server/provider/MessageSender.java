@@ -1,12 +1,13 @@
 package com.senpure.io.server.provider;
 
 import com.senpure.io.protocol.Message;
+import com.senpure.io.server.remoting.RemoteServerManager;
 import com.senpure.io.server.remoting.ResponseCallback;
 
 import java.util.List;
 
 
-public interface MessageSender {
+public interface MessageSender extends RemoteServerManager {
 
 
 

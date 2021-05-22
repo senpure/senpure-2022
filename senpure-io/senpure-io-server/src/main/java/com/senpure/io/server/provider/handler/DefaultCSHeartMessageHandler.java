@@ -13,13 +13,13 @@ import javax.annotation.Nonnull;
  * @author senpure
  * @time 2018-10-17 14:59:15
  */
-public class CSHeartMessageHandlerImpl extends AbstractFrameworkNecessaryMessageHandler<CSHeartMessage> implements CSHeartMessageHandler  {
+public class DefaultCSHeartMessageHandler extends AbstractFrameworkNecessaryMessageHandler<CSHeartMessage> implements CSHeartMessageHandler  {
 
     @Override
-    public void execute(Channel channel, long token, long userId, CSHeartMessage message) {
+    public void execute(Channel channel,  CSHeartMessage message) {
 
 
-        messageSender.sendMessageByToken(token, new SCHeartMessage());
+        messageSender.sendMessageByToken(0L, new SCHeartMessage());
     }
 
 

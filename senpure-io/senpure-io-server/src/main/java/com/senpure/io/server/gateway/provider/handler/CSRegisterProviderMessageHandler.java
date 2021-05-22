@@ -17,7 +17,7 @@ import io.netty.channel.Channel;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
-public class CSRegisterProviderMessageReqHandler extends AbstractGatewayProviderMessageHandler {
+public class CSRegisterProviderMessageHandler extends AbstractGatewayProviderMessageHandler {
 
     @Override
     public synchronized void execute(Channel channel, GatewayReceiveProviderMessage frame) {
@@ -36,13 +36,20 @@ public class CSRegisterProviderMessageReqHandler extends AbstractGatewayProvider
             messageExecutor.readMessage(message, frame);
             List<HandleMessage> handleMessages = message.getMessages();
             String serverKey = message.getServerKey();
+            String lastServerName = ChannelAttributeUtil.getRemoteServerName(channel);
+            String lastServerKey = ChannelAttributeUtil.getRemoteServerName(channel);
+            if (lastServerName != null) {
+                if (!lastServerName.equals(message.getServerName()) || lastServerKey.equals(message.getServerKey())) {
+                    return;
+                }
+            }
             ChannelAttributeUtil.setRemoteServerName(channel, message.getServerName());
             ChannelAttributeUtil.setRemoteServerKey(channel, serverKey);
             logger.info("服务注册:{}:{} [{}]", message.getServerName(), message.getServerKey(), message.getReadableServerName());
             for (HandleMessage handleMessage : handleMessages) {
                 logger.info("{}", handleMessage);
             }
-                ConcurrentMap<Integer, ProviderManager> messageHandleMap = messageExecutor.messageHandleMap;
+            ConcurrentMap<Integer, ProviderManager> messageHandleMap = messageExecutor.messageHandleMap;
             ProviderManager providerManager = messageExecutor.getProviderManager(message.getServerName());
 
             if (providerManager == null) {

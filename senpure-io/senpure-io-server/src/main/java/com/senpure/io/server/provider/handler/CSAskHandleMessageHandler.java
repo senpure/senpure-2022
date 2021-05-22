@@ -21,10 +21,12 @@ import java.util.Arrays;
 public class CSAskHandleMessageHandler extends AbstractFrameworkNecessaryMessageHandler<CSAskHandleMessage> {
 
 
+
+
+
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
-    public void execute(Channel channel, long token, long userId, CSAskHandleMessage message) {
-
+    public void execute(Channel channel, CSAskHandleMessage message) {
         ProviderMessageHandler handler = handlerContext.handler(message.getFromMessageId());
         ProviderAskMessageHandler askHandler;
         ProviderAskMessageHandler.Answer answer = null;
@@ -49,12 +51,12 @@ public class CSAskHandleMessageHandler extends AbstractFrameworkNecessaryMessage
             scAskHandleMessage.setAskValue(answer.getValue());
         }
 
-        ProviderSendMessage frame = messageSender.createMessageByToken(token, scAskHandleMessage);
-        //这里的token是无效的所以直接使用 channel
+       // messageSender.sendMessage(channel, scAskHandleMessage);
+        ProviderSendMessage frame = messageSender.createMessageByToken(0L, scAskHandleMessage);
+
         channel.writeAndFlush(frame);
-
+       // messageSender.sendMessage(channel,scAskHandleMessage);
     }
-
 
     @Override
     public int messageId() {

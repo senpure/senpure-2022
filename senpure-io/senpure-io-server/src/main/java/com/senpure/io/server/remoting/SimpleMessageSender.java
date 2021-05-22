@@ -6,7 +6,7 @@ import io.netty.channel.Channel;
 import javax.annotation.Nonnull;
 import java.util.List;
 
-public interface MultipleServer {
+public interface SimpleMessageSender {
 
     /**
      * 使用指定的channel 向服务器发送消息

@@ -35,12 +35,12 @@ public abstract class AbstractMessageExecutor implements FutureService {
 
         ScheduledFuture<?> scheduledFuture = service.schedule(() -> {
             SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
-            errorMessage.setCode(Constant.ERROR_TIMEOUT);
             errorMessage.setMessage("同步请求超时[" + future.getMessage().messageId() + "][" + future.getRequestId() + "]:" + future.getTimeout());
             errorMessage.getArgs().add(String.valueOf(future.getMessage().messageId()));
             errorMessage.getArgs().add(String.valueOf(future.getRequestId()));
+            errorMessage.setCode(Constant.ERROR_TIMEOUT);
             receive(channel, requestId, errorMessage, false);
-        }, timeout, TimeUnit.MICROSECONDS);
+        }, timeout, TimeUnit.MILLISECONDS);
         future.setScheduledFuture(scheduledFuture);
 
         return future;
@@ -77,7 +77,9 @@ public abstract class AbstractMessageExecutor implements FutureService {
         return errorMessageIds.contains(message.messageId());
     }
 
-    public void checkTimeoutFuture(){}
+    public void checkTimeoutFuture() {
+    }
+
     public void checkTimeoutFuture2() {
 
         long now = System.currentTimeMillis();

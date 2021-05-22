@@ -5,7 +5,7 @@ import io.netty.channel.Channel;
 
 import javax.annotation.Nonnull;
 
-public class SCFrameworkErrorMessageHandlerImpl extends AbstractFrameworkNecessaryMessageHandler<SCFrameworkErrorMessage>
+public class DefaultSCFrameworkErrorMessageHandler extends AbstractProviderSCMessageHandler<SCFrameworkErrorMessage>
         implements SCFrameworkErrorMessageHandler {
     @Override
     public int messageId() {

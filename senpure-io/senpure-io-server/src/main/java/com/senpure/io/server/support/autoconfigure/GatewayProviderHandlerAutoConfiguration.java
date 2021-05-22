@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Bean;
 public class GatewayProviderHandlerAutoConfiguration {
 
 
-    @Bean("gatewayProviderHeartMessageHandler")
+    @Bean("gatewayProviderCSHeartMessageHandler")
     public CSHeartMessageHandler csHeartMessageHandler() {
         return new CSHeartMessageHandler();
     }
@@ -17,16 +17,16 @@ public class GatewayProviderHandlerAutoConfiguration {
         return new CSFrameworkVerifyProviderMessageHandler();
     }
 
-    @Bean("gatewayProviderFrameworkVerifyMessageHandler")
+    @Bean("gatewayProviderCSFrameworkVerifyMessageHandler")
     public CSFrameworkVerifyMessageHandler csFrameworkVerifyMessageHandler(ServerProperties properties) {
         ServerProperties.GatewayProperties gatewayProperties = properties.getGateway();
         return new CSFrameworkVerifyMessageHandler(gatewayProperties.isSimpleVerify(), gatewayProperties.getSimpleToken(), gatewayProperties.getSimpleUserId());
     }
 
     @Bean
-    public CSRegisterProviderMessageReqHandler scRegServerHandleMessageMessageHandler() {
+    public CSRegisterProviderMessageHandler scRegServerHandleMessageMessageHandler() {
 
-        return new CSRegisterProviderMessageReqHandler();
+        return new CSRegisterProviderMessageHandler();
     }
 
     @Bean
@@ -35,7 +35,7 @@ public class GatewayProviderHandlerAutoConfiguration {
     }
 
     @Bean
-    public SCFrameworkVerifyMessageHandler scConsumerVerifyMessageHandler() {
+    public SCFrameworkVerifyMessageHandler scFrameworkVerifyMessageHandler() {
         return new SCFrameworkVerifyMessageHandler();
     }
 
