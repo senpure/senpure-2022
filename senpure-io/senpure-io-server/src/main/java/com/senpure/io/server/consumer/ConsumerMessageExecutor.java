@@ -19,11 +19,11 @@ import java.util.function.Consumer;
 public class ConsumerMessageExecutor extends AbstractMessageExecutor {
     private final ConsumerMessageHandlerContext handlerContext;
 
-    private final ProviderSingleInstanceMessageSender providerManager;
+    private final ProviderManager providerManager;
 
     public ConsumerMessageExecutor(TaskLoopGroup service,
                                    ServerProperties.ConsumerProperties properties,
-                                   ConsumerMessageHandlerContext handlerContext, ProviderSingleInstanceMessageSender providerManager) {
+                                   ConsumerMessageHandlerContext handlerContext, ProviderManager providerManager) {
         super(service);
         String[] ids = StringUtils.commaDelimitedListToStringArray(properties.getScErrorMessageId());
         for (String id : ids) {

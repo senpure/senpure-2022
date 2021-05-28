@@ -5,14 +5,15 @@ import com.senpure.base.util.Assert;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DefaultMessageDecoderContext  implements MessageDecoderContext {
+public class DefaultMessageDecoderContext implements MessageDecoderContext {
 
-    private final static Map<Integer, MessageDecoder<?>> decoderMap = new HashMap<>();
+    protected final  Map<Integer, MessageDecoder<?>> decoderMap = new HashMap<>();
+
     @Override
     public void registerDecoder(MessageDecoder<?> decoder) {
         MessageDecoder<?> last = decoderMap.get(decoder.messageId());
         if (last != null) {
-            Assert.error(decoder.messageId() + " 解码程序已经存在 -> 新注册" +
+            Assert.error(getClass().getName() + " " + decoder.messageId() + " 解码程序已经存在 -> 新注册" +
                     "[" + decoder.getClass().getName() + "]" +
                     " -> 已注册" + "[" + last.getClass().getName() + "]");
         }

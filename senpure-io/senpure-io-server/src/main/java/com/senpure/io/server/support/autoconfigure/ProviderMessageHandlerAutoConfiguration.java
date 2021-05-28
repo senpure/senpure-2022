@@ -63,7 +63,18 @@ public class ProviderMessageHandlerAutoConfiguration {
     @Bean("providerSCFrameworkVerifyProviderMessageHandler")
     @ConditionalOnMissingBean(SCFrameworkVerifyProviderMessageHandler.class)
     @ConditionalOnProperty(prefix = "server.io.provider", value = "framework-verify-provider", havingValue = "true")
-    public SCFrameworkVerifyProviderMessageHandler scFrameworkVerifyProviderMessageHandlerF() {
+    public SCFrameworkVerifyProviderMessageHandler scFrameworkVerifyProviderMessageHandler() {
         return new DefaultSCFrameworkVerifyProviderMessageHandler();
+    }
+    @Bean("providerSCRegisterProviderMessageHandler")
+    @ConditionalOnMissingBean(SCRegisterProviderMessageHandler.class)
+    public SCRegisterProviderMessageHandler scRegisterProviderMessageHandler() {
+        return new DefaultSCRegisterProviderMessageHandler();
+    }
+    @Bean("providerSCHeartMessageHandler ")
+    @ConditionalOnMissingBean(SCHeartMessageHandler.class)
+    private  SCHeartMessageHandler scHeartMessageHandler()
+    {
+        return new DefaultSCHeartMessageHandler();
     }
 }

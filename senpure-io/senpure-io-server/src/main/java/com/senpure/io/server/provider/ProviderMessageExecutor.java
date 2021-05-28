@@ -6,17 +6,16 @@ import com.senpure.io.server.MessageFrame;
 import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
 import com.senpure.io.server.provider.handler.ProviderMessageHandler;
 import com.senpure.io.server.remoting.AbstractMessageExecutor;
-import com.senpure.io.server.remoting.MessageSender;
 import io.netty.channel.Channel;
 
 import java.util.concurrent.TimeUnit;
 
 public class ProviderMessageExecutor extends AbstractMessageExecutor {
 
-    private final com.senpure.io.server.provider.MessageSender messageSender;
+    private final MessageSender messageSender;
     private final ProviderMessageHandlerContext handlerContext;
 
-    public ProviderMessageExecutor(TaskLoopGroup service, com.senpure.io.server.provider.MessageSender messageSender, ProviderMessageHandlerContext handlerContext) {
+    public ProviderMessageExecutor(TaskLoopGroup service,MessageSender messageSender, ProviderMessageHandlerContext handlerContext) {
         super(service);
         this.messageSender = messageSender;
         this.handlerContext = handlerContext;

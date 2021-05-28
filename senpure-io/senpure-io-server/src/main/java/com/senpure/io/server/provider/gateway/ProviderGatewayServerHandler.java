@@ -60,7 +60,7 @@ public class ProviderGatewayServerHandler extends SimpleChannelInboundHandler<Pr
         if (evt instanceof IdleStateEvent) {
             Channel channel = ctx.channel();
             if (channel.isWritable()) {
-                logger.info("维持网关心跳{} : {}", ChannelAttributeUtil.getRemoteServerKey(channel), channel);
+                logger.trace("维持网关心跳{} : {}", ChannelAttributeUtil.getRemoteServerKey(channel), channel);
                 CSHeartMessage heartMessage = new  CSHeartMessage();
                 ProviderSendMessage frame=  gatewayManager.createMessageByToken(0L, heartMessage);
                 channel.writeAndFlush(frame);

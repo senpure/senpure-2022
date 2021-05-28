@@ -16,10 +16,10 @@ public class ConsumerServerHandler extends SimpleChannelInboundHandler<ConsumerM
    // private RemoteServerManager remoteServerManager;
     private ConsumerMessageExecutor messageExecutor;
 
-    private ProviderSingleInstanceMessageSender providerManager;
+    private ProviderManager providerManager;
 
 
-    public ConsumerServerHandler(ConsumerMessageExecutor messageExecutor, ProviderSingleInstanceMessageSender providerManager) {
+    public ConsumerServerHandler(ConsumerMessageExecutor messageExecutor, ProviderManager providerManager) {
         this.providerManager = providerManager;
         this.messageExecutor = messageExecutor;
     }

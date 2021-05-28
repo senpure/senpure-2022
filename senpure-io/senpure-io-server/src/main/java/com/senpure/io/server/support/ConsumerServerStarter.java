@@ -2,12 +2,8 @@ package com.senpure.io.server.support;
 
 import com.senpure.executor.TaskLoopGroup;
 import com.senpure.io.server.Constant;
-import com.senpure.io.server.MessageDecoderContext;
 import com.senpure.io.server.ServerProperties;
-import com.senpure.io.server.consumer.ConsumerMessageExecutor;
-import com.senpure.io.server.consumer.ConsumerServer;
-import com.senpure.io.server.consumer.Provider;
-import com.senpure.io.server.consumer.ProviderSingleInstanceMessageSender;
+import com.senpure.io.server.consumer.*;
 import com.senpure.io.server.remoting.ChannelService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,12 +34,12 @@ public class ConsumerServerStarter implements ApplicationRunner {
     @Resource
     private ServerProperties properties;
     @Resource
-    private ProviderSingleInstanceMessageSender remoteServerManager;
+    private ProviderManager remoteServerManager;
 
     @Resource
     private ConsumerMessageExecutor messageExecutor;
     @Resource
-    private MessageDecoderContext decoderContext;
+    private ConsumerMessageDecoderContext decoderContext;
     @Resource
     private TaskLoopGroup taskLoopGroup;
 

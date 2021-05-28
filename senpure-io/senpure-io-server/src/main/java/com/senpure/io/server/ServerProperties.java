@@ -234,6 +234,10 @@ public class ServerProperties {
              */
             private boolean inFormat = true;
             /**
+             * 跳过心跳日志打印
+             */
+            private boolean skipHeart = true;
+            /**
              * netty boosGroup 线程数
              */
             private int ioBossThreadPoolSize = 1;
@@ -319,7 +323,13 @@ public class ServerProperties {
                 this.enableHeartCheck = enableHeartCheck;
             }
 
+            public boolean isSkipHeart() {
+                return skipHeart;
+            }
 
+            public void setSkipHeart(boolean skipHeart) {
+                this.skipHeart = skipHeart;
+            }
         }
 
         public static class GatewayProperties {
@@ -370,6 +380,10 @@ public class ServerProperties {
              * 输入格式化
              */
             private boolean inFormat = true;
+            /**
+             * 跳过心跳日志打印
+             */
+            private boolean skipHeart = true;
             /**
              * netty boosGroup 线程数
              */
@@ -423,6 +437,13 @@ public class ServerProperties {
                 this.port = port;
             }
 
+            public boolean isSkipHeart() {
+                return skipHeart;
+            }
+
+            public void setSkipHeart(boolean skipHeart) {
+                this.skipHeart = skipHeart;
+            }
 
             public long getConnectFailInterval() {
                 return connectFailInterval;
@@ -714,6 +735,10 @@ public class ServerProperties {
              * 心跳读入间隔毫秒
              */
             private long readerIdleTime = 15000;
+            /**
+             * 跳过心跳日志打印
+             */
+            private boolean skipHeart = true;
 
             public int getIoBossThreadPoolSize() {
                 return ioBossThreadPoolSize;
@@ -764,6 +789,14 @@ public class ServerProperties {
                 this.readerIdleTime = readerIdleTime;
             }
 
+            public boolean isSkipHeart() {
+                return skipHeart;
+            }
+
+            public void setSkipHeart(boolean skipHeart) {
+                this.skipHeart = skipHeart;
+            }
+
             @Override
             public String toString() {
                 return "ProviderProperties{" +
@@ -805,7 +838,10 @@ public class ServerProperties {
              * 心跳读入间隔毫秒
              */
             private long readerIdleTime = 15000;
-
+            /**
+             * 跳过心跳日志打印
+             */
+            private boolean skipHeart = true;
             public int getIoBossThreadPoolSize() {
                 return ioBossThreadPoolSize;
             }
@@ -822,6 +858,13 @@ public class ServerProperties {
                 this.ioWorkThreadPoolSize = ioWorkThreadPoolSize;
             }
 
+            public boolean isSkipHeart() {
+                return skipHeart;
+            }
+
+            public void setSkipHeart(boolean skipHeart) {
+                this.skipHeart = skipHeart;
+            }
 
             public int getPort() {
                 return port;

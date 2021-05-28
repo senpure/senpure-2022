@@ -1,6 +1,7 @@
 package com.senpure.io.server.provider;
 
 import com.senpure.io.server.MessageFrame;
+import com.senpure.io.server.protocol.message.CSHeartMessage;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.logging.LogLevel;
@@ -19,6 +20,7 @@ public class ProviderLoggingHandler extends LoggingHandler {
     private final boolean outFormat;
 
     private final boolean inFormat;
+    private boolean skipHeart = true;
 
     public ProviderLoggingHandler(LogLevel level, boolean inFormat, boolean outFormat) {
         super(level);
@@ -33,8 +35,16 @@ public class ProviderLoggingHandler extends LoggingHandler {
             if (msg instanceof ProviderSendMessage) {
                 if (outFormat) {
                     ProviderSendMessage frame = (ProviderSendMessage) msg;
-                    this.logger.log(this.internalLevel, "{} requestId:{} token:{} userIds:{}{}{}",
-                            "WRITE",frame.requestId(), frame.getToken(), Arrays.toString(frame.getUserIds()), "\n", frame.message().toString(null));
+
+                    boolean log = true;
+                    if (skipHeart && frame.messageId() == CSHeartMessage.MESSAGE_ID) {
+                        log = false;
+                    }
+                    if (log) {
+                        this.logger.log(this.internalLevel, "{} requestId:{} token:{} userIds:{}{}{}",
+                                "WRITE", frame.requestId(), frame.getToken(), Arrays.toString(frame.getUserIds()), "\n", frame.message().toString(null));
+
+                    }
                     //this.logger.log(this.internalLevel, this.format(ctx, ChannelAttributeUtil.getChannelPlayerStr(ctx.channel())+" WRITE", "\n"+((Message) msg).toString(null)));
                 } else {
                     this.logger.log(this.internalLevel, "{} {}",
@@ -61,7 +71,7 @@ public class ProviderLoggingHandler extends LoggingHandler {
                 if (inFormat) {
                     ProviderReceivedMessage frame = (ProviderReceivedMessage) msg;
                     this.logger.log(this.internalLevel, "{} {}[{}] requestId:{} token:{} userId:{}{}{}",
-                            "RECEIVED",frame.messageType== MessageFrame.MESSAGE_TYPE_SC?"SC":"CS", frame.messageType, frame.requestId(), frame.getToken(), frame.getUserId(), "\n", frame.getMessage().toString(null));
+                            "RECEIVED", frame.messageType == MessageFrame.MESSAGE_TYPE_SC ? "SC" : "CS", frame.messageType, frame.requestId(), frame.getToken(), frame.getUserId(), "\n", frame.getMessage().toString(null));
                     // this.logger.log(this.internalLevel, this.format(ctx, ChannelAttributeUtil.getChannelPlayerStr(ctx.channel()) + " RECEIVED", "\n" + ((Message) msg).toString(null)));
 
                 } else {
@@ -75,5 +85,13 @@ public class ProviderLoggingHandler extends LoggingHandler {
         }
         ctx.fireChannelRead(msg);
 
+    }
+
+    public boolean isSkipHeart() {
+        return skipHeart;
+    }
+
+    public void setSkipHeart(boolean skipHeart) {
+        this.skipHeart = skipHeart;
     }
 }

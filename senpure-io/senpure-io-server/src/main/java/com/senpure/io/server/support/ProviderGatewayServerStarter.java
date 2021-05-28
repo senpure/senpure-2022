@@ -3,10 +3,14 @@ package com.senpure.io.server.support;
 import com.senpure.base.util.Spring;
 import com.senpure.executor.TaskLoopGroup;
 import com.senpure.io.protocol.Message;
-import com.senpure.io.server.*;
+import com.senpure.io.server.ChannelAttributeUtil;
+import com.senpure.io.server.Constant;
+import com.senpure.io.server.MessageFrame;
+import com.senpure.io.server.ServerProperties;
 import com.senpure.io.server.protocol.bean.HandleMessage;
 import com.senpure.io.server.protocol.bean.IdName;
 import com.senpure.io.server.protocol.message.*;
+import com.senpure.io.server.provider.ProviderMessageDecoderContext;
 import com.senpure.io.server.provider.ProviderMessageExecutor;
 import com.senpure.io.server.provider.ProviderMessageHandlerContext;
 import com.senpure.io.server.provider.ProviderSendMessage;
@@ -28,7 +32,9 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class ProviderGatewayServerStarter implements ApplicationRunner {
@@ -36,7 +42,7 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
 
     private final ServerProperties properties;
     private final List<ProviderGatewayServer> servers = new ArrayList<>();
-    private final Map<String, Long> failGatewayMap = new HashMap<>();
+   // private final Map<String, Long> failGatewayMap = new HashMap<>();
     private long lastLogTime = 0;
 
     @Resource
@@ -46,12 +52,12 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
     @Resource
     private ProviderMessageHandlerContext handlerContext;
     @Resource
-    private MessageDecoderContext decoderContext;
+    private ProviderMessageDecoderContext decoderContext;
     @Resource
     private ProviderMessageExecutor messageExecutor;
     @Resource
     private TaskLoopGroup service;
-    @Value("${server.port:8080}")
+    @Value("${server.port:0}")
     private int httpPort;
 
     public ProviderGatewayServerStarter(ServerProperties properties) {
@@ -247,7 +253,7 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
         Channel channel = context.server.getChannel();
 
         //每个channel都需要认证
-        logger.info("{} 准备认证 {}", gateway.getRemoteServerKey(),channel);
+        logger.info("{} 准备认证 {}", gateway.getRemoteServerKey(), channel);
         CSFrameworkVerifyMessage message = new CSFrameworkVerifyMessage();
         ServerProperties.Verify verify = properties.getVerify();
         message.setUserName(verify.getUserName());
@@ -276,35 +282,37 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
 
     public void registerProvider(Context context) {
         Gateway gateway = context.gateway;
-        if (gateway.getChannelSize() <= 1) {
-            ProviderGatewayServer server = context.server;
-            CSRegisterProviderMessage message = new CSRegisterProviderMessage();
-            message.setServerName(properties.getServerName());
-            message.setReadableServerName(server.getReadableServerName());
-            message.setServerKey(ChannelAttributeUtil.getLocalServerKey(server.getChannel()));
-            message.setServerType(properties.getServerType());
-            message.setServerOption(properties.getServerOption());
-            message.setMessages(handleMessages);
-            ProviderSendMessage frame = gatewayManager.createMessage(message, true);
-            logger.debug("向{}注册服务", ChannelAttributeUtil.getRemoteServerKey(server.getChannel()));
-            for (HandleMessage handleMessage : handleMessages) {
-                logger.debug(handleMessage.toString());
-            }
-            Channel channel = context.server.getChannel();
-            gateway.sendMessage(frame, response -> {
-                if (response.isSuccess()) {
-                    logger.info("{} 注册服务成功 {}", ChannelAttributeUtil.getLocalServerKey(channel), channel);
-                    SCRegisterProviderMessage scRegisterProviderMessage = response.getMessage();
-                    if (scRegisterProviderMessage.getMessage() != null) {
-                        logger.info("{}", scRegisterProviderMessage.getMessage());
 
-                    }
-                } else {
-                    logger.error("{} 注册服务失败 {}", ChannelAttributeUtil.getLocalServerKey(channel), channel);
-                    logger.error(response.getMessage());
-                    Spring.exit();
+        ProviderGatewayServer server = context.server;
+        CSRegisterProviderMessage message = new CSRegisterProviderMessage();
+        message.setServerName(properties.getServerName());
+        message.setReadableServerName(server.getReadableServerName());
+        message.setServerKey(ChannelAttributeUtil.getLocalServerKey(server.getChannel()));
+        message.setServerType(properties.getServerType());
+        message.setServerOption(properties.getServerOption());
+        message.setMessages(handleMessages);
+        ProviderSendMessage frame = gatewayManager.createMessage(message, true);
+        logger.debug("向{}注册服务", ChannelAttributeUtil.getRemoteServerKey(server.getChannel()));
+        for (HandleMessage handleMessage : handleMessages) {
+            logger.debug(handleMessage.toString());
+        }
+        Channel channel = context.server.getChannel();
+        gateway.sendMessage(frame, response -> {
+            if (response.isSuccess()) {
+                logger.info("{} 注册服务成功 {}", ChannelAttributeUtil.getLocalServerKey(channel), channel);
+                SCRegisterProviderMessage scRegisterProviderMessage = response.getMessage();
+                if (scRegisterProviderMessage.getMessage() != null) {
+                    logger.info("{}", scRegisterProviderMessage.getMessage());
+
                 }
-            });
+            } else {
+                logger.error("{} 注册服务失败 {}", ChannelAttributeUtil.getLocalServerKey(channel), channel);
+                logger.error(response.getMessage().toString());
+                Spring.exit();
+            }
+        });
+        //
+        if (gateway.getChannelSize() == 1) {
             registerIdNames(gateway, server.getChannel());
         }
         stop(context);

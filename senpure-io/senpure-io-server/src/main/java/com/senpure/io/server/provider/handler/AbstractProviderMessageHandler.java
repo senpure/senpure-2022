@@ -2,8 +2,8 @@ package com.senpure.io.server.provider.handler;
 
 import com.senpure.io.protocol.Message;
 import com.senpure.io.server.MessageDecoder;
-import com.senpure.io.server.MessageDecoderContext;
 import com.senpure.io.server.provider.MessageSender;
+import com.senpure.io.server.provider.ProviderMessageDecoderContext;
 import com.senpure.io.server.provider.ProviderMessageHandlerContext;
 import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
@@ -20,7 +20,7 @@ public abstract class AbstractProviderMessageHandler<T extends Message> implemen
     @Resource
     protected ProviderMessageHandlerContext handlerContext;
     @Resource
-    protected MessageDecoderContext decoderContext;
+    protected ProviderMessageDecoderContext decoderContext;
 
     @Override
     public void afterPropertiesSet() {

@@ -1,11 +1,11 @@
 package com.senpure.io.server.support;
 
-import com.senpure.io.server.MessageDecoderContext;
 import com.senpure.io.server.ServerProperties;
+import com.senpure.io.server.protocol.bean.IdName;
+import com.senpure.io.server.provider.ProviderMessageDecoderContext;
+import com.senpure.io.server.provider.ProviderMessageExecutor;
 import com.senpure.io.server.provider.consumer.ConsumerManager;
 import com.senpure.io.server.provider.consumer.ProviderConsumerServer;
-import com.senpure.io.server.protocol.bean.IdName;
-import com.senpure.io.server.provider.ProviderMessageExecutor;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.PostConstruct;
@@ -28,7 +28,7 @@ public class ProviderConsumerServerStarter {
     @Resource
     private ConsumerManager consumerManager;
     @Resource
-    private MessageDecoderContext decoderContext;
+    private ProviderMessageDecoderContext decoderContext;
 
     private ProviderConsumerServer providerConsumerServer;
 

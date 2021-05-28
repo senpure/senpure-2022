@@ -6,7 +6,7 @@ import com.senpure.io.server.remoting.AbstractSameServerSingleInstanceMessageSen
 import java.util.HashSet;
 import java.util.Set;
 
-public class ProviderSingleInstanceMessageSender extends AbstractSameServerSingleInstanceMessageSender<ConsumerMessage,Provider> {
+public class ProviderManager extends AbstractSameServerSingleInstanceMessageSender<ConsumerMessage,Provider> {
 
     @Override
     public ConsumerMessage createMessage(Message message) {
@@ -31,7 +31,7 @@ public class ProviderSingleInstanceMessageSender extends AbstractSameServerSingl
     }
 
     public static void main(String[] args) {
-        ProviderSingleInstanceMessageSender providerManager = new ProviderSingleInstanceMessageSender();
+        ProviderManager providerManager = new ProviderManager();
         providerManager.atomicRequestId.set(Integer.MAX_VALUE -20);
 
         Set<Integer> integers = new HashSet<>();

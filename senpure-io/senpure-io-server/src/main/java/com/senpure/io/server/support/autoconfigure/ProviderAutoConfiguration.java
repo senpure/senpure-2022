@@ -1,14 +1,11 @@
 package com.senpure.io.server.support.autoconfigure;
 
 import com.senpure.base.util.Assert;
-import com.senpure.io.server.DefaultMessageDecoderContext;
-import com.senpure.io.server.MessageDecoderContext;
 import com.senpure.io.server.ServerProperties;
-import com.senpure.io.server.protocol.message.CSBreakUserGatewayMessage;
-import com.senpure.io.server.protocol.message.CSFrameworkVerifyMessage;
-import com.senpure.io.server.protocol.message.CSRelationUserGatewayMessage;
-import com.senpure.io.server.protocol.message.SCFrameworkVerifyProviderMessage;
+import com.senpure.io.server.protocol.message.*;
+import com.senpure.io.server.provider.DefaultProviderMessageDecoderContext;
 import com.senpure.io.server.provider.DefaultProviderMessageHandlerContext;
+import com.senpure.io.server.provider.ProviderMessageDecoderContext;
 import com.senpure.io.server.provider.ProviderMessageHandlerContext;
 import com.senpure.io.server.provider.handler.ProviderMessageHandler;
 import org.slf4j.Logger;
@@ -66,10 +63,10 @@ public class ProviderAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(MessageDecoderContext.class)
-    public MessageDecoderContext messageDecoderContext() {
+    @ConditionalOnMissingBean(ProviderMessageDecoderContext.class)
+    public ProviderMessageDecoderContext providerMessageDecoderContext () {
 
-        return new DefaultMessageDecoderContext();
+        return new DefaultProviderMessageDecoderContext();
     }
 
     @Bean
@@ -102,6 +99,16 @@ public class ProviderAutoConfiguration {
             if (handler == null) {
                 Assert.error("缺少[CSRelationUserGatewayMessage]处理器");
             }
+            handler = handlerContext.handler(SCSuccessMessage.MESSAGE_ID);
+            if (handler == null) {
+                Assert.error("缺少[SCSuccessMessage]处理器,无法提供消息解码器");
+            }
+
+            handler = handlerContext.handler(SCRegisterProviderMessage.MESSAGE_ID);
+            if (handler == null) {
+                Assert.error("缺少[SCRegisterProviderMessage]处理器,无法提供消息解码器");
+            }
+
             if (serverProperties.getProvider().isFrameworkVerifyProvider()) {
                 handler = handlerContext.handler(CSFrameworkVerifyMessage.MESSAGE_ID);
                 if (handler == null) {

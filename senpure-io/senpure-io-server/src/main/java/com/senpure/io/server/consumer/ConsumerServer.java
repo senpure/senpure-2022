@@ -3,7 +3,6 @@ package com.senpure.io.server.consumer;
 import com.senpure.base.AppEvn;
 import com.senpure.base.util.Assert;
 import com.senpure.io.server.ChannelAttributeUtil;
-import com.senpure.io.server.MessageDecoderContext;
 import com.senpure.io.server.ServerProperties;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -41,13 +40,13 @@ public class ConsumerServer {
     private ConsumerMessageExecutor messageExecutor;
 
     private Channel channel;
-    private ProviderSingleInstanceMessageSender remoteServerManager;
+    private ProviderManager remoteServerManager;
     private boolean addLoggingHandler = true;
 
     private final List<ChannelHandler> extHandlers = new ArrayList<>();
 
 
-    private MessageDecoderContext decoderContext;
+    private ConsumerMessageDecoderContext decoderContext;
     private volatile boolean closed = false;
 
 
@@ -179,7 +178,7 @@ public class ConsumerServer {
     }
 
 
-    public void setRemoteServerManager(ProviderSingleInstanceMessageSender remoteServerManager) {
+    public void setRemoteServerManager(ProviderManager remoteServerManager) {
         this.remoteServerManager = remoteServerManager;
     }
 
@@ -218,7 +217,7 @@ public class ConsumerServer {
         extHandlers.add(extHandler);
     }
 
-    public void setDecoderContext(MessageDecoderContext decoderContext) {
+    public void setDecoderContext(ConsumerMessageDecoderContext decoderContext) {
         this.decoderContext = decoderContext;
     }
 

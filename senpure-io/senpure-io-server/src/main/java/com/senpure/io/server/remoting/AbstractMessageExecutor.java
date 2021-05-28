@@ -4,6 +4,7 @@ import com.senpure.executor.TaskLoopGroup;
 import com.senpure.io.protocol.Message;
 import com.senpure.io.server.Constant;
 import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
+import com.senpure.io.server.support.MessageIdReader;
 import io.netty.channel.Channel;
 import io.netty.util.concurrent.ScheduledFuture;
 import org.slf4j.Logger;
@@ -34,11 +35,12 @@ public abstract class AbstractMessageExecutor implements FutureService {
         futureMap.put(requestId, future);
 
         ScheduledFuture<?> scheduledFuture = service.schedule(() -> {
-            logger.debug("{} {} {} 同步请求超时 ", requestId, timeout, message);
+            logger.debug("{} {} {}  同步请求超时 ", requestId, MessageIdReader.read(future.getMessage().messageId()), timeout);
             SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
-            errorMessage.setMessage("同步请求超时[" + future.getMessage().messageId() + "][" + future.getRequestId() + "]:" + future.getTimeout());
-            errorMessage.getArgs().add(String.valueOf(future.getMessage().messageId()));
+            errorMessage.setMessage("同步请求超时[" + future.getRequestId() + "][" + MessageIdReader.read(future.getMessage().messageId()) + "]:" + future.getTimeout());
             errorMessage.getArgs().add(String.valueOf(future.getRequestId()));
+            errorMessage.getArgs().add(String.valueOf(future.getMessage().messageId()));
+            errorMessage.getArgs().add(String.valueOf(timeout));
             errorMessage.setCode(Constant.ERROR_TIMEOUT);
             receive(channel, requestId, errorMessage, false);
         }, timeout, TimeUnit.MILLISECONDS);

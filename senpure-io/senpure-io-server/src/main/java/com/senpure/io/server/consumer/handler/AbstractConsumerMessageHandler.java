@@ -3,7 +3,7 @@ package com.senpure.io.server.consumer.handler;
 
 import com.senpure.io.protocol.Message;
 import com.senpure.io.server.MessageDecoder;
-import com.senpure.io.server.MessageDecoderContext;
+import com.senpure.io.server.consumer.ConsumerMessageDecoderContext;
 import com.senpure.io.server.consumer.ConsumerMessageHandlerContext;
 import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
@@ -18,7 +18,7 @@ public abstract class AbstractConsumerMessageHandler<T extends Message> implemen
     @Resource
     private ConsumerMessageHandlerContext handlerContext;
     @Resource
-    private MessageDecoderContext decoderContext;
+    private ConsumerMessageDecoderContext decoderContext;
 
     public AbstractConsumerMessageHandler() {
 

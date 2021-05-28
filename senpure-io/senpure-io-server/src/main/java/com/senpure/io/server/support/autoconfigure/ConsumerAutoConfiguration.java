@@ -3,13 +3,12 @@ package com.senpure.io.server.support.autoconfigure;
 import com.senpure.base.util.Assert;
 import com.senpure.executor.DefaultTaskLoopGroup;
 import com.senpure.executor.TaskLoopGroup;
-import com.senpure.io.server.DefaultMessageDecoderContext;
-import com.senpure.io.server.MessageDecoderContext;
 import com.senpure.io.server.ServerProperties;
 import com.senpure.io.server.consumer.*;
 import com.senpure.io.server.consumer.handler.ConsumerMessageHandler;
 import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
 import com.senpure.io.server.protocol.message.SCHeartMessage;
+import com.senpure.io.server.protocol.message.SCSuccessMessage;
 import com.senpure.io.server.support.ConsumerServerStarter;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import org.slf4j.Logger;
@@ -101,10 +100,11 @@ public class ConsumerAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(MessageDecoderContext.class)
-    public MessageDecoderContext messageDecoderContext() {
-        return new DefaultMessageDecoderContext();
+    @ConditionalOnMissingBean(ConsumerMessageDecoderContext.class)
+    public ConsumerMessageDecoderContext consumerMessageDecoderContext () {
+        return new DefaultConsumerMessageDecoderContext();
     }
+
 
     @Bean
     public ConsumerMessageHandlerContext consumerMessageHandlerContext() {
@@ -118,15 +118,15 @@ public class ConsumerAutoConfiguration {
 //    }
 
     @Bean
-    public ProviderSingleInstanceMessageSender providerManager() {
+    public ProviderManager providerManager() {
 
-        return new ProviderSingleInstanceMessageSender();
+        return new ProviderManager();
     }
 
     @Bean
     public ConsumerMessageExecutor consumerMessageExecutor(TaskLoopGroup taskLoopGroup,
                                                            ConsumerMessageHandlerContext messageDecoderContext,
-                                                           ProviderSingleInstanceMessageSender providerManager) {
+                                                           ProviderManager providerManager) {
         return new ConsumerMessageExecutor(taskLoopGroup,
                 properties.getConsumer(),
                 messageDecoderContext, providerManager);
@@ -151,11 +151,15 @@ public class ConsumerAutoConfiguration {
         public void run(ApplicationArguments args) {
             ConsumerMessageHandler<?> handler = handlerContext.handler(SCFrameworkErrorMessage.MESSAGE_ID);
             if (handler == null) {
-                Assert.error("缺少[SCInnerErrorMessage]处理器");
+                Assert.error("缺少[SCFrameworkErrorMessage]处理器");
             }
             handler = handlerContext.handler(SCHeartMessage.MESSAGE_ID);
             if (handler == null) {
                 Assert.error("缺少[SCHeartMessage]处理器");
+            }
+            handler = handlerContext.handler(SCSuccessMessage.MESSAGE_ID);
+            if (handler == null) {
+                Assert.error("缺少[SCSuccessMessage]处理器,无法提供消息解码器");
             }
         }
     }
