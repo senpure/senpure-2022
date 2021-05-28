@@ -21,7 +21,6 @@ import org.hibernate.boot.jaxb.SourceType;
 import org.hibernate.cfg.annotations.HCANNHelper;
 import org.hibernate.internal.CoreMessageLogger;
 import org.hibernate.internal.util.StringHelper;
-import org.hibernate.internal.util.collections.CollectionHelper;
 import org.jboss.logging.Logger;
 
 import javax.persistence.*;
@@ -32,13 +31,13 @@ import java.util.*;
  *
  * @author Hardy Ferentschik
  */
-class PropertyContainer {
+class PropertyContainer2 {
 //
 //    static {
 //        System.setProperty("jboss.i18n.generate-proxies", "true");
 //    }
 
-    private static final CoreMessageLogger LOG = Logger.getMessageLogger(CoreMessageLogger.class, PropertyContainer.class.getName());
+    private static final CoreMessageLogger LOG = Logger.getMessageLogger(CoreMessageLogger.class, PropertyContainer2.class.getName());
 
     /**
      * The class for which this container is created.
@@ -52,9 +51,9 @@ class PropertyContainer {
      */
     private final AccessType classLevelAccessType;
 
-    private final List<XProperty> persistentAttributes;
+    private final Map<String, XProperty> persistentAttributeMap;
 
-    PropertyContainer(XClass clazz, XClass entityAtStake, AccessType defaultClassLevelAccessType) {
+    PropertyContainer2(XClass clazz, XClass entityAtStake, AccessType defaultClassLevelAccessType) {
         this.xClass = clazz;
         this.entityAtStake = entityAtStake;
 
@@ -72,31 +71,27 @@ class PropertyContainer {
                 : defaultClassLevelAccessType;
         assert classLevelAccessType == AccessType.FIELD || classLevelAccessType == AccessType.PROPERTY;
 
+        this.persistentAttributeMap = new VersionSecondMap<>();
 
         final List<XProperty> fields = xClass.getDeclaredProperties( AccessType.FIELD.getType() );
         final List<XProperty> getters = xClass.getDeclaredProperties( AccessType.PROPERTY.getType() );
 
         preFilter( fields, getters );
 
-        final Map<String,XProperty> persistentAttributesFromGetters = new HashMap<String, XProperty>();
+        final Map<String,XProperty> persistentAttributesFromGetters =  new HashMap();
 
-        final TreeMap<String, XProperty> localAttributeMap = new TreeMap<>();
         collectPersistentAttributesUsingLocalAccessType(
-                xClass,
-                localAttributeMap,
+                persistentAttributeMap,
                 persistentAttributesFromGetters,
                 fields,
                 getters
         );
         collectPersistentAttributesUsingClassLevelAccessType(
-                xClass,
-                classLevelAccessType,
-                localAttributeMap,
+                persistentAttributeMap,
                 persistentAttributesFromGetters,
                 fields,
                 getters
         );
-        this.persistentAttributes = verifyAndInitializePersistentAttributes( xClass, localAttributeMap );
     }
 
     private void preFilter(List<XProperty> fields, List<XProperty> getters) {
@@ -117,9 +112,8 @@ class PropertyContainer {
         }
     }
 
-    private static void collectPersistentAttributesUsingLocalAccessType(
-            XClass xClass,
-            TreeMap<String, XProperty> persistentAttributeMap,
+    private void collectPersistentAttributesUsingLocalAccessType(
+            Map<String, XProperty> persistentAttributeMap,
             Map<String,XProperty> persistentAttributesFromGetters,
             List<XProperty> fields,
             List<XProperty> getters) {
@@ -170,10 +164,8 @@ class PropertyContainer {
         }
     }
 
-    private static void collectPersistentAttributesUsingClassLevelAccessType(
-            XClass xClass,
-            AccessType classLevelAccessType,
-            TreeMap<String, XProperty> persistentAttributeMap,
+    private void collectPersistentAttributesUsingClassLevelAccessType(
+            Map<String, XProperty> persistentAttributeMap,
             Map<String,XProperty> persistentAttributesFromGetters,
             List<XProperty> fields,
             List<XProperty> getters) {
@@ -225,30 +217,20 @@ class PropertyContainer {
         return classLevelAccessType;
     }
 
-    /**
-     * @deprecated Use the {@link #propertyIterator()} method instead.
-     */
-    @Deprecated
     public Collection<XProperty> getProperties() {
-        return Collections.unmodifiableCollection( this.persistentAttributes );
+        assertTypesAreResolvable();
+        return Collections.unmodifiableCollection( persistentAttributeMap.values() );
     }
 
-    public Iterable<XProperty> propertyIterator() {
-        return persistentAttributes;
-    }
-
-    private static List<XProperty> verifyAndInitializePersistentAttributes(XClass xClass, Map<String, XProperty> localAttributeMap) {
-        ArrayList<XProperty> output = new ArrayList( localAttributeMap.size() );
-        for ( XProperty xProperty : localAttributeMap.values() ) {
+    private void assertTypesAreResolvable() {
+        for ( XProperty xProperty : persistentAttributeMap.values() ) {
             if ( !xProperty.isTypeResolved() && !discoverTypeWithoutReflection( xProperty ) ) {
                 String msg = "Property " + StringHelper.qualify( xClass.getName(), xProperty.getName() ) +
                         " has an unbound type and no explicit target entity. Resolve this Generic usage issue" +
                         " or set an explicit target attribute (eg @OneToMany(target=) or use an explicit @Type";
                 throw new AnnotationException( msg );
             }
-            output.add( xProperty );
         }
-        return CollectionHelper.toSmallList( output );
     }
 //
 //	private void considerExplicitFieldAndPropertyAccess() {
@@ -298,13 +280,13 @@ class PropertyContainer {
 //	 *
 //	 * @return A maps of the properties with the given access type keyed against their property name
 //	 */
-//	private TreeMap<String, XProperty> initProperties(AccessType access) {
+//	private Map<String, XProperty> initProperties(AccessType access) {
 //		if ( !( AccessType.PROPERTY.equals( access ) || AccessType.FIELD.equals( access ) ) ) {
 //			throw new IllegalArgumentException( "Access type has to be AccessType.FIELD or AccessType.Property" );
 //		}
 //
 //		//order so that property are used in the same order when binding native query
-//		TreeMap<String, XProperty> propertiesMap = new TreeMap<String, XProperty>();
+//		Map<String, XProperty> propertiesMap = new Map<String, XProperty>();
 //		List<XProperty> properties = xClass.getDeclaredProperties( access.getType() );
 //		for ( XProperty property : properties ) {
 //			if ( mustBeSkipped( property ) ) {
@@ -333,11 +315,6 @@ class PropertyContainer {
 
         AccessType hibernateDefinedAccessType = AccessType.DEFAULT;
         AccessType jpaDefinedAccessType = AccessType.DEFAULT;
-
-        org.hibernate.annotations.AccessType accessType = xClass.getAnnotation( org.hibernate.annotations.AccessType.class );
-        if ( accessType != null ) {
-            hibernateDefinedAccessType = AccessType.getAccessStrategy( accessType.value() );
-        }
 
         Access access = xClass.getAnnotation( Access.class );
         if ( access != null ) {
@@ -401,9 +378,11 @@ class PropertyContainer {
     }
 
     private static boolean mustBeSkipped(XProperty property) {
-        //TODO make those hardcoded tests more portable (through the bytecode provider?)
+        //make those hardcoded tests more portable (through the bytecode provider?)
         return property.isAnnotationPresent( Transient.class )
                 || "net.sf.cglib.transform.impl.InterceptFieldCallback".equals( property.getType().getName() )
                 || "org.hibernate.bytecode.internal.javassist.FieldHandler".equals( property.getType().getName() );
     }
 }
+
+
