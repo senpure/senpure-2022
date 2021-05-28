@@ -68,7 +68,7 @@ public class GatewayConsumerServer {
                             }
                             p.addLast(new GatewayConsumerMessageDecoder());
                             p.addLast(new GatewayConsumerMessageEncoder());
-                            p.addLast(new LoggingHandler(LogLevel.DEBUG));
+                            p.addLast(new GatewayConsumerLoggingHandler(LogLevel.DEBUG));
                             if (consumer.isEnableHeartCheck()) {
                                 p.addLast(new IdleStateHandler(consumer.getReaderIdleTime(), 0L, 0L, TimeUnit.MILLISECONDS));
                             }

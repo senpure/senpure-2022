@@ -82,7 +82,10 @@ public class ProviderConsumerServer {
                             p.addLast(new ProviderConsumerMessageDecoder(decoderContext));
                             p.addLast(new ProviderConsumerMessageEncoder());
                             if (addLoggingHandler) {
-                                p.addLast(new ProviderLoggingHandler(LogLevel.DEBUG, consumer.isInFormat(), consumer.isOutFormat()));
+
+
+                                p.addLast(new ProviderLoggingHandler(LogLevel.DEBUG, consumer.isInFormat(), consumer.isOutFormat(), consumer.isSkipHeart()));
+
                             }
                             if (consumer.isEnableHeartCheck()) {
                                 p.addLast(new IdleStateHandler(consumer.getReaderIdleTime(), 0L, 0L, TimeUnit.MILLISECONDS));

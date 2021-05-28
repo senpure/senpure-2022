@@ -87,7 +87,8 @@ public class ProviderGatewayServer {
                                     p.addLast(new ProviderGatewayMessageDecoder(decoderContext));
                                     p.addLast(new ProviderGatewayMessageEncoder());
                                     if (addLoggingHandler) {
-                                        p.addLast(new ProviderLoggingHandler(LogLevel.DEBUG, gateway.isInFormat(), gateway.isOutFormat()));
+
+                                        p.addLast(new ProviderLoggingHandler(LogLevel.DEBUG, gateway.isInFormat(), gateway.isInFormat(), gateway.isSkipHeart()));
                                     }
                                     if (gateway.isEnableHeartCheck()) {
                                         p.addLast(new IdleStateHandler(0, gateway.getWriterIdleTime(), 0, TimeUnit.MILLISECONDS));
