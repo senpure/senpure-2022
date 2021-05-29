@@ -394,6 +394,12 @@ public class GatewayManager extends AbstractSameServerMultipleInstanceMessageSen
     }
 
     @Override
+    public void sendMessage(Channel channel, Message message) {
+        MessageFrame frame = createMessage(message);
+        channel.writeAndFlush(frame);
+    }
+
+    @Override
     public void respondMessage(Channel channel, Message message) {
 
         MessageFrame frame = createMessage(message, requestId());
@@ -401,7 +407,7 @@ public class GatewayManager extends AbstractSameServerMultipleInstanceMessageSen
     }
 
     @Override
-    public void respondMessage(Channel channel, Message message,int requestId) {
+    public void respondMessage(Channel channel, Message message, int requestId) {
 
         MessageFrame frame = createMessage(message, requestId);
         channel.writeAndFlush(frame);
@@ -411,7 +417,7 @@ public class GatewayManager extends AbstractSameServerMultipleInstanceMessageSen
     public MessageFrameSender getFrameSender(Channel channel) {
 //        String serverKey = ChannelAttributeUtil.getRemoteServerKey(channel);
 //        return getGateway(serverKey);
-        throw new RuntimeException("gatewayManager不允许调用该方法");
+        throw new RuntimeException("gatewayManager不允许调用该方法,请使用具体的gateway实例发送消息");
     }
 
     private static class GatewayUsers {

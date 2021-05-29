@@ -42,7 +42,7 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
 
     private final ServerProperties properties;
     private final List<ProviderGatewayServer> servers = new ArrayList<>();
-   // private final Map<String, Long> failGatewayMap = new HashMap<>();
+    // private final Map<String, Long> failGatewayMap = new HashMap<>();
     private long lastLogTime = 0;
 
     @Resource
@@ -121,81 +121,50 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
                     log = true;
 
                 }
-                List<ServiceInstance> serviceInstances = discoveryClient.getInstances(providerGateway.getName());
-                if (log) {
-                    logger.debug("{} 实例数量 {}", providerGateway.getName(), serviceInstances.size());
-                    gatewayManager.report();
-                }
-                for (ServiceInstance instance : serviceInstances) {
-                    boolean useDefault = false;
-                    String portStr = instance.getMetadata().get(Constant.GATEWAY_METADATA_PROVIDER_PORT);
-
-                    int port;
-                    if (portStr == null) {
-                        useDefault = true;
-                        port = gatewayProperties.getProvider().getPort();
-                    } else {
-                        port = Integer.parseInt(portStr);
-                    }
-                    String gatewayKey = gatewayManager.getRemoteServerKey(instance.getHost(), port);
-                    Gateway gateway = gatewayManager.getGateway(gatewayKey);
-                    if (gateway == null) {
-                        gateway = new Gateway(service);
-                        if (providerGateway.getChannel() <= 1) {
-                            gateway.setChannelService(new ChannelService.SingleChannelService(gatewayKey));
-                        } else {
-                            gateway.setChannelService(new ChannelService.MultipleChannelService(gatewayKey));
-                        }
-                        gateway.setFutureService(messageExecutor);
-                        gateway.setRemoteServerKey(gatewayKey);
-
-                        gateway.verifyWorkable();
-                        gateway.setDefaultWaitSendTimeout(providerGateway.getMessageWaitSendTimeout());
-
-                        gateway = gatewayManager.addGateway(gateway);
+                if (providerGateway.getModel() == ServerProperties.ProviderProperties.GatewayProperties.MODEL.DIRECT) {
+                    if (log) {
+                        logger.debug("{} 直连模式 {}:{}", providerGateway.getName(), providerGateway.getHost(), providerGateway.getPort());
                     }
 
+                    Gateway gateway = getGateway(providerGateway, providerGateway.getHost(), providerGateway.getPort());
                     if (gateway.isConnecting()) {
-                        continue;
+                        return;
                     }
                     if (gateway.getChannelSize() < providerGateway.getChannel() && now >= gateway.getNextConnectTime()) {
-                        logger.debug("{} channel 数量 {}/{} {}", gatewayKey, gateway.getChannelSize(), providerGateway.getChannel(), gateway);
-                        if (useDefault) {
-                            logger.info("网关 [{}] {} {} 没有 没有配置provider socket端口,使用默认端口 {}", providerGateway.getName(), instance.getHost(), instance.getUri(), gatewayProperties.getProvider().getPort());
-                        }
-                        gateway.setConnecting(true);
-                        ProviderGatewayServer providerGatewayServer = new ProviderGatewayServer();
-                        providerGatewayServer.setGatewayManager(gatewayManager);
-                        providerGatewayServer.setProperties(properties);
-                        providerGatewayServer.setMessageExecutor(messageExecutor);
-                        providerGatewayServer.setDecoderContext(decoderContext);
-                        providerGatewayServer.setServerName(properties.getServerName());
-                        providerGatewayServer.setHttpPort(httpPort);
-                        providerGatewayServer.setReadableServerName(providerProperties.getReadableName());
-                        if (providerGatewayServer.start(instance.getHost(), port)) {
-                            Iterator<ProviderGatewayServer> iterator = servers.iterator();
-                            while (iterator.hasNext()) {
-                                ProviderGatewayServer server = iterator.next();
-                                if (server.isClosed()) {
-                                    iterator.remove();
-                                    server.destroy();
-                                }
-                            }
-                            servers.add(providerGatewayServer);
-                            Context context = new Context();
-                            context.gateway = gateway;
-                            context.server = providerGatewayServer;
-                            start(context);
-                            gateway.setStreakFailTimes(0);
+                        logger.debug("{} channel 数量 {}/{} {}", gateway.getRemoteServerKey(), gateway.getChannelSize(), providerGateway.getChannel(), gateway);
 
-
+                        connect(gateway,providerGateway.getHost(),providerGateway.getPort(),providerProperties);
+                    }
+                } else {
+                    List<ServiceInstance> serviceInstances = discoveryClient.getInstances(providerGateway.getName());
+                    if (log) {
+                        logger.debug("{} 实例数量 {}", providerGateway.getName(), serviceInstances.size());
+                        gatewayManager.report();
+                    }
+                    for (ServiceInstance instance : serviceInstances) {
+                        boolean useDefault = false;
+                        String portStr = instance.getMetadata().get(Constant.GATEWAY_METADATA_PROVIDER_PORT);
+                        int port;
+                        if (portStr == null) {
+                            useDefault = true;
+                            port = gatewayProperties.getProvider().getPort();
                         } else {
-                            logger.warn("{}  socket {}:{} 连接失败", providerGateway.getName(), instance.getHost(), port);
-                            gateway.streakFailTimesIncr();
-                            gateway.setNextConnectTime(now + providerGateway.getConnectFailInterval());
-                            gateway.setConnecting(false);
+                            port = Integer.parseInt(portStr);
                         }
+                        String gatewayKey = gatewayManager.getRemoteServerKey(instance.getHost(), port);
+                        Gateway gateway = getGateway(providerGateway, instance.getHost(), port);
 
+                        if (gateway.isConnecting()) {
+                            continue;
+                        }
+                        if (gateway.getChannelSize() < providerGateway.getChannel() && now >= gateway.getNextConnectTime()) {
+                            logger.debug("{} channel 数量 {}/{} {}", gatewayKey, gateway.getChannelSize(), providerGateway.getChannel(), gateway);
+                            if (useDefault) {
+                                logger.info("网关 [{}] {} {} 没有 没有配置provider socket端口,使用默认端口 {}", providerGateway.getName(), instance.getHost(), instance.getUri(), gatewayProperties.getProvider().getPort());
+                            }
+                            connect(gateway,instance.getHost(),port,providerProperties);
+
+                        }
                     }
                 }
             } catch (Exception e) {
@@ -203,6 +172,63 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
             }
 
         }, 2000, 50, TimeUnit.MILLISECONDS);
+    }
+
+    private Gateway getGateway(ServerProperties.ProviderProperties.GatewayProperties providerGateway,
+                               String host, int port) {
+        String gatewayKey = gatewayManager.getRemoteServerKey(host, port);
+        Gateway gateway = gatewayManager.getGateway(gatewayKey);
+        if (gateway == null) {
+            gateway = new Gateway(service);
+            if (providerGateway.getChannel() <= 1) {
+                gateway.setChannelService(new ChannelService.SingleChannelService(gatewayKey));
+            } else {
+                gateway.setChannelService(new ChannelService.MultipleChannelService(gatewayKey));
+            }
+            gateway.setFutureService(messageExecutor);
+            gateway.setRemoteServerKey(gatewayKey);
+            gateway.verifyWorkable();
+            gateway.setDefaultWaitSendTimeout(providerGateway.getMessageWaitSendTimeout());
+            gateway = gatewayManager.addGateway(gateway);
+        }
+        return gateway;
+
+    }
+
+    private void connect(Gateway gateway, String host, int port, ServerProperties.ProviderProperties providerProperties) {
+        gateway.setConnecting(true);
+        ServerProperties.ProviderProperties.GatewayProperties providerGateway = properties.getProvider().getGateway();
+        ProviderGatewayServer providerGatewayServer = new ProviderGatewayServer();
+        providerGatewayServer.setGatewayManager(gatewayManager);
+        providerGatewayServer.setProperties(properties);
+        providerGatewayServer.setMessageExecutor(messageExecutor);
+        providerGatewayServer.setDecoderContext(decoderContext);
+        providerGatewayServer.setServerName(properties.getServerName());
+        providerGatewayServer.setHttpPort(httpPort);
+        providerGatewayServer.setReadableServerName(providerProperties.getReadableName());
+        if (providerGatewayServer.start(host, port)) {
+            Iterator<ProviderGatewayServer> iterator = servers.iterator();
+            while (iterator.hasNext()) {
+                ProviderGatewayServer server = iterator.next();
+                if (server.isClosed()) {
+                    iterator.remove();
+                    server.destroy();
+                }
+            }
+            servers.add(providerGatewayServer);
+            Context context = new Context();
+            context.gateway = gateway;
+            context.server = providerGatewayServer;
+            start(context);
+            gateway.setStreakFailTimes(0);
+
+
+        } else {
+            logger.warn("{}  socket {}:{} 连接失败", providerGateway.getName(), host, port);
+            gateway.streakFailTimesIncr();
+            gateway.setNextConnectTime(System.currentTimeMillis() + providerGateway.getConnectFailInterval());
+            gateway.setConnecting(false);
+        }
     }
 
     private void start(Context context) {
@@ -266,8 +292,9 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
             if (response.isSuccess()) {
                 logger.info("框架内部认证成功");
                 gateway.setFrameworkVerifyPassed(true);
-                logger.debug("新增channel {} {}", context, gateway.getChannelSize());
+
                 gateway.addChannel(channel);
+                logger.debug("新增channel {} {}", context.gateway.getRemoteServerKey(), gateway.getChannelSize());
                 registerProvider(context);
             } else {
                 logger.error("框架认证失败");

@@ -236,7 +236,7 @@ public class ServerProperties {
             /**
              * 跳过心跳日志打印
              */
-            private boolean skipHeart = true;
+            private boolean skipHeart = false;
             /**
              * netty boosGroup 线程数
              */
@@ -333,13 +333,13 @@ public class ServerProperties {
         }
 
         public static class GatewayProperties {
-            public static enum MODEL {
+            public enum MODEL {
                 /**
                  * 服务模式（通过注册中心查找服务）
                  */
                 SERVER,
                 /**
-                 * 直连模式(直接连接ip地址)
+                 * 直连模式(直接连接ip地址) 该模式只能连接一个网关
                  */
                 DIRECT
             }
@@ -383,7 +383,7 @@ public class ServerProperties {
             /**
              * 跳过心跳日志打印
              */
-            private boolean skipHeart = true;
+            private boolean skipHeart = false;
             /**
              * netty boosGroup 线程数
              */
@@ -738,7 +738,7 @@ public class ServerProperties {
             /**
              * 跳过心跳日志打印
              */
-            private boolean skipHeart = true;
+            private boolean skipHeart = false;
 
             public int getIoBossThreadPoolSize() {
                 return ioBossThreadPoolSize;
@@ -841,7 +841,8 @@ public class ServerProperties {
             /**
              * 跳过心跳日志打印
              */
-            private boolean skipHeart = true;
+            private boolean skipHeart = false;
+
             public int getIoBossThreadPoolSize() {
                 return ioBossThreadPoolSize;
             }

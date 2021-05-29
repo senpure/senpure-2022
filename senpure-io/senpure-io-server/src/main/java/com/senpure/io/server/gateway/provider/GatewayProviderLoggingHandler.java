@@ -32,27 +32,16 @@ public class GatewayProviderLoggingHandler extends LoggingHandler {
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
-
         if (this.logger.isEnabled(this.internalLevel)) {
-
             if (msg instanceof GatewaySendProviderMessage) {
                 GatewaySendProviderMessage frame = (GatewaySendProviderMessage) msg;
-                boolean log = true;
-                if (skipHeart && frame.messageId() == SCHeartMessage.MESSAGE_ID) {
-                    log = false;
-                }
-                if (log) {
-
-                    this.logger.log(this.internalLevel, "{} {}",
-                            "WRITE: ", msg);
-
+                if (!skipHeart || frame.messageId() != SCHeartMessage.MESSAGE_ID) {
+                    this.logger.log(this.internalLevel, "{} {}", "WRITE: ", msg);
                 }
             } else {
-                this.logger.log(this.internalLevel, "{} {}",
-                        "WRITE: ", msg);
+                this.logger.log(this.internalLevel, "{} {}", "WRITE: ", msg);
             }
         }
-
         ctx.write(msg, promise);
     }
 
@@ -62,17 +51,11 @@ public class GatewayProviderLoggingHandler extends LoggingHandler {
         if (this.logger.isEnabled(this.internalLevel)) {
             if (msg instanceof GatewaySendProviderMessage) {
                 GatewaySendProviderMessage frame = (GatewaySendProviderMessage) msg;
-                boolean log = true;
-                if (skipHeart && frame.messageId() == CSHeartMessage.MESSAGE_ID) {
-                    log = false;
-                }
-                if (log) {
-                    this.logger.log(this.internalLevel, "{} {}",
-                            "RECEIVED: ", msg);
+                if (!skipHeart || frame.messageId() != CSHeartMessage.MESSAGE_ID) {
+                    this.logger.log(this.internalLevel, "{} {}", "RECEIVED: ", msg);
                 }
             } else {
-                this.logger.log(this.internalLevel, "{} {}",
-                        "RECEIVED: ", msg);
+                this.logger.log(this.internalLevel, "{} {}", "RECEIVED: ", msg);
             }
         }
         ctx.fireChannelRead(msg);

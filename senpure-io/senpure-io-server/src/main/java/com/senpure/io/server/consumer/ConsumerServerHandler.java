@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 public class ConsumerServerHandler extends SimpleChannelInboundHandler<ConsumerMessage> {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
-   // private RemoteServerManager remoteServerManager;
+    // private RemoteServerManager remoteServerManager;
     private ConsumerMessageExecutor messageExecutor;
 
     private ProviderManager providerManager;
@@ -33,10 +33,10 @@ public class ConsumerServerHandler extends SimpleChannelInboundHandler<ConsumerM
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        String remoteServerKey=ChannelAttributeUtil.getRemoteServerKey(ctx.channel());
+        String remoteServerKey = ChannelAttributeUtil.getRemoteServerKey(ctx.channel());
         logger.info("{} :{} 远程服务器连接断开 ", remoteServerKey, ctx.channel());
-        providerManager.getDefaultRemoteServer().removeChannel(ctx.channel());
-       // providerManager.getRemoteServer().
+        providerManager.getDefaultFrameSender().removeChannel(ctx.channel());
+        // providerManager.getRemoteServer().
 //        remoteServerManager.getRemoteServerChannelManager(ChannelAttributeUtil.
 //                getRemoteServerKey(ctx.channel())).removeChannel(ctx.channel());
 
@@ -54,7 +54,7 @@ public class ConsumerServerHandler extends SimpleChannelInboundHandler<ConsumerM
         if (evt instanceof IdleStateEvent) {
             Channel channel = ctx.channel();
             if (channel.isWritable()) {
-                logger.info("维持服务器心跳{} : {}", ChannelAttributeUtil.getRemoteServerKey(channel), channel);
+                logger.trace("维持服务器心跳{} : {}", ChannelAttributeUtil.getRemoteServerKey(channel), channel);
                 CSHeartMessage heartMessage = new CSHeartMessage();
                 ConsumerMessage frame = new ConsumerMessage(heartMessage);
                 frame.setRequestId(0);

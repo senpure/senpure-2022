@@ -44,63 +44,42 @@ public class ConsumerLoggingHandler extends LoggingHandler {
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
-
         if (this.logger.isEnabled(this.internalLevel)) {
             if (msg instanceof ConsumerMessage) {
                 ConsumerMessage frame = (ConsumerMessage) msg;
-                boolean log = true;
-                if (skipHeart && frame.messageId() == CSHeartMessage.MESSAGE_ID) {
-                    log = false;
-                }
-                if (log) {
-
-
+                if (!skipHeart || frame.messageId() != CSHeartMessage.MESSAGE_ID) {
                     if (outFormat) {
                         this.logger.log(this.internalLevel, "{} {}{}",
                                 "WRITE", "\n", frame.message().toString(null));
                         //this.logger.log(this.internalLevel, this.format(ctx, ChannelAttributeUtil.getChannelPlayerStr(ctx.channel())+" WRITE", "\n"+((Message) msg).toString(null)));
                     } else {
-                        this.logger.log(this.internalLevel, "{} {}",
-                                "WRITE: ", msg);
-                        //  this.logger.log(this.internalLevel, this.format(ctx, ChannelAttributeUtil.getChannelPlayerStr(ctx.channel())+" WRITE", msg));
-
+                        this.logger.log(this.internalLevel, "{} {}", "WRITE: ", msg);
                     }
                 }
             } else {
-                this.logger.log(this.internalLevel, "{} {}",
-                        "WRITE: ", msg);
+                this.logger.log(this.internalLevel, "{} {}", "WRITE: ", msg);
             }
         }
-
         ctx.write(msg, promise);
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
-
         if (this.logger.isEnabled(this.internalLevel)) {
             if (msg instanceof ConsumerMessage) {
                 ConsumerMessage frame = (ConsumerMessage) msg;
-                boolean log = true;
-                if (skipHeart && frame.messageId() == SCHeartMessage.MESSAGE_ID) {
-                    log = false;
-                }
-                if (log) {
-
-
+                if (!skipHeart || frame.messageId() != SCHeartMessage.MESSAGE_ID) {
                     if (inFormat) {
                         this.logger.log(this.internalLevel, "{} {}{}",
                                 "RECEIVED", "\n", frame.message().toString(null));
                         // this.logger.log(this.internalLevel, this.format(ctx, ChannelAttributeUtil.getChannelPlayerStr(ctx.channel()) + " RECEIVED", "\n" + ((Message) msg).toString(null)));
 
                     } else {
-                        this.logger.log(this.internalLevel, "{} {}",
-                                "RECEIVED: ", msg);
+                        this.logger.log(this.internalLevel, "{} {}", "RECEIVED: ", msg);
                     }
                 }
             } else {
-                this.logger.log(this.internalLevel, "{} {}",
-                        "RECEIVED: ", msg);
+                this.logger.log(this.internalLevel, "{} {}", "RECEIVED: ", msg);
             }
         }
         ctx.fireChannelRead(msg);

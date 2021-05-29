@@ -6,6 +6,9 @@ import io.netty.channel.Channel;
 
 import javax.annotation.Nonnull;
 
+/**
+ * 同一个服会有多个实例相连
+ */
 public abstract class AbstractSameServerMultipleInstanceMessageSender<T extends MessageFrame> extends AbstractMessageSender<T> implements SameServerMultipleInstanceMessageSender {
 
 

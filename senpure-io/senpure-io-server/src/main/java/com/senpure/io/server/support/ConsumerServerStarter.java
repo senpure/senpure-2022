@@ -4,7 +4,9 @@ import com.senpure.executor.TaskLoopGroup;
 import com.senpure.io.server.Constant;
 import com.senpure.io.server.ServerProperties;
 import com.senpure.io.server.consumer.*;
+import com.senpure.io.server.protocol.message.CSFrameworkVerifyMessage;
 import com.senpure.io.server.remoting.ChannelService;
+import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -34,7 +36,7 @@ public class ConsumerServerStarter implements ApplicationRunner {
     @Resource
     private ServerProperties properties;
     @Resource
-    private ProviderManager remoteServerManager;
+    private ProviderManager providerManager;
 
     @Resource
     private ConsumerMessageExecutor messageExecutor;
@@ -79,14 +81,13 @@ public class ConsumerServerStarter implements ApplicationRunner {
             messageExecutor.getService().scheduleWithFixedDelay(() -> {
                 try {
                     boolean canLog = canLog();
-                    if (remoteServerManager.getDefaultRemoteServer() == null) {
+                    if (providerManager.getDefaultFrameSender() == null) {
                         int port;
                         String host;
                         if (properties.getConsumer().getModel() == ServerProperties.ConsumerProperties.MODEL.DIRECT) {
                             host = properties.getConsumer().getRemoteHost();
                             port = properties.getConsumer().getRemotePort();
                         } else {
-
                             List<ServiceInstance> serviceInstances = discoveryClient.getInstances(properties.getConsumer().getRemoteName());
                             if (serviceInstances.size() == 0) {
                                 if (canLog) {
@@ -112,7 +113,7 @@ public class ConsumerServerStarter implements ApplicationRunner {
                             host = instance.getHost();
                         }
 
-                        String serverKey = remoteServerManager.getRemoteServerKey(host, port);
+                        String serverKey = providerManager.getRemoteServerKey(host, port);
                         Provider provider = new Provider(taskLoopGroup);
                         provider.setRemoteServerKey(serverKey);
                         provider.setFutureService(messageExecutor);
@@ -124,61 +125,55 @@ public class ConsumerServerStarter implements ApplicationRunner {
                         provider.setDefaultTimeout(properties.getConsumer().getRequestTimeout());
                         provider.setDefaultWaitSendTimeout(properties.getConsumer().getMessageWaitSendTimeout());
 
+                        provider.setRemoteHost(host);
+                        provider.setRemotePort(port);
                         provider.verifyWorkable();
-                        remoteServerManager.setDefaultRemoteServer(provider);
+                        providerManager.setDefaultFrameSender(provider);
 
                     } else {
 
 
-                       Provider provider = remoteServerManager.getDefaultRemoteServer();
+                        Provider provider = providerManager.getDefaultFrameSender();
 
                         if (provider.isConnecting()) {
                             return;
                         }
                         long now = System.currentTimeMillis();
                         ServerProperties.ConsumerProperties consumerProperties = properties.getConsumer();
-                        if (provider.getChannelSize() < properties.getConsumer().getRemoteChannel()) {
-                            boolean start = false;
-                            if (lastFailTime == 0) {
-                                start = true;
-                            } else {
-                                if (now - lastFailTime >= properties.getConsumer().getConnectFailInterval()) {
-                                    start = true;
+                        if (provider.getChannelSize() < properties.getConsumer().getRemoteChannel() && now >= provider.getNextConnectTime()) {
+                            provider.setConnecting(true);
+                            ConsumerServer consumerServer = new ConsumerServer();
+                            consumerServer.setMessageExecutor(messageExecutor);
+                            consumerServer.setRemoteServerManager(providerManager);
+                            consumerServer.setProperties(properties.getConsumer());
+                            consumerServer.setDecoderContext(decoderContext);
+                            if (consumerServer.start(provider.getRemoteHost(), provider.getRemotePort())) {
+                                Iterator<ConsumerServer> iterator = servers.iterator();
+                                while (iterator.hasNext()) {
+                                    ConsumerServer server = iterator.next();
+                                    logger.info("server.isClosed() {}", server.isClosed());
+                                    if (server.isClosed()) {
+                                        iterator.remove();
+                                        server.destroy();
+                                    }
                                 }
-                            }
-                            if (start) {
-                                provider.setConnecting(true);
-                                ConsumerServer consumerServer = new ConsumerServer();
-                                consumerServer.setMessageExecutor(messageExecutor);
-                                consumerServer.setRemoteServerManager(remoteServerManager);
-                                consumerServer.setProperties(properties.getConsumer());
-                                consumerServer.setDecoderContext(decoderContext);
-                                if (consumerServer.start(consumerProperties.getRemoteHost(), consumerProperties.getRemotePort())) {
+                                servers.add(consumerServer);
+                                frameworkVerify(providerManager, provider, consumerServer.getChannel());
+                                provider.setStreakFailTimes(0);
+                                lastFailServerKey = null;
 
-                                    Iterator<ConsumerServer> iterator = servers.iterator();
-                                    while (iterator.hasNext()) {
-                                        ConsumerServer server = iterator.next();
-                                        logger.info("server.isClosed() {}",server.isClosed());
-                                        if (server.isClosed()) {
-                                            iterator.remove();
-                                            server.destroy();
-                                        }
-                                    }
-                                    servers.add(consumerServer);
-                                    //验证
-                                    provider.addChannel(consumerServer.getChannel());
-                                    failTimes = 0;
-                                } else {
-                                    lastFailTime = now;
-                                    lastFailServerKey = provider.getRemoteServerKey();
-                                    failTimes++;
-                                    if (failTimes >= 10 && provider.getChannelSize() == 0) {
-                                        remoteServerManager.setDefaultRemoteServer(null);
-                                        failTimes = 0;
-                                    }
-                                }
+                            } else {
+                                lastFailServerKey = provider.getRemoteServerKey();
+                                logger.warn("{}  socket {}:{} 连接失败", provider.getRemoteServerKey(), provider.getRemoteHost(), provider.getRemotePort());
+                                provider.streakFailTimesIncr();
+                                provider.setNextConnectTime(now + consumerProperties.getConnectFailInterval());
                                 provider.setConnecting(false);
+                                if (provider.getStreakFailTimes() >= 10 && provider.getChannelSize() == 0) {
+                                    providerManager.setDefaultFrameSender(null);
+                                }
                             }
+                            provider.setConnecting(false);
+
 
                         }
 
@@ -192,8 +187,34 @@ public class ConsumerServerStarter implements ApplicationRunner {
         }
     }
 
-    public  void verify()
-    {
+    private void frameworkVerify(ProviderManager providerManager, Provider provider, Channel channel) {
+
+        //每个channel都需要认证
+        logger.info("{} 准备认证 {}", provider.getRemoteServerKey(), channel);
+        CSFrameworkVerifyMessage message = new CSFrameworkVerifyMessage();
+        ServerProperties.Verify verify = properties.getVerify();
+        message.setUserName(verify.getUserName());
+        message.setUserType(verify.getUserType());
+        message.setPassword(verify.getPassword());
+        message.setToken(verify.getToken());
+        ConsumerMessage frame = providerManager.createMessage(message, true);
+        provider.sendMessage(channel, frame, response -> {
+            if (response.isSuccess()) {
+                logger.info("框架内部认证成功");
+                provider.setFrameworkVerifyPassed(true);
+                provider.addChannel(channel);
+                logger.debug("新增channel {} {}", provider.getRemoteServerKey(), provider.getChannelSize());
+            } else {
+                logger.error("框架认证失败");
+                logger.error(response.getMessage().toString());
+                channel.close();
+                provider.streakFailTimesIncr();
+                provider.setNextConnectTime(System.currentTimeMillis() + properties.getConsumer().getConnectFailInterval());
+            }
+            provider.setConnecting(false);
+        });
+
 
     }
+
 }

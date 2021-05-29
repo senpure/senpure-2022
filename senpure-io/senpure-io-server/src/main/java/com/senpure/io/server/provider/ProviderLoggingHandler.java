@@ -47,28 +47,20 @@ public class ProviderLoggingHandler extends LoggingHandler {
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
-
         if (this.logger.isEnabled(this.internalLevel)) {
             if (msg instanceof ProviderSendMessage) {
                 ProviderSendMessage frame = (ProviderSendMessage) msg;
-                boolean log = true;
-                if (skipHeart && frame.messageId() == CSHeartMessage.MESSAGE_ID) {
-                    log = false;
-                }
-                if (log) {
+                if (!skipHeart || frame.messageId() != CSHeartMessage.MESSAGE_ID) {
                     if (outFormat) {
                         this.logger.log(this.internalLevel, "{} requestId:{} token:{} userIds:{}{}{}",
                                 "WRITE", frame.requestId(), frame.getToken(), Arrays.toString(frame.getUserIds()), "\n", frame.message().toString(null));
-
                     } else {
-                        this.logger.log(this.internalLevel, "{} {}",
-                                "WRITE: ", msg);
+                        this.logger.log(this.internalLevel, "{} {}", "WRITE: ", msg);
 
                     }
                 }
             } else {
-                this.logger.log(this.internalLevel, "{} {}",
-                        "WRITE: ", msg);
+                this.logger.log(this.internalLevel, "{} {}", "WRITE: ", msg);
             }
         }
 
@@ -77,15 +69,10 @@ public class ProviderLoggingHandler extends LoggingHandler {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
-
         if (this.logger.isEnabled(this.internalLevel)) {
             if (msg instanceof ProviderReceivedMessage) {
                 ProviderReceivedMessage frame = (ProviderReceivedMessage) msg;
-                boolean log = true;
-                if (skipHeart && frame.messageId() == SCHeartMessage.MESSAGE_ID) {
-                    log = false;
-                }
-                if (log) {
+                if (!skipHeart || frame.messageId() != SCHeartMessage.MESSAGE_ID) {
                     if (inFormat) {
 
                         this.logger.log(this.internalLevel, "{} {}[{}] requestId:{} token:{} userId:{}{}{}",
@@ -93,13 +80,11 @@ public class ProviderLoggingHandler extends LoggingHandler {
                         // this.logger.log(this.internalLevel, this.format(ctx, ChannelAttributeUtil.getChannelPlayerStr(ctx.channel()) + " RECEIVED", "\n" + ((Message) msg).toString(null)));
 
                     } else {
-                        this.logger.log(this.internalLevel, "{} {}",
-                                "RECEIVED: ", msg);
+                        this.logger.log(this.internalLevel, "{} {}", "RECEIVED: ", msg);
                     }
                 }
             } else {
-                this.logger.log(this.internalLevel, "{} {}",
-                        "RECEIVED: ", msg);
+                this.logger.log(this.internalLevel, "{} {}", "RECEIVED: ", msg);
             }
         }
         ctx.fireChannelRead(msg);

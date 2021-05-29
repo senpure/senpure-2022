@@ -13,7 +13,7 @@ public class DefaultMessageDecoderContext implements MessageDecoderContext {
     public void registerDecoder(MessageDecoder<?> decoder) {
         MessageDecoder<?> last = decoderMap.get(decoder.messageId());
         if (last != null) {
-            Assert.error(getClass().getName() + " " + decoder.messageId() + " 解码程序已经存在 -> 新注册" +
+            Assert.error( decoder.messageId() + " 解码程序已经存在 -> 新注册" +
                     "[" + decoder.getClass().getName() + "]" +
                     " -> 已注册" + "[" + last.getClass().getName() + "]");
         }

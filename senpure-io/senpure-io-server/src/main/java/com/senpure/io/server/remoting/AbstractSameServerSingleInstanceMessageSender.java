@@ -6,61 +6,64 @@ import io.netty.channel.Channel;
 
 import javax.annotation.Nonnull;
 
+/**
+ * 同一个服会只有一个实例相连
+ */
 public abstract class AbstractSameServerSingleInstanceMessageSender<T extends MessageFrame, R extends ServerInstanceMessageFrameSender> extends AbstractSameServerMultipleInstanceMessageSender<T> implements SameServerSingleInstanceMessageSender {
 
 
-    protected R defaultRemoteServer;
+    protected R defaultFrameSender;
 
-    public void setDefaultRemoteServer(R defaultRemoteServer) {
-        this.defaultRemoteServer = defaultRemoteServer;
+    public void setDefaultFrameSender(R defaultFrameSender) {
+        this.defaultFrameSender = defaultFrameSender;
     }
 
-    public R getDefaultRemoteServer() {
-        return defaultRemoteServer;
+    public R getDefaultFrameSender() {
+        return defaultFrameSender;
     }
 
     @Override
     public void sendMessage(Message message) {
 
-        defaultRemoteServer.sendMessage(createMessage(message));
+        defaultFrameSender.sendMessage(createMessage(message));
     }
 
     @Override
     public void sendMessage(Message message, ResponseCallback callback) {
-        defaultRemoteServer.sendMessage(createMessage(message, nextRequestId()), callback);
+        defaultFrameSender.sendMessage(createMessage(message, nextRequestId()), callback);
     }
 
     @Override
     public void sendMessage(Message message, ResponseCallback callback, int timeout) {
-        defaultRemoteServer.sendMessage(createMessage(message, nextRequestId()), callback, timeout);
+        defaultFrameSender.sendMessage(createMessage(message, nextRequestId()), callback, timeout);
     }
 
     @Nonnull
     @Override
     public Response sendSyncMessage(Message message) {
-        return defaultRemoteServer.sendSyncMessage(createMessage(message, nextRequestId()));
+        return defaultFrameSender.sendSyncMessage(createMessage(message, nextRequestId()));
     }
 
     @Nonnull
     @Override
     public Response sendSyncMessage(Message message, int timeout) {
-        return defaultRemoteServer.sendSyncMessage(createMessage(message, nextRequestId()), timeout);
+        return defaultFrameSender.sendSyncMessage(createMessage(message, nextRequestId()), timeout);
     }
 
     @Override
     public void respondMessage(Message message) {
 
 
-        defaultRemoteServer.sendMessage(createMessage(message, requestId()));
+        defaultFrameSender.sendMessage(createMessage(message, requestId()));
     }
 
     @Override
     public void respondMessage(Message message, int requestId) {
-        defaultRemoteServer.sendMessage(createMessage(message, requestId));
+        defaultFrameSender.sendMessage(createMessage(message, requestId));
     }
 
     @Override
     public ServerInstanceMessageFrameSender getFrameSender(Channel channel) {
-        return defaultRemoteServer;
+        return defaultFrameSender;
     }
 }
