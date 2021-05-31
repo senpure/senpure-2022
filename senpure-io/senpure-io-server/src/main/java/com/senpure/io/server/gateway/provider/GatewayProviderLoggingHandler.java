@@ -1,6 +1,6 @@
 package com.senpure.io.server.gateway.provider;
 
-import com.senpure.io.server.gateway.GatewaySendProviderMessage;
+import com.senpure.io.server.MessageFrame;
 import com.senpure.io.server.protocol.message.CSHeartMessage;
 import com.senpure.io.server.protocol.message.SCHeartMessage;
 import io.netty.channel.ChannelHandlerContext;
@@ -33,8 +33,8 @@ public class GatewayProviderLoggingHandler extends LoggingHandler {
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
         if (this.logger.isEnabled(this.internalLevel)) {
-            if (msg instanceof GatewaySendProviderMessage) {
-                GatewaySendProviderMessage frame = (GatewaySendProviderMessage) msg;
+            if (msg instanceof MessageFrame) {
+                MessageFrame  frame = (MessageFrame) msg;
                 if (!skipHeart || frame.messageId() != SCHeartMessage.MESSAGE_ID) {
                     this.logger.log(this.internalLevel, "{} {}", "WRITE: ", msg);
                 }
@@ -49,8 +49,8 @@ public class GatewayProviderLoggingHandler extends LoggingHandler {
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
 
         if (this.logger.isEnabled(this.internalLevel)) {
-            if (msg instanceof GatewaySendProviderMessage) {
-                GatewaySendProviderMessage frame = (GatewaySendProviderMessage) msg;
+            if (msg instanceof MessageFrame) {
+                MessageFrame frame = (MessageFrame) msg;
                 if (!skipHeart || frame.messageId() != CSHeartMessage.MESSAGE_ID) {
                     this.logger.log(this.internalLevel, "{} {}", "RECEIVED: ", msg);
                 }

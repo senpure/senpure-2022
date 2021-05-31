@@ -4,10 +4,12 @@ import com.senpure.io.protocol.CompressMessage;
 import io.netty.buffer.ByteBuf;
 
 /**
+ * 向网关请求消息转发
+ * 
  * @author senpure
- * @time 2021-5-20 17:05:32
+ * @time 2021-5-31 20:56:51
  */
-public class SCMessageForwardMessage extends CompressMessage {
+public class CSMessageForwardMessage extends CompressMessage {
 
     public static final int MESSAGE_ID = 120;
     //服务名
@@ -23,7 +25,7 @@ public class SCMessageForwardMessage extends CompressMessage {
     //message data
     private byte [] data;
 
-    public void copy(SCMessageForwardMessage source) {
+    public void copy(CSMessageForwardMessage source) {
         this.serverName = source.getServerName();
         this.serverKey = source.getServerKey();
         this.serverType = source.getServerType();
@@ -160,7 +162,7 @@ public class SCMessageForwardMessage extends CompressMessage {
     /**
      * set 服务名
      */
-    public SCMessageForwardMessage setServerName(String serverName) {
+    public CSMessageForwardMessage setServerName(String serverName) {
         this.serverName = serverName;
         return this;
     }
@@ -177,7 +179,7 @@ public class SCMessageForwardMessage extends CompressMessage {
     /**
      * set 服务实例唯一标识
      */
-    public SCMessageForwardMessage setServerKey(String serverKey) {
+    public CSMessageForwardMessage setServerKey(String serverKey) {
         this.serverKey = serverKey;
         return this;
     }
@@ -194,7 +196,7 @@ public class SCMessageForwardMessage extends CompressMessage {
     /**
      * set 服务类型
      */
-    public SCMessageForwardMessage setServerType(String serverType) {
+    public CSMessageForwardMessage setServerType(String serverType) {
         this.serverType = serverType;
         return this;
     }
@@ -211,7 +213,7 @@ public class SCMessageForwardMessage extends CompressMessage {
     /**
      * set 服务扩展字段
      */
-    public SCMessageForwardMessage setServerOption(String serverOption) {
+    public CSMessageForwardMessage setServerOption(String serverOption) {
         this.serverOption = serverOption;
         return this;
     }
@@ -228,7 +230,7 @@ public class SCMessageForwardMessage extends CompressMessage {
     /**
      * set messageId
      */
-    public SCMessageForwardMessage setId(int id) {
+    public CSMessageForwardMessage setId(int id) {
         this.id = id;
         return this;
     }
@@ -245,14 +247,14 @@ public class SCMessageForwardMessage extends CompressMessage {
     /**
      * set message data
      */
-    public SCMessageForwardMessage setData(byte [] data) {
+    public CSMessageForwardMessage setData(byte [] data) {
         this.data = data;
         return this;
     }
 
     @Override
     public int messageType() {
-        return MESSAGE_TYPE_SC;
+        return MESSAGE_TYPE_CS;
     }
 
     @Override
@@ -262,7 +264,7 @@ public class SCMessageForwardMessage extends CompressMessage {
 
     @Override
     public String toString() {
-        return "SCMessageForwardMessage[120]{"
+        return "CSMessageForwardMessage[120]{"
                 + "serverName=" + serverName
                 + ",serverKey=" + serverKey
                 + ",serverType=" + serverType
@@ -277,7 +279,7 @@ public class SCMessageForwardMessage extends CompressMessage {
         //最长字段长度 12
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("SCMessageForwardMessage").append("[120]").append("{");
+        sb.append("CSMessageForwardMessage").append("[120]").append("{");
         //服务名
         sb.append("\n");
         sb.append(indent).append("serverName   = ").append(serverName);

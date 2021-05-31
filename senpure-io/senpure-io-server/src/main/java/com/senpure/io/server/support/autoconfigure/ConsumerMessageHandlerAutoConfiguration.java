@@ -29,4 +29,10 @@ public class ConsumerMessageHandlerAutoConfiguration {
     public SCSuccessMessageHandler scSuccessMessageHandler() {
         return new DefaultSCSuccessMessageHandler();
     }
+
+    @Bean("consumerSCFrameworkVerifyMessageHandler")
+    @ConditionalOnMissingBean(SCFrameworkVerifyMessageHandler.class)
+    public SCFrameworkVerifyMessageHandler scFrameworkVerifyMessageHandler() {
+        return new DefaultSCFrameworkVerifyMessageHandler();
+    }
 }

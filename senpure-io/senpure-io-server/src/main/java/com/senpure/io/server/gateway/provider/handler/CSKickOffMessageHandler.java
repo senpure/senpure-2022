@@ -2,13 +2,13 @@ package com.senpure.io.server.gateway.provider.handler;
 
 import com.senpure.io.server.ChannelAttributeUtil;
 import com.senpure.io.server.gateway.GatewayReceiveProviderMessage;
-import com.senpure.io.server.protocol.message.SCKickOffMessage;
+import com.senpure.io.server.protocol.message.CSKickOffMessage;
 import io.netty.channel.Channel;
 
-public class SCKickOffMessageHandler extends AbstractGatewayProviderMessageHandler {
+public class CSKickOffMessageHandler extends AbstractGatewayProviderMessageHandler {
     @Override
     public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
-        SCKickOffMessage message = new SCKickOffMessage();
+        CSKickOffMessage message = new CSKickOffMessage ();
         messageExecutor.readMessage(message, frame);
         long tempUserId = message.getUserId();
         Channel userChannel = null;
@@ -22,12 +22,12 @@ public class SCKickOffMessageHandler extends AbstractGatewayProviderMessageHandl
             logger.info("{} token:{} uerId:{} 踢下线", userChannel, ChannelAttributeUtil.getToken(userChannel), ChannelAttributeUtil.getUserId(userChannel));
             userChannel.close();
         } else {
-            logger.info("{} 踢下线失败，找不到channel", message.toString());
+            logger.info("{} 踢下线失败，找不到channel", message);
         }
     }
 
     @Override
     public int messageId() {
-        return SCKickOffMessage.MESSAGE_ID;
+        return CSKickOffMessage .MESSAGE_ID;
     }
 }

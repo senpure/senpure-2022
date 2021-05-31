@@ -12,6 +12,7 @@ import io.netty.channel.Channel;
 public class SCAskHandleMessageHandler extends AbstractGatewayProviderMessageHandler {
     @Override
     public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
+        //todo 改成和请求关联一样的同步请求
         SCAskHandleMessage message = new SCAskHandleMessage();
         messageExecutor.readMessage(message, frame);
         WaitAskTask waitAskTask = messageExecutor.waitAskMap.get(message.getAskToken());

@@ -1039,6 +1039,7 @@ public class ServerProperties {
          * 自动连接服务
          */
         private boolean autoConnect = true;
+
         /**
          * 连接目标失败后下一次连接间隔毫秒(手动连接时自己处理)
          */
@@ -1097,6 +1098,10 @@ public class ServerProperties {
          */
         private long writerIdleTime = 5000;
         /**
+         * 跳过心跳日志打印
+         */
+        private boolean skipHeart = false;
+        /**
          * 服务器返回错误消息id 多个用逗号,隔开
          */
         private String scErrorMessageId = "1000500";
@@ -1109,6 +1114,8 @@ public class ServerProperties {
         public void setReadableName(String readableName) {
             this.readableName = readableName;
         }
+
+
 
         public MODEL getModel() {
             return model;
@@ -1212,6 +1219,14 @@ public class ServerProperties {
 
         public void setMessageWaitSendTimeout(int messageWaitSendTimeout) {
             this.messageWaitSendTimeout = messageWaitSendTimeout;
+        }
+
+        public boolean isSkipHeart() {
+            return skipHeart;
+        }
+
+        public void setSkipHeart(boolean skipHeart) {
+            this.skipHeart = skipHeart;
         }
 
         public boolean isOutFormat() {

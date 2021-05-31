@@ -48,7 +48,6 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
 
 
     protected IDGenerator idGenerator;
-    public final ConcurrentHashMap<Long, WaitRelationTask> waitRelationMap = new ConcurrentHashMap<>(16);
     public final ConcurrentHashMap<Long, WaitAskTask> waitAskMap = new ConcurrentHashMap<>(16);
 
     private final Map<Integer, GatewayProviderMessageHandler> provider2GatewayHandlerMap = new HashMap<>();
@@ -242,6 +241,7 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
                     Channel consumerChannel = tokenChannel.get(token);
                     if (consumerChannel == null) {
                         logger.warn("没有找到channel token:{}", token);
+
                     } else {
                         if (consumerChannel.isWritable()) {
                             consumerChannel.writeAndFlush(message);

@@ -5,17 +5,15 @@ import io.netty.buffer.ByteBuf;
 
 /**
  * @author senpure
- * @time 2021-5-20 17:05:32
+ * @time 2021-5-31 20:56:51
  */
-public class SCKickOffMessage extends CompressMessage {
+public class CSDispatchConfirmMessage extends CompressMessage {
 
-    public static final int MESSAGE_ID = 116;
-    //token
+    public static final int MESSAGE_ID = 127;
     private long token;
-    //userId
     private long userId;
 
-    public void copy(SCKickOffMessage source) {
+    public void copy(CSDispatchConfirmMessage source) {
         this.token = source.getToken();
         this.userId = source.getUserId();
     }
@@ -26,9 +24,7 @@ public class SCKickOffMessage extends CompressMessage {
     @Override
     public void write(ByteBuf buf) {
         serializedSize();
-        //token
         writeVar64(buf, 8, token);
-        //userId
         writeVar64(buf, 16, userId);
     }
 
@@ -42,11 +38,9 @@ public class SCKickOffMessage extends CompressMessage {
             switch (tag) {
                 case 0://end
                     return;
-                //token
                 case 8:// 1 << 3 | 0
                     token = readVar64(buf);
                     break;
-                //userId
                 case 16:// 2 << 3 | 0
                     userId = readVar64(buf);
                     break;
@@ -66,63 +60,45 @@ public class SCKickOffMessage extends CompressMessage {
             return size;
         }
         size = 0;
-        //token
         //tag size 8
         size += computeVar64Size(1, token);
-        //userId
         //tag size 16
         size += computeVar64Size(1, userId);
         serializedSize = size ;
         return size ;
     }
 
-    /**
-     * get token
-     *
-     * @return
-     */
     public long getToken() {
         return token;
     }
 
-    /**
-     * set token
-     */
-    public SCKickOffMessage setToken(long token) {
+    public CSDispatchConfirmMessage setToken(long token) {
         this.token = token;
         return this;
     }
 
-    /**
-     * get userId
-     *
-     * @return
-     */
     public long getUserId() {
         return userId;
     }
 
-    /**
-     * set userId
-     */
-    public SCKickOffMessage setUserId(long userId) {
+    public CSDispatchConfirmMessage setUserId(long userId) {
         this.userId = userId;
         return this;
     }
 
     @Override
     public int messageType() {
-        return MESSAGE_TYPE_SC;
+        return MESSAGE_TYPE_CS;
     }
 
     @Override
     public int messageId() {
-        return 116;
+        return 127;
     }
 
     @Override
     public String toString() {
-        return "SCKickOffMessage[116]{"
+        return "CSDispatchConfirmMessage[127]{"
                 + "token=" + token
                 + ",userId=" + userId
                 + "}";
@@ -133,11 +109,9 @@ public class SCKickOffMessage extends CompressMessage {
         //最长字段长度 6
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("SCKickOffMessage").append("[116]").append("{");
-        //token
+        sb.append("CSDispatchConfirmMessage").append("[127]").append("{");
         sb.append("\n");
         sb.append(indent).append("token  = ").append(token);
-        //userId
         sb.append("\n");
         sb.append(indent).append("userId = ").append(userId);
         sb.append("\n");

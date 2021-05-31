@@ -52,7 +52,7 @@ public class ProviderLoggingHandler extends LoggingHandler {
                 ProviderSendMessage frame = (ProviderSendMessage) msg;
                 if (!skipHeart || frame.messageId() != CSHeartMessage.MESSAGE_ID) {
                     if (outFormat) {
-                        this.logger.log(this.internalLevel, "{} requestId:{} token:{} userIds:{}{}{}",
+                        this.logger.log(this.internalLevel, "{} requestId:{} tokens:{} userIds:{}{}{}",
                                 "WRITE", frame.requestId(), frame.getToken(), Arrays.toString(frame.getUserIds()), "\n", frame.message().toString(null));
                     } else {
                         this.logger.log(this.internalLevel, "{} {}", "WRITE: ", msg);

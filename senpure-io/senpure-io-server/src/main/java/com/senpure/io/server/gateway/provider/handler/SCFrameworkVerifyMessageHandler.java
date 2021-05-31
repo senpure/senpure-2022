@@ -13,7 +13,7 @@ public class SCFrameworkVerifyMessageHandler extends AbstractGatewayProviderMess
         readMessage(message, frame);
         int requestId = frame.requestId();
         if (requestId != 0) {
-            messageExecutor.receive(channel, requestId, frame);
+            messageExecutor.receive(channel, requestId, message);
         }
     }
 

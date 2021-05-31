@@ -1,13 +1,17 @@
 package com.senpure.io.server.gateway.consumer.handler;
 
+import com.senpure.base.util.Assert;
+import com.senpure.io.protocol.Message;
 import com.senpure.io.server.ChannelAttributeUtil;
 import com.senpure.io.server.Constant;
 import com.senpure.io.server.gateway.GatewayReceiveConsumerMessage;
+import com.senpure.io.server.gateway.GatewayReceiveProviderMessage;
 import com.senpure.io.server.gateway.provider.Provider;
 import com.senpure.io.server.gateway.provider.ProviderManager;
 import com.senpure.io.server.protocol.message.CSFrameworkVerifyMessage;
 import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
 import com.senpure.io.server.protocol.message.SCFrameworkVerifyMessage;
+import com.senpure.io.server.support.MessageIdReader;
 import io.netty.channel.Channel;
 
 public class CSFrameworkVerifyMessageHandler extends AbstractGatewayConsumerMessageHandler {
@@ -21,6 +25,9 @@ public class CSFrameworkVerifyMessageHandler extends AbstractGatewayConsumerMess
         this.simpleVerify = simpleVerify;
         this.token = token;
         this.userId = userId;
+        if (simpleVerify && (userId == 0 || userId > Constant.MAX_FRAMEWORK_USER_ID)) {
+            throw new RuntimeException("userId 不合法");
+        }
     }
 
     @Override
@@ -35,12 +42,13 @@ public class CSFrameworkVerifyMessageHandler extends AbstractGatewayConsumerMess
                 SCFrameworkVerifyMessage verifyMessage = new SCFrameworkVerifyMessage();
                 verifyMessage.setUserId(userId);
                 messageExecutor.responseMessage2Consumer(frame.requestId(), frame.token(), verifyMessage);
-                logger.debug("{} 框架认证成功", channel);
+                logger.debug("simpleVerify {} consumer 框架简单认证成功", channel);
             } else {
-                logger.debug("{} 框架认证失败", channel);
+                logger.debug("{} 框架简单认证失败", channel);
+                logger.debug("simpleVerify {} consumer 框架简单认证失败", channel);
                 SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
                 errorMessage.setCode(Constant.ERROR_VERIFY_FAILURE);
-                errorMessage.setMessage("框架内部认证失败");
+                errorMessage.setMessage("框架内部简单认证失败");
                 messageExecutor.responseMessage2Consumer(frame.requestId(), frame.token(), errorMessage);
                 channel.close();
             }
@@ -50,7 +58,7 @@ public class CSFrameworkVerifyMessageHandler extends AbstractGatewayConsumerMess
                 logger.debug("{} provider 框架认证失败", channel);
                 SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
                 errorMessage.setCode(Constant.ERROR_VERIFY_FAILURE);
-                errorMessage.setMessage("框架内部认证失败,没有认证服务提供者");
+                errorMessage.setMessage("框架内部认证失败,没有认证服务提供者，如果是初次使用可更改[网关]的配置来使用内置的简单认证器,server.io.gateway.simple-verify=true");
                 messageExecutor.responseMessage2Consumer(frame.requestId(), frame.token(), errorMessage);
                 return;
             }
@@ -67,19 +75,35 @@ public class CSFrameworkVerifyMessageHandler extends AbstractGatewayConsumerMess
             providerManager.sendMessage(provider, frame, response -> {
                 if (response.isSuccess()) {
                     ChannelAttributeUtil.setFramework(channel, true);
-                    GatewayReceiveConsumerMessage returnMessage = new GatewayReceiveConsumerMessage(frame.getMessageLength(), frame.getData());
-                    messageExecutor.responseMessage2Consumer(requestId, frame.token(), returnMessage);
+                    SCFrameworkVerifyMessage message = new SCFrameworkVerifyMessage();
+                    readMessage(message, response.getMessage());
+                    if (message.getUserId() == 0 || message.getUserId() > Constant.MAX_FRAMEWORK_USER_ID) {
+                        SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
+                        errorMessage.setCode(Constant.ERROR_VERIFY_FAILURE);
+                        errorMessage.setMessage("userId不合法[" + message.getUserId() + "]应该 >0&&<=" + Constant.MAX_FRAMEWORK_USER_ID);
+                        messageExecutor.sendMessage2Producer(response.getChannel(), response.getMessage());
+                        channel.close();
+                    } else {
+                        ChannelAttributeUtil.setUserId(channel, message.getUserId());
+                        messageExecutor.responseMessage2Consumer(requestId, frame.token(), response.getMessage());
+                    }
+
                 } else {
                     logger.debug("{} provider 框架认证失败", channel);
-                    SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
-                    errorMessage.setCode(Constant.ERROR_VERIFY_FAILURE);
-                    errorMessage.setMessage("框架内部认证失败");
-                    messageExecutor.responseMessage2Consumer(requestId, frame.token(), errorMessage);
+                    messageExecutor.responseMessage2Consumer(requestId, frame.token(), response.getMessage());
                     channel.close();
                 }
             });
         }
 
+
+    }
+
+    protected void readMessage(Message message, GatewayReceiveProviderMessage frame) {
+        if (message.messageId() != frame.messageId()) {
+            Assert.error("消息id不匹配" + MessageIdReader.read(message.messageId()) + "  " + MessageIdReader.read(frame.messageId()));
+        }
+        messageExecutor.readMessage(message, frame);
 
     }
 

@@ -4,25 +4,22 @@ import com.senpure.io.protocol.CompressMessage;
 import io.netty.buffer.ByteBuf;
 
 /**
- * 关联用户与网关
+ * 请求网关将目标断开连接
  * 
  * @author senpure
  * @time 2021-5-31 20:56:51
  */
-public class CSRelationUserGatewayMessage extends CompressMessage {
+public class CSKickOffMessage extends CompressMessage {
 
-    public static final int MESSAGE_ID = 109;
-    //channel token
+    public static final int MESSAGE_ID = 116;
+    //token
     private long token;
     //userId
     private long userId;
-    //relation token
-    private long relationToken;
 
-    public void copy(CSRelationUserGatewayMessage source) {
+    public void copy(CSKickOffMessage source) {
         this.token = source.getToken();
         this.userId = source.getUserId();
-        this.relationToken = source.getRelationToken();
     }
 
     /**
@@ -31,12 +28,10 @@ public class CSRelationUserGatewayMessage extends CompressMessage {
     @Override
     public void write(ByteBuf buf) {
         serializedSize();
-        //channel token
+        //token
         writeVar64(buf, 8, token);
         //userId
         writeVar64(buf, 16, userId);
-        //relation token
-        writeVar64(buf, 24, relationToken);
     }
 
     /**
@@ -49,17 +44,13 @@ public class CSRelationUserGatewayMessage extends CompressMessage {
             switch (tag) {
                 case 0://end
                     return;
-                //channel token
+                //token
                 case 8:// 1 << 3 | 0
                     token = readVar64(buf);
                     break;
                 //userId
                 case 16:// 2 << 3 | 0
                     userId = readVar64(buf);
-                    break;
-                //relation token
-                case 24:// 3 << 3 | 0
-                    relationToken = readVar64(buf);
                     break;
                 default://skip
                     skip(buf, tag);
@@ -77,21 +68,18 @@ public class CSRelationUserGatewayMessage extends CompressMessage {
             return size;
         }
         size = 0;
-        //channel token
+        //token
         //tag size 8
         size += computeVar64Size(1, token);
         //userId
         //tag size 16
         size += computeVar64Size(1, userId);
-        //relation token
-        //tag size 24
-        size += computeVar64Size(1, relationToken);
         serializedSize = size ;
         return size ;
     }
 
     /**
-     * get channel token
+     * get token
      *
      * @return
      */
@@ -100,9 +88,9 @@ public class CSRelationUserGatewayMessage extends CompressMessage {
     }
 
     /**
-     * set channel token
+     * set token
      */
-    public CSRelationUserGatewayMessage setToken(long token) {
+    public CSKickOffMessage setToken(long token) {
         this.token = token;
         return this;
     }
@@ -119,25 +107,8 @@ public class CSRelationUserGatewayMessage extends CompressMessage {
     /**
      * set userId
      */
-    public CSRelationUserGatewayMessage setUserId(long userId) {
+    public CSKickOffMessage setUserId(long userId) {
         this.userId = userId;
-        return this;
-    }
-
-    /**
-     * get relation token
-     *
-     * @return
-     */
-    public long getRelationToken() {
-        return relationToken;
-    }
-
-    /**
-     * set relation token
-     */
-    public CSRelationUserGatewayMessage setRelationToken(long relationToken) {
-        this.relationToken = relationToken;
         return this;
     }
 
@@ -148,33 +119,29 @@ public class CSRelationUserGatewayMessage extends CompressMessage {
 
     @Override
     public int messageId() {
-        return 109;
+        return 116;
     }
 
     @Override
     public String toString() {
-        return "CSRelationUserGatewayMessage[109]{"
+        return "CSKickOffMessage[116]{"
                 + "token=" + token
                 + ",userId=" + userId
-                + ",relationToken=" + relationToken
                 + "}";
     }
 
     @Override
     public String toString(String indent) {
-        //最长字段长度 13
+        //最长字段长度 6
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("CSRelationUserGatewayMessage").append("[109]").append("{");
-        //channel token
+        sb.append("CSKickOffMessage").append("[116]").append("{");
+        //token
         sb.append("\n");
-        sb.append(indent).append("token         = ").append(token);
+        sb.append(indent).append("token  = ").append(token);
         //userId
         sb.append("\n");
-        sb.append(indent).append("userId        = ").append(userId);
-        //relation token
-        sb.append("\n");
-        sb.append(indent).append("relationToken = ").append(relationToken);
+        sb.append(indent).append("userId = ").append(userId);
         sb.append("\n");
         sb.append(indent).append("}");
         return sb.toString();

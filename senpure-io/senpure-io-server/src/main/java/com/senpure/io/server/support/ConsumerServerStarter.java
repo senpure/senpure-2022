@@ -1,6 +1,7 @@
 package com.senpure.io.server.support;
 
 import com.senpure.executor.TaskLoopGroup;
+import com.senpure.io.server.ChannelAttributeUtil;
 import com.senpure.io.server.Constant;
 import com.senpure.io.server.ServerProperties;
 import com.senpure.io.server.consumer.*;
@@ -136,6 +137,7 @@ public class ConsumerServerStarter implements ApplicationRunner {
                         Provider provider = providerManager.getDefaultFrameSender();
 
                         if (provider.isConnecting()) {
+                            logger.warn("{} 正在连接中", provider.getRemoteServerKey());
                             return;
                         }
                         long now = System.currentTimeMillis();
@@ -171,8 +173,8 @@ public class ConsumerServerStarter implements ApplicationRunner {
                                 if (provider.getStreakFailTimes() >= 10 && provider.getChannelSize() == 0) {
                                     providerManager.setDefaultFrameSender(null);
                                 }
+                                provider.setConnecting(false);
                             }
-                            provider.setConnecting(false);
 
 
                         }
@@ -197,6 +199,11 @@ public class ConsumerServerStarter implements ApplicationRunner {
         message.setUserType(verify.getUserType());
         message.setPassword(verify.getPassword());
         message.setToken(verify.getToken());
+        message.setServerName(properties.getServerName());
+        message.setServerKey(ChannelAttributeUtil.getLocalServerKey(channel));
+        message.setServerType(properties.getServerType());
+        message.setServerOption(properties.getServerOption());
+
         ConsumerMessage frame = providerManager.createMessage(message, true);
         provider.sendMessage(channel, frame, response -> {
             if (response.isSuccess()) {

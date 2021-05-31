@@ -7,7 +7,7 @@ import io.netty.buffer.ByteBuf;
  * 框架内部验证
  * 
  * @author senpure
- * @time 2021-5-20 17:05:32
+ * @time 2021-5-31 20:56:51
  */
 public class CSFrameworkVerifyMessage extends CompressMessage {
 

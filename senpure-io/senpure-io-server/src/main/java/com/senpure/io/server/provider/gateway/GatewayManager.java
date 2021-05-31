@@ -2,9 +2,9 @@ package com.senpure.io.server.provider.gateway;
 
 import com.senpure.io.protocol.Message;
 import com.senpure.io.server.MessageFrame;
+import com.senpure.io.server.protocol.message.CSKickOffMessage;
+import com.senpure.io.server.protocol.message.CSMessageForwardMessage;
 import com.senpure.io.server.protocol.message.SCBreakUserGatewayMessage;
-import com.senpure.io.server.protocol.message.SCKickOffMessage;
-import com.senpure.io.server.protocol.message.SCMessageForwardMessage;
 import com.senpure.io.server.provider.MessageSender;
 import com.senpure.io.server.provider.ProviderSendMessage;
 import com.senpure.io.server.remoting.AbstractSameServerMultipleInstanceMessageSender;
@@ -241,28 +241,9 @@ public class GatewayManager extends AbstractSameServerMultipleInstanceMessageSen
 
     @Override
     public void sendMessageByToken(List<Long> tokens, Message message) {
-        Map<String, GatewayUsers> map = new HashMap<>();
         for (Long token : tokens) {
-            GatewayRelation gatewayRelation = tokenGatewayMap.get(token);
-            if (gatewayRelation != null) {
-                String key = gatewayRelation.gateway.getRemoteServerKey();
-                GatewayUsers gatewayUsers = map.get(key);
-                if (gatewayUsers == null) {
-                    gatewayUsers = new GatewayUsers();
-                    gatewayUsers.gateway = gatewayRelation.gateway;
-                    map.put(key, gatewayUsers);
-                }
-                gatewayUsers.userIds.add(token);
-            } else {
-                logger.warn("tokens -> token {} 不存在 GatewayRelation", token);
-            }
+            sendMessageByToken(token, message);
         }
-        map.values().forEach(gatewayUsers -> {
-            Long[] users = new Long[gatewayUsers.userIds.size()];
-            gatewayUsers.userIds.toArray(users);
-            ProviderSendMessage frame = createMessage(users, message);
-            gatewayUsers.gateway.sendMessage(frame);
-        });
     }
 
     @Override
@@ -280,7 +261,7 @@ public class GatewayManager extends AbstractSameServerMultipleInstanceMessageSen
 
     @Override
     public void dispatchMessage(String serverName, String serverKey, Message message) {
-        SCMessageForwardMessage forwardMessage = new SCMessageForwardMessage();
+        CSMessageForwardMessage forwardMessage = new  CSMessageForwardMessage();
         forwardMessage.setServerName(serverName);
         forwardMessage.setServerKey(serverKey);
 
@@ -293,14 +274,14 @@ public class GatewayManager extends AbstractSameServerMultipleInstanceMessageSen
 
     @Override
     public void sendKickOffMessage(Long userId) {
-        SCKickOffMessage message = new SCKickOffMessage();
+        CSKickOffMessage message = new CSKickOffMessage ();
         message.setUserId(userId);
         sendMessage(userId, message, true);
     }
 
     @Override
     public void sendKickOffMessageByToken(Long token) {
-        SCKickOffMessage message = new SCKickOffMessage();
+        CSKickOffMessage message = new CSKickOffMessage ();
         message.setToken(token);
         sendMessageByToken(token, message, true);
     }
@@ -330,6 +311,7 @@ public class GatewayManager extends AbstractSameServerMultipleInstanceMessageSen
         frame.setToken(token);
         frame.setUserIds(new Long[]{userId});
         frame.setRequestId(requestId);
+
         GatewayRelation gatewayRelation = tokenGatewayMap.get(token);
         if (gatewayRelation != null) {
             gatewayRelation.gateway.sendMessage(frame);

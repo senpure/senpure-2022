@@ -2,13 +2,13 @@ package com.senpure.io.server.gateway.provider.handler;
 
 import com.senpure.io.server.gateway.GatewayReceiveProviderMessage;
 import com.senpure.io.server.gateway.provider.ProviderManager;
-import com.senpure.io.server.protocol.message.SCMessageForwardMessage;
+import com.senpure.io.server.protocol.message.CSMessageForwardMessage;
 import io.netty.channel.Channel;
 
-public class SCMessageForwardMessageHandler extends AbstractGatewayProviderMessageHandler {
+public class CSMessageForwardMessageHandler extends AbstractGatewayProviderMessageHandler {
     @Override
     public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
-        SCMessageForwardMessage message = new SCMessageForwardMessage();
+        CSMessageForwardMessage message = new CSMessageForwardMessage();
         messageExecutor.readMessage(message, frame);
         if (message.getServerName() != null) {
             ProviderManager providerManager = messageExecutor.getProviderManager(message.getServerName());
@@ -27,6 +27,6 @@ public class SCMessageForwardMessageHandler extends AbstractGatewayProviderMessa
 
     @Override
     public int messageId() {
-        return SCMessageForwardMessage.MESSAGE_ID;
+        return CSMessageForwardMessage.MESSAGE_ID;
     }
 }

@@ -8,9 +8,9 @@ import java.util.Arrays;
 
 public class ProviderSendMessage extends AbstractMessageFrame {
 
-
+    //假定userId可能需要多个发送的情况,所以这里不使用数组
     private Long[] userIds;
-
+    //假定token很少会用到需要多个发送的情况,所以这里不使用数组
     private long token;
 
     public ProviderSendMessage(Message message) {

@@ -4,14 +4,14 @@ import com.senpure.io.server.ChannelAttributeUtil;
 import com.senpure.io.server.gateway.GatewayReceiveProviderMessage;
 import com.senpure.io.server.gateway.provider.Provider;
 import com.senpure.io.server.gateway.provider.ProviderManager;
-import com.senpure.io.server.protocol.message.SCStatisticMessage;
+import com.senpure.io.server.protocol.message.CSStatisticMessage;
 import io.netty.channel.Channel;
 
-public class SCStatisticMessageHandler  extends AbstractGatewayProviderMessageHandler {
+public class CSStatisticMessageHandler extends AbstractGatewayProviderMessageHandler {
 
     @Override
     public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
-        SCStatisticMessage message = new SCStatisticMessage();
+       CSStatisticMessage message = new CSStatisticMessage();
         messageExecutor.readMessage(message, frame);
         String serverKey = ChannelAttributeUtil.getRemoteServerKey(channel);
         String serverName = ChannelAttributeUtil.getRemoteServerName(channel);
@@ -32,6 +32,6 @@ public class SCStatisticMessageHandler  extends AbstractGatewayProviderMessageHa
 
     @Override
     public int messageId() {
-        return SCStatisticMessage.MESSAGE_ID;
+        return CSStatisticMessage.MESSAGE_ID;
     }
 }

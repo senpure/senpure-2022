@@ -60,7 +60,7 @@ public class WaitAskTask {
     }
 
     public void sendMessage() {
-        providerManager.relationAndWaitSendMessage(provider, message);
+        providerManager.relationAndSendMessage(provider, message);
 
     }
 

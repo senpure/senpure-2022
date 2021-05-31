@@ -282,6 +282,10 @@ public class ProviderGatewayServerStarter implements ApplicationRunner {
         logger.info("{} 准备认证 {}", gateway.getRemoteServerKey(), channel);
         CSFrameworkVerifyMessage message = new CSFrameworkVerifyMessage();
         ServerProperties.Verify verify = properties.getVerify();
+        message.setServerName(properties.getServerName());
+        message.setServerKey(ChannelAttributeUtil.getLocalServerKey(channel));
+        message.setServerType(properties.getServerType());
+        message.setServerOption(properties.getServerOption());
         message.setUserName(verify.getUserName());
         message.setUserType(verify.getUserType());
         message.setPassword(verify.getPassword());

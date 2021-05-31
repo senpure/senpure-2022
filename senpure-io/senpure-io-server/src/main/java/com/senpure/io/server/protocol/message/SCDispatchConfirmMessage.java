@@ -4,18 +4,18 @@ import com.senpure.io.protocol.CompressMessage;
 import io.netty.buffer.ByteBuf;
 
 /**
- * 加入匹配
- * 
  * @author senpure
- * @time 2021-5-20 17:05:32
+ * @time 2021-5-31 16:58:35
  */
-public class SCMatchingMessage extends CompressMessage {
+public class SCDispatchConfirmMessage extends CompressMessage {
 
-    public static final int MESSAGE_ID = 122;
-    private boolean success;
+    public static final int MESSAGE_ID = 127;
+    private long token;
+    private long userId;
 
-    public void copy(SCMatchingMessage source) {
-        this.success = source.isSuccess();
+    public void copy(SCDispatchConfirmMessage source) {
+        this.token = source.getToken();
+        this.userId = source.getUserId();
     }
 
     /**
@@ -24,7 +24,8 @@ public class SCMatchingMessage extends CompressMessage {
     @Override
     public void write(ByteBuf buf) {
         serializedSize();
-        writeBoolean(buf, 8, success);
+        writeVar64(buf, 8, token);
+        writeVar64(buf, 16, userId);
     }
 
     /**
@@ -38,7 +39,10 @@ public class SCMatchingMessage extends CompressMessage {
                 case 0://end
                     return;
                 case 8:// 1 << 3 | 0
-                    success = readBoolean(buf);
+                    token = readVar64(buf);
+                    break;
+                case 16:// 2 << 3 | 0
+                    userId = readVar64(buf);
                     break;
                 default://skip
                     skip(buf, tag);
@@ -57,17 +61,28 @@ public class SCMatchingMessage extends CompressMessage {
         }
         size = 0;
         //tag size 8
-        size += computeBooleanSize(1, success);
+        size += computeVar64Size(1, token);
+        //tag size 16
+        size += computeVar64Size(1, userId);
         serializedSize = size ;
         return size ;
     }
 
-    public boolean isSuccess() {
-        return success;
+    public long getToken() {
+        return token;
     }
 
-    public SCMatchingMessage setSuccess(boolean success) {
-        this.success = success;
+    public SCDispatchConfirmMessage setToken(long token) {
+        this.token = token;
+        return this;
+    }
+
+    public long getUserId() {
+        return userId;
+    }
+
+    public SCDispatchConfirmMessage setUserId(long userId) {
+        this.userId = userId;
         return this;
     }
 
@@ -78,24 +93,27 @@ public class SCMatchingMessage extends CompressMessage {
 
     @Override
     public int messageId() {
-        return 122;
+        return 127;
     }
 
     @Override
     public String toString() {
-        return "SCMatchingMessage[122]{"
-                + "success=" + success
+        return "SCDispatchConfirmMessage[127]{"
+                + "token=" + token
+                + ",userId=" + userId
                 + "}";
     }
 
     @Override
     public String toString(String indent) {
-        //最长字段长度 7
+        //最长字段长度 6
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("SCMatchingMessage").append("[122]").append("{");
+        sb.append("SCDispatchConfirmMessage").append("[127]").append("{");
         sb.append("\n");
-        sb.append(indent).append("success = ").append(success);
+        sb.append(indent).append("token  = ").append(token);
+        sb.append("\n");
+        sb.append(indent).append("userId = ").append(userId);
         sb.append("\n");
         sb.append(indent).append("}");
         return sb.toString();

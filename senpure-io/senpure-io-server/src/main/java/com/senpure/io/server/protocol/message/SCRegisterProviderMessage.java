@@ -7,7 +7,7 @@ import io.netty.buffer.ByteBuf;
  * 注册provider返回
  * 
  * @author senpure
- * @time 2021-5-20 17:05:32
+ * @time 2021-5-31 20:56:51
  */
 public class SCRegisterProviderMessage extends CompressMessage {
 

@@ -10,7 +10,21 @@ public class SCLoginMessageHandler extends SCFrameworkVerifyMessageHandler {
 
     @Override
     public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
+        if (frame.getUserIds().length == 0) {
+            SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
+            errorMessage.setCode(Constant.ERROR_VERIFY_FAILURE);
+            errorMessage.setMessage("请将认证后的userId 放在 userIds第一位返回");
+            messageExecutor.sendMessage2Producer(channel, errorMessage);
+            return;
+        }
         long userId = frame.getUserIds()[0];
+        if (userId == 0) {
+            SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
+            errorMessage.setCode(Constant.ERROR_VERIFY_FAILURE);
+            errorMessage.setMessage("请将认证后的userId 放在 userIds第一位返回");
+            messageExecutor.sendMessage2Producer(channel, errorMessage);
+            return;
+        }
         if (userId <= Constant.MAX_FRAMEWORK_USER_ID) {
 
             SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
@@ -18,7 +32,7 @@ public class SCLoginMessageHandler extends SCFrameworkVerifyMessageHandler {
             errorMessage.setMessage("外部玩家认证id必须大于" + Constant.MAX_FRAMEWORK_USER_ID + "请修改相关程序");
             messageExecutor.sendMessage2Producer(channel, errorMessage);
             //todo tongzhi diaoyoufang
-          //  messageExecutor.sendMessage2Consumer(frame.getToken(), errorMessage);
+            //  messageExecutor.sendMessage2Consumer(frame.getToken(), errorMessage);
             return;
         }
         Channel consumerChannel = messageExecutor.prepLoginChannels.remove(frame.getToken());
@@ -28,8 +42,7 @@ public class SCLoginMessageHandler extends SCFrameworkVerifyMessageHandler {
             if (oldUserId == null) {
                 messageExecutor.providerManagerForEach(providerManager -> providerManager.afterUserAuthorize(token, userId));
 
-            }
-            else {
+            } else {
                 if (oldUserId == userId) {
                     logger.info("{}重复登陆 {} 不做额外的处理", consumerChannel, userId);
                 } else {

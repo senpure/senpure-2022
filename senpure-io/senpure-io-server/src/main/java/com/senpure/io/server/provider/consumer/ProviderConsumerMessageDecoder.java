@@ -64,12 +64,9 @@ public class ProviderConsumerMessageDecoder extends ByteToMessageDecoder {
                 errorMessage.setCode(Constant.ERROR_NOT_HANDLE_REQUEST);
                 errorMessage.getArgs().add(String.valueOf(messageId));
                 errorMessage.setMessage("服务器没有处理程序:" + MessageIdReader.read(messageId));
-
                 ProviderSendMessage frame = new ProviderSendMessage(errorMessage);
                 frame.setRequestId(requestId);
-
                 frame.setToken(ChannelAttributeUtil.getToken(channel));
-
                 channel.writeAndFlush(frame);
 
             } else {

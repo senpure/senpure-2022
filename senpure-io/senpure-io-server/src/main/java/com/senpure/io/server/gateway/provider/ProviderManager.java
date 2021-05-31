@@ -9,6 +9,7 @@ import com.senpure.io.server.gateway.GatewaySendProviderMessage;
 import com.senpure.io.server.protocol.message.CSBreakUserGatewayMessage;
 import com.senpure.io.server.protocol.message.CSRelationUserGatewayMessage;
 import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
+import com.senpure.io.server.protocol.message.SCRelationUserGatewayMessage;
 import com.senpure.io.server.remoting.AbstractSameServerMultipleInstanceMessageSender;
 import com.senpure.io.server.remoting.ServerInstanceMessageFrameSender;
 import com.senpure.io.server.support.MessageIdReader;
@@ -21,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.BiConsumer;
 
 public class ProviderManager extends AbstractSameServerMultipleInstanceMessageSender<GatewayLocalSendProviderMessage> {
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
@@ -102,6 +104,16 @@ public class ProviderManager extends AbstractSameServerMultipleInstanceMessageSe
     }
 
 
+    @Nullable
+    public Provider provider(long token) {
+        ProviderRelation providerRelation = tokenProviderMap.get(token);
+        if (providerRelation != null) {
+
+            return providerRelation.provider;
+        }
+        return null;
+    }
+
     public void sendMessage(GatewaySendProviderMessage frame) {
         ProviderRelation providerRelation = tokenProviderMap.get(frame.token());
         Provider provider;
@@ -116,7 +128,7 @@ public class ProviderManager extends AbstractSameServerMultipleInstanceMessageSe
                 messageExecutor.responseMessage2Consumer(frame.requestId(), frame.token(), errorMessage);
             } else {
 
-                relationAndWaitSendMessage(provider, frame);
+                relationAndSendMessage(provider, frame);
             }
 
         } else {
@@ -125,29 +137,31 @@ public class ProviderManager extends AbstractSameServerMultipleInstanceMessageSe
         }
     }
 
-    public void relationAndWaitSendMessage(Provider provider, GatewaySendProviderMessage frame) {
+    public void relation(Provider provider, long token, long userId, BiConsumer<CSRelationUserGatewayMessage, SCRelationUserGatewayMessage> biConsumer) {
         long relationToken = messageExecutor.getIdGenerator().nextId();
         CSRelationUserGatewayMessage relationUserGatewayMessage = new CSRelationUserGatewayMessage();
-        relationUserGatewayMessage.setToken(frame.token());
-        relationUserGatewayMessage.setUserId(frame.userId());
+        relationUserGatewayMessage.setToken(token);
+        relationUserGatewayMessage.setUserId(userId);
         relationUserGatewayMessage.setRelationToken(relationToken);
         sendMessage(provider, relationUserGatewayMessage, response -> {
             if (response.isSuccess()) {
-                logger.debug("success {} {}", frame.token(), relationToken);
-                bind(frame.token(), relationToken, provider);
-                provider.sendMessage(frame);
-//                CSBreakUserGatewayMessage breakUserGatewayMessage = new CSBreakUserGatewayMessage();
-//                breakUserGatewayMessage.setToken(message.getToken());
-//                breakUserGatewayMessage.setUserId(message.getUserId());
-//                breakUserGatewayMessage.setRelationToken(message.getRelationToken());
+                biConsumer.accept(relationUserGatewayMessage, response.getMessage());
             } else {
-
-                logger.debug("error {} {} {}", frame.token(), relationToken, response.getMessage());
+                logger.debug("error {} {} {}", token, relationToken, response.getMessage());
             }
         }, 5000);
+    }
+
+    public void relationAndSendMessage(Provider provider, GatewaySendProviderMessage frame) {
+        relation(provider, frame.token(), frame.userId(), (cs, sc) -> {
+            bind(frame.token(), cs.getRelationToken(), provider);
+            provider.sendMessage(frame);
+        });
+
 
     }
 
+    //todo 该方法不对
     public void sendMessage2Consumer(@Nullable String serverKey, int messageId, byte[] data) {
         if (serverKey != null) {
             for (Map.Entry<Long, ProviderRelation> entry : tokenProviderMap.entrySet()) {
@@ -170,6 +184,7 @@ public class ProviderManager extends AbstractSameServerMultipleInstanceMessageSe
 
     }
 
+    @Nullable
     public Provider nextProvider() {
         lock.readLock().lock();
         try {

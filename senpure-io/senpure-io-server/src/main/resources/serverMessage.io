@@ -106,16 +106,19 @@ message SC AskHandle 114 {
     String  askValue      = 4;            //值
 }
 
-message SC KickOff 116 {
+//请求网关将目标断开连接
+message CS KickOff 116 {
     long token;                           // token
     long userId;                          //userId
 }
 
-message SC Statistic 118 {
+//向网关上报统计信息
+message CS Statistic 119 {
     Statistic statistic = 1;
 }
 
-message SC MessageForward 120 {
+//向网关请求消息转发
+message CS MessageForward 120 {
     String serverName   = 1;              //服务名
     String serverKey    = 2;              //服务实例唯一标识
     String serverType   = 3;              //服务类型
@@ -124,14 +127,39 @@ message SC MessageForward 120 {
     bytes  data         = 6;              //message data
 }
 
-//加入匹配
-message CS Matching 121 {
-    Consumer [] consumers = 1;
+//向网关请求将目标分配到一台实例
+message CS MatchingConsumer 121 {
+    String      serverName = 1;
+    Consumer [] consumers  = 2;
+    int         timeout    = 3;           //超时 毫秒
 }
 
-//加入匹配
-message SC Matching 122 {
-    boolean success = 1;
+//向网关请求将目标分配到一台实例
+message SC MatchingConsumer 122 {
+    String serverName  = 1;
+    String serverKey   = 2;
+    long   matchableId = 3;
+}
+
+message CS BindProvider 123 {
+    String      serverName = 1;
+    String      serverKey  = 2;
+    Consumer [] consumers  = 3;           //
+    int         dataId     = 4;
+    bytes       data       = 5;
+}
+
+message SC BindProvider 124 {
+}
+
+message CS ConsumerDispatch 125 {
+    Consumer [] consumers = 1;
+    int         timeout   = 2;            //超时
+}
+
+message CS DispatchConfirm 127 {
+    long token  = 1;
+    long userId = 2;
 }
 
 //成功消息

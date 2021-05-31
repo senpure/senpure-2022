@@ -24,10 +24,19 @@ public class GatewayProviderHandlerAutoConfiguration {
     }
 
     @Bean
-    public CSRegisterProviderMessageHandler scRegServerHandleMessageMessageHandler() {
+    public CSRegisterProviderMessageHandler csRegServerHandleMessageMessageHandler() {
 
         return new CSRegisterProviderMessageHandler();
     }
+
+
+    @Bean
+    public CSMatchingConsumerMessageHandler csMatchingConsumerMessageMessageHandler() {
+
+        return new CSMatchingConsumerMessageHandler();
+    }
+
+
 
     @Bean
     public SCAskHandleMessageHandler scAskHandleMessageHandler() {
@@ -46,8 +55,8 @@ public class GatewayProviderHandlerAutoConfiguration {
     }
 
     @Bean
-    public SCKickOffMessageHandler scKickOffMessageHandler() {
-        return new SCKickOffMessageHandler();
+    public CSKickOffMessageHandler scKickOffMessageHandler() {
+        return new CSKickOffMessageHandler();
     }
 
     @Bean
@@ -57,8 +66,8 @@ public class GatewayProviderHandlerAutoConfiguration {
     }
 
     @Bean
-    public SCMessageForwardMessageHandler scMessageForwardMessageHandler() {
-        return new SCMessageForwardMessageHandler();
+    public CSMessageForwardMessageHandler scMessageForwardMessageHandler() {
+        return new CSMessageForwardMessageHandler();
     }
 
     @Bean
@@ -67,8 +76,8 @@ public class GatewayProviderHandlerAutoConfiguration {
     }
 
     @Bean
-    public SCStatisticMessageHandler scStatisticMessageHandler() {
-        return new SCStatisticMessageHandler();
+    public CSStatisticMessageHandler scStatisticMessageHandler() {
+        return new CSStatisticMessageHandler();
     }
 
 

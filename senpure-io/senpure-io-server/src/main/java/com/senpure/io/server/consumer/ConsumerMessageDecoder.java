@@ -54,7 +54,7 @@ public class ConsumerMessageDecoder extends ByteToMessageDecoder {
                                 CompressBean.computeVar32Size(requestId) + CompressBean.computeVar32Size(messageId);
                 int messageLength = packageLength - headSize;
                 in.skipBytes(messageLength);
-                logger.warn("没有找到消息解码程序 messageId {}", MessageIdReader.read(messageId));
+                logger.warn("没有找到消息解码程序 messageId {} skipLength {}", MessageIdReader.read(messageId),messageLength);
             } else {
                 try {
                     Message message = decoder.decode(in, maxIndex);

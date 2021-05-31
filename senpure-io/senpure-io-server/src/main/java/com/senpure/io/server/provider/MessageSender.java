@@ -9,6 +9,7 @@ import java.util.List;
 public interface MessageSender extends com.senpure.io.server.remoting.MessageSender {
 
 
+    Long[] EMPTY_ARRAY = new Long[0];
 
     /**
      * 向用户发送消息
@@ -167,20 +168,20 @@ public interface MessageSender extends com.senpure.io.server.remoting.MessageSen
     default ProviderSendMessage createMessage(Long userId, Message message) {
         ProviderSendMessage frame = new ProviderSendMessage(message);
         frame.setUserIds(new Long[]{userId});
+
         return frame;
     }
 
     default ProviderSendMessage createMessage(Long[] userIds, Message message) {
         ProviderSendMessage frame = new ProviderSendMessage(message);
         frame.setUserIds(userIds);
-
         return frame;
     }
 
     default ProviderSendMessage createMessageByToken(Long token, Message message) {
         ProviderSendMessage frame = new ProviderSendMessage(message);
         frame.setToken(token);
-        frame.setUserIds(new Long[0]);
+        frame.setUserIds(EMPTY_ARRAY);
         return frame;
     }
 }

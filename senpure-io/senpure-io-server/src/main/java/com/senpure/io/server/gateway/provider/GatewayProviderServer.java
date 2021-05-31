@@ -70,7 +70,7 @@ public class GatewayProviderServer {
                             }
                             p.addLast(new GatewayProviderMessageDecoder());
                             p.addLast(new GatewayProviderMessageEncoder());
-                            p.addLast(new GatewayProviderLoggingHandler(LogLevel.DEBUG));
+                            p.addLast(new GatewayProviderLoggingHandler(LogLevel.DEBUG, provider.isSkipHeart()));
                             if (provider.isEnableHeartCheck()) {
                                 p.addLast(new IdleStateHandler(provider.getReaderIdleTime(), 0L, 0L, TimeUnit.MILLISECONDS));
                             }

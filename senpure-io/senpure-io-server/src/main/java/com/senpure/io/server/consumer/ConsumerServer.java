@@ -84,7 +84,7 @@ public class ConsumerServer {
                                     p.addLast(new ConsumerMessageDecoder(decoderContext));
                                     p.addLast(new ConsumerMessageEncoder());
                                     if (addLoggingHandler) {
-                                        p.addLast(new ConsumerLoggingHandler(LogLevel.DEBUG, properties.isInFormat(), properties.isOutFormat()));
+                                        p.addLast(new ConsumerLoggingHandler(LogLevel.DEBUG, properties.isInFormat(), properties.isOutFormat(), properties.isSkipHeart()));
                                     }
                                     for (ChannelHandler extHandler : extHandlers) {
                                         p.addLast(extHandler);

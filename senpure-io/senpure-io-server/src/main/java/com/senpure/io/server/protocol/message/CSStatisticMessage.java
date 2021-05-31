@@ -5,15 +5,17 @@ import com.senpure.io.protocol.CompressMessage;
 import io.netty.buffer.ByteBuf;
 
 /**
+ * 向网关上报统计信息
+ * 
  * @author senpure
- * @time 2021-5-20 17:05:32
+ * @time 2021-5-31 20:56:51
  */
-public class SCStatisticMessage extends CompressMessage {
+public class CSStatisticMessage extends CompressMessage {
 
-    public static final int MESSAGE_ID = 118;
+    public static final int MESSAGE_ID = 119;
     private Statistic statistic;
 
-    public void copy(SCStatisticMessage source) {
+    public void copy(CSStatisticMessage source) {
         if (source.getStatistic() != null) {
             Statistic tempStatistic = new Statistic();
             tempStatistic.copy(source.getStatistic());
@@ -76,24 +78,24 @@ public class SCStatisticMessage extends CompressMessage {
         return statistic;
     }
 
-    public SCStatisticMessage setStatistic(Statistic statistic) {
+    public CSStatisticMessage setStatistic(Statistic statistic) {
         this.statistic = statistic;
         return this;
     }
 
     @Override
     public int messageType() {
-        return MESSAGE_TYPE_SC;
+        return MESSAGE_TYPE_CS;
     }
 
     @Override
     public int messageId() {
-        return 118;
+        return 119;
     }
 
     @Override
     public String toString() {
-        return "SCStatisticMessage[118]{"
+        return "CSStatisticMessage[119]{"
                 + "statistic=" + statistic
                 + "}";
     }
@@ -105,7 +107,7 @@ public class SCStatisticMessage extends CompressMessage {
         //最长字段长度 9
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("SCStatisticMessage").append("[118]").append("{");
+        sb.append("CSStatisticMessage").append("[119]").append("{");
         sb.append("\n");
         sb.append(indent).append("statistic = ");
         if (statistic != null){

@@ -4,16 +4,14 @@ import com.senpure.io.protocol.CompressMessage;
 import io.netty.buffer.ByteBuf;
 
 /**
- * 成功消息
- * 
  * @author senpure
  * @time 2021-5-31 20:56:51
  */
-public class SCSuccessMessage extends CompressMessage {
+public class SCBindProviderMessage extends CompressMessage {
 
-    public static final int MESSAGE_ID = 200;
+    public static final int MESSAGE_ID = 124;
 
-    public void copy(SCSuccessMessage source) {
+    public void copy(SCBindProviderMessage source) {
     }
 
     /**
@@ -62,12 +60,12 @@ public class SCSuccessMessage extends CompressMessage {
 
     @Override
     public int messageId() {
-        return 200;
+        return 124;
     }
 
     @Override
     public String toString() {
-        return "SCSuccessMessage[200]{"
+        return "SCBindProviderMessage[124]{"
                 + "}";
     }
 
@@ -75,7 +73,7 @@ public class SCSuccessMessage extends CompressMessage {
     public String toString(String indent) {
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
-        sb.append("SCSuccessMessage").append("[200]").append("{");
+        sb.append("SCBindProviderMessage").append("[124]").append("{");
         sb.append("\n");
         sb.append(indent).append("}");
         return sb.toString();
