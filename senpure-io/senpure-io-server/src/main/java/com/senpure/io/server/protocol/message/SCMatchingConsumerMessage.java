@@ -7,7 +7,7 @@ import io.netty.buffer.ByteBuf;
  * 向网关请求将目标分配到一台实例
  * 
  * @author senpure
- * @time 2021-5-31 20:56:51
+ * @time 2021-5-31 22:16:30
  */
 public class SCMatchingConsumerMessage extends CompressMessage {
 

@@ -141,15 +141,11 @@ message SC MatchingConsumer 122 {
     long   matchableId = 3;
 }
 
-message CS BindProvider 123 {
-    String      serverName = 1;
-    String      serverKey  = 2;
-    Consumer [] consumers  = 3;           //
-    int         dataId     = 4;
-    bytes       data       = 5;
-}
-
-message SC BindProvider 124 {
+message SC MatchingSuccess 124 {
+    String serverName = 1;
+    String serverKey  = 2;
+    int    dataId     = 3;
+    bytes  data       = 4;
 }
 
 message CS ConsumerDispatch 125 {

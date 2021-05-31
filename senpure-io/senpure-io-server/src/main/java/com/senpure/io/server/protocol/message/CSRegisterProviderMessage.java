@@ -11,7 +11,7 @@ import java.util.ArrayList;
  * 注册provider
  * 
  * @author senpure
- * @time 2021-5-31 20:56:51
+ * @time 2021-5-31 22:16:30
  */
 public class CSRegisterProviderMessage extends CompressMessage {
 
