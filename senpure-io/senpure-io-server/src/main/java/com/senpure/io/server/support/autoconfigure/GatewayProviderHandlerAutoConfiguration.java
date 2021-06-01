@@ -2,83 +2,99 @@ package com.senpure.io.server.support.autoconfigure;
 
 import com.senpure.io.server.ServerProperties;
 import com.senpure.io.server.gateway.provider.handler.*;
+import com.senpure.io.server.provider.handler.CSAskHandleMessageHandler;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 
 public class GatewayProviderHandlerAutoConfiguration {
 
 
     @Bean("gatewayProviderCSHeartMessageHandler")
+    @ConditionalOnMissingBean(CSHeartMessageHandler.class)
     public CSHeartMessageHandler csHeartMessageHandler() {
-        return new CSHeartMessageHandler();
+        return new DefaultCSHeartMessageHandler();
     }
 
     @Bean
+    @ConditionalOnMissingBean(CSFrameworkVerifyMessageHandler.class)
     public CSFrameworkVerifyProviderMessageHandler csFrameworkVerifyProviderMessageHandler() {
-        return new CSFrameworkVerifyProviderMessageHandler();
+        return new DefaultCSFrameworkVerifyProviderMessageHandler();
     }
 
     @Bean("gatewayProviderCSFrameworkVerifyMessageHandler")
+    @ConditionalOnMissingBean(CSFrameworkVerifyMessageHandler.class)
     public CSFrameworkVerifyMessageHandler csFrameworkVerifyMessageHandler(ServerProperties properties) {
         ServerProperties.GatewayProperties gatewayProperties = properties.getGateway();
-        return new CSFrameworkVerifyMessageHandler(gatewayProperties.isSimpleVerify(), gatewayProperties.getSimpleToken(), gatewayProperties.getSimpleUserId());
+        return new DefaultCSFrameworkVerifyMessageHandler(gatewayProperties.isSimpleVerify(), gatewayProperties.getSimpleToken(), gatewayProperties.getSimpleUserId());
     }
 
     @Bean
+    @ConditionalOnMissingBean(CSRegisterProviderMessageHandler.class)
     public CSRegisterProviderMessageHandler csRegServerHandleMessageMessageHandler() {
 
-        return new CSRegisterProviderMessageHandler();
+        return new DefaultCSRegisterProviderMessageHandler();
     }
 
-
-    @Bean
+    @Bean("gatewayProviderCSMatchingConsumerMessageHandler")
+    @ConditionalOnMissingBean(CSMatchingConsumerMessageHandler.class)
     public CSMatchingConsumerMessageHandler csMatchingConsumerMessageMessageHandler() {
-
-        return new CSMatchingConsumerMessageHandler();
-    }
-
-
-
-    @Bean
-    public SCAskHandleMessageHandler scAskHandleMessageHandler() {
-        return new SCAskHandleMessageHandler();
-    }
-
-    @Bean
-    public SCFrameworkVerifyMessageHandler scFrameworkVerifyMessageHandler() {
-        return new SCFrameworkVerifyMessageHandler();
+        return new DefaultCSMatchingConsumerMessageHandler();
     }
 
 
     @Bean
-    public SCIdNameMessageHandler scIdNameMessageHandler() {
-        return new SCIdNameMessageHandler();
-    }
-
-    @Bean
+    @ConditionalOnMissingBean(CSKickOffMessageHandler.class)
     public CSKickOffMessageHandler scKickOffMessageHandler() {
-        return new CSKickOffMessageHandler();
+        return new DefaultCSKickOffMessageHandler();
+    }
+
+    @Bean("gatewayProviderCSBreakUserGatewayMessageHandle")
+    @ConditionalOnMissingBean(CSBreakUserGatewayMessageHandler.class)
+    public CSBreakUserGatewayMessageHandler csBreakUserGatewayMessageHandler() {
+        return new DefaultCSBreakUserGatewayMessageHandler();
     }
 
     @Bean
-    public SCLoginMessageHandler scLoginMessageHandler() {
-        return new SCLoginMessageHandler();
-
-    }
-
-    @Bean
+    @ConditionalOnMissingBean(CSMessageForwardMessageHandler.class)
     public CSMessageForwardMessageHandler scMessageForwardMessageHandler() {
-        return new CSMessageForwardMessageHandler();
+        return new DefaultCSMessageForwardMessageHandler();
     }
 
     @Bean
-    public SCRelationUserGatewayMessageHandler scRelationUserGatewayMessageHandler() {
-        return new SCRelationUserGatewayMessageHandler();
-    }
-
-    @Bean
+    @ConditionalOnMissingBean(CSStatisticMessageHandler.class)
     public CSStatisticMessageHandler scStatisticMessageHandler() {
-        return new CSStatisticMessageHandler();
+        return new DefaultCSStatisticMessageHandler();
     }
 
+    @Bean
+    @ConditionalOnMissingBean(SCLoginMessageHandler.class)
+    public SCLoginMessageHandler scLoginMessageHandler() {
+        return new DefaultSCLoginMessageHandler();
+
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(SCRelationUserGatewayMessageHandler.class)
+    public SCRelationUserGatewayMessageHandler scRelationUserGatewayMessageHandler() {
+        return new DefaultSCRelationUserGatewayMessageHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CSAskHandleMessageHandler.class)
+    public SCAskHandleMessageHandler scAskHandleMessageHandler() {
+        return new DefaultSCAskHandleMessageHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(SCIdNameMessageHandler.class)
+    public SCIdNameMessageHandler scIdNameMessageHandler() {
+        return new DefaultSCIdNameMessageHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(SCFrameworkVerifyMessageHandler.class)
+    public SCFrameworkVerifyMessageHandler scFrameworkVerifyMessageHandler() {
+        return new DefaultSCFrameworkVerifyMessageHandler();
+    }
 
 }

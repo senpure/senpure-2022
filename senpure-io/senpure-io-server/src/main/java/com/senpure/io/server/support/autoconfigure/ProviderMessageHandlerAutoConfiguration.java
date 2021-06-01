@@ -28,10 +28,10 @@ public class ProviderMessageHandlerAutoConfiguration {
         return new DefaultCSRelationUserGatewayMessageHandler();
     }
 
-
+    @ConditionalOnMissingBean(CSAskHandleMessageHandler.class)
     @Bean
-    public CSAskHandleMessageHandler csAskHandleMessageHandler() {
-        return new CSAskHandleMessageHandler();
+    public DefaultCSAskHandleMessageHandler csAskHandleMessageHandler() {
+        return new DefaultCSAskHandleMessageHandler();
     }
 
     @Bean("providerConsumerCSHeartMessageHandler")
@@ -66,15 +66,16 @@ public class ProviderMessageHandlerAutoConfiguration {
     public SCFrameworkVerifyProviderMessageHandler scFrameworkVerifyProviderMessageHandler() {
         return new DefaultSCFrameworkVerifyProviderMessageHandler();
     }
+
     @Bean("providerSCRegisterProviderMessageHandler")
     @ConditionalOnMissingBean(SCRegisterProviderMessageHandler.class)
     public SCRegisterProviderMessageHandler scRegisterProviderMessageHandler() {
         return new DefaultSCRegisterProviderMessageHandler();
     }
+
     @Bean("providerSCHeartMessageHandler ")
     @ConditionalOnMissingBean(SCHeartMessageHandler.class)
-    private  SCHeartMessageHandler scHeartMessageHandler()
-    {
+    private SCHeartMessageHandler scHeartMessageHandler() {
         return new DefaultSCHeartMessageHandler();
     }
 }
