@@ -11,7 +11,7 @@ import com.senpure.io.server.protocol.message.SCFrameworkErrorMessage;
 import com.senpure.io.server.protocol.message.SCFrameworkVerifyMessage;
 import io.netty.channel.Channel;
 
-public class DefaultCSFrameworkVerifyMessageHandler extends AbstractGatewayProviderMessageHandler  implements CSFrameworkVerifyMessageHandler{
+public class DefaultCSFrameworkVerifyMessageHandler extends AbstractGatewayProviderMessageHandler implements CSFrameworkVerifyMessageHandler {
 
     private final boolean simpleVerify;
     private final String token;
@@ -28,6 +28,12 @@ public class DefaultCSFrameworkVerifyMessageHandler extends AbstractGatewayProvi
 
     @Override
     public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
+
+        executeFramework(channel, frame);
+    }
+
+    @Override
+    public void executeFramework(Channel channel, GatewayReceiveProviderMessage frame) {
         if (simpleVerify) {
             CSFrameworkVerifyMessage message = new CSFrameworkVerifyMessage();
             messageExecutor.readMessage(message, frame.getData());
@@ -84,7 +90,7 @@ public class DefaultCSFrameworkVerifyMessageHandler extends AbstractGatewayProvi
                     messageExecutor.sendMessage2Producer(response.getChannel(), response.getMessage());
                     channel.close();
                 } else {
-                    ChannelAttributeUtil.setUserId(channel,message.getUserId());
+                    ChannelAttributeUtil.setUserId(channel, message.getUserId());
                     messageExecutor.responseMessage2Producer(requestId, channel, response.getMessage());
                 }
             } else {

@@ -158,6 +158,11 @@ message CS DispatchConfirm 127 {
     long userId = 2;
 }
 
+message CS BindProvider 123 {
+    String serverName = 1;
+    String serverKey  = 2;
+}
+
 //成功消息
 message SC Success 200 {
 }

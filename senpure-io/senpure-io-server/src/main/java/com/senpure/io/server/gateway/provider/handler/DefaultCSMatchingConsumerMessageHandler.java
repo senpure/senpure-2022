@@ -11,7 +11,7 @@ import io.netty.channel.Channel;
 
 public class DefaultCSMatchingConsumerMessageHandler extends AbstractGatewayProviderMessageHandler implements CSMatchingConsumerMessageHandler {
     @Override
-    public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
+    public void executeFramework(Channel channel, GatewayReceiveProviderMessage frame) {
         CSMatchingConsumerMessage message = new CSMatchingConsumerMessage();
         readMessage(message, frame);
         ProviderManager providerManager = messageExecutor.getProviderManager(message.getServerName());

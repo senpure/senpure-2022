@@ -10,7 +10,7 @@ import io.netty.channel.Channel;
 public class DefaultCSStatisticMessageHandler extends AbstractGatewayProviderMessageHandler implements  CSStatisticMessageHandler {
 
     @Override
-    public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
+    public void executeFramework(Channel channel, GatewayReceiveProviderMessage frame) {
        CSStatisticMessage message = new CSStatisticMessage();
         messageExecutor.readMessage(message, frame);
         String serverKey = ChannelAttributeUtil.getRemoteServerKey(channel);

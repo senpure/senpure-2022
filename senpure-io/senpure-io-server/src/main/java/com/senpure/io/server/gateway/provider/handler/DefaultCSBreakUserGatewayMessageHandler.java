@@ -9,7 +9,8 @@ import io.netty.channel.Channel;
 
 public class DefaultCSBreakUserGatewayMessageHandler extends AbstractGatewayProviderMessageHandler implements CSBreakUserGatewayMessageHandler {
     @Override
-    public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
+    public void executeFramework(Channel channel, GatewayReceiveProviderMessage frame) {
+
         CSBreakUserGatewayMessage message = new CSBreakUserGatewayMessage();
         readMessage(message, frame);
         String serverName = ChannelAttributeUtil.getRemoteServerName(channel);

@@ -317,17 +317,18 @@ public class ProviderManager extends AbstractSameServerMultipleInstanceMessageSe
             if (localRemove) {
                 providerRelation.provider.getStatistic().consumerDecr();
             }
+            //本地已经处理，不用管provider的返回
             logger.info("{} {} 取消 对{} :token{} userId:{}的 关联  {}",
                     serverName, providerRelation.provider.getRemoteServerKey(), consumerChannel, token, userId, localRemove ? "移除" : "不移除");
-                CSBreakUserGatewayMessage breakUserGatewayMessage = new CSBreakUserGatewayMessage();
-                breakUserGatewayMessage.setRelationToken(providerRelation.relationToken);
-                breakUserGatewayMessage.setUserId(userId);
-                breakUserGatewayMessage.setToken(localRemove ? token : 0);
-                breakUserGatewayMessage.setType(type);
-                GatewayLocalSendProviderMessage frame = messageExecutor.createMessage(breakUserGatewayMessage);
-                frame.setUserId(breakUserGatewayMessage.getUserId());
-                frame.setToken(breakUserGatewayMessage.getToken());
-                providerRelation.provider.sendMessage(frame);
+            CSBreakUserGatewayMessage breakUserGatewayMessage = new CSBreakUserGatewayMessage();
+            breakUserGatewayMessage.setRelationToken(providerRelation.relationToken);
+            breakUserGatewayMessage.setUserId(userId);
+            breakUserGatewayMessage.setToken(localRemove ? token : 0);
+            breakUserGatewayMessage.setType(type);
+            GatewayLocalSendProviderMessage frame = messageExecutor.createMessage(breakUserGatewayMessage);
+            frame.setUserId(breakUserGatewayMessage.getUserId());
+            frame.setToken(breakUserGatewayMessage.getToken());
+            providerRelation.provider.sendMessage(frame);
 
 
         } else {

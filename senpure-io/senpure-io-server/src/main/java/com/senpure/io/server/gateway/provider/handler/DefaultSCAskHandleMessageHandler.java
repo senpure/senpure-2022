@@ -11,7 +11,7 @@ import io.netty.channel.Channel;
 
 public class DefaultSCAskHandleMessageHandler extends AbstractGatewayProviderMessageHandler implements SCAskHandleMessageHandler {
     @Override
-    public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
+    public void executeFramework(Channel channel, GatewayReceiveProviderMessage frame) {
         //todo 改成和请求关联一样的同步请求
         SCAskHandleMessage message = new SCAskHandleMessage();
         messageExecutor.readMessage(message, frame);

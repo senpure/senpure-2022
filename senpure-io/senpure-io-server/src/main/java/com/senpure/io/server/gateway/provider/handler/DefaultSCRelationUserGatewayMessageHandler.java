@@ -10,7 +10,7 @@ import io.netty.channel.Channel;
 
 public class DefaultSCRelationUserGatewayMessageHandler extends AbstractGatewayProviderMessageHandler  implements  SCRelationUserGatewayMessageHandler{
     @Override
-    public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
+    public void executeFramework(Channel channel, GatewayReceiveProviderMessage frame) {
         SCRelationUserGatewayMessage message = new SCRelationUserGatewayMessage();
         messageExecutor.readMessage(message, frame);
         int requestId = frame.requestId();

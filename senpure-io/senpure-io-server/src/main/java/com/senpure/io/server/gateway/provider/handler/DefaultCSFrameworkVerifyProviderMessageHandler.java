@@ -15,16 +15,20 @@ public class DefaultCSFrameworkVerifyProviderMessageHandler extends AbstractGate
 
     @Override
     public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
-
-
         verify(channel, frame);
+    }
+
+    @Override
+    public void executeFramework(Channel channel, GatewayReceiveProviderMessage frame) {
+
+
     }
 
     private synchronized void verify(Channel channel, GatewayReceiveProviderMessage frame) {
         CSFrameworkVerifyProviderMessage message = new CSFrameworkVerifyProviderMessage();
         messageExecutor.readMessage(message, frame);
 
-        if (message.getServerName() == null||message.getServerKey()==null) {
+        if (message.getServerName() == null || message.getServerKey() == null) {
 
             SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
             errorMessage.setCode(Constant.ERROR_VERIFY_FAILURE);
@@ -57,12 +61,12 @@ public class DefaultCSFrameworkVerifyProviderMessageHandler extends AbstractGate
         }
 
 
-        ChannelAttributeUtil.setRemoteServerName(channel,message.getServerName());
+        ChannelAttributeUtil.setRemoteServerName(channel, message.getServerName());
         ChannelAttributeUtil.setRemoteServerKey(channel, message.getServerKey());
         provider.addChannel(channel);
 
         SCFrameworkVerifyProviderMessage providerMessage = new SCFrameworkVerifyProviderMessage();
-        messageExecutor.responseMessage2Producer(frame.requestId(), channel,providerMessage);
+        messageExecutor.responseMessage2Producer(frame.requestId(), channel, providerMessage);
 
     }
 

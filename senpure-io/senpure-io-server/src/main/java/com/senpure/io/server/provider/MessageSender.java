@@ -90,6 +90,25 @@ public interface MessageSender extends com.senpure.io.server.remoting.MessageSen
 
     void sendMessageByToken(List<Long> tokens, Message message);
 
+//    /**
+//     * 随机选择一个服务器发送消息
+//     *
+//     * @param message 消息
+//     */
+//    void sendMessage(Message message);
+//
+//    /**
+//     * @param message  消息
+//     * @param callback callback
+//     */
+//    void sendMessage(Message message, ResponseCallback callback);
+//
+//    /**
+//     * @param message  消息
+//     * @param callback callback
+//     * @param timeout  timeout
+//     */
+//    void sendMessage(Message message, ResponseCallback callback, int timeout);
 
     /**
      * 将消息发送给所有的consumer
@@ -164,6 +183,7 @@ public interface MessageSender extends com.senpure.io.server.remoting.MessageSen
     boolean breakUser(Long userId, long relationToken);
 
     boolean breakToken(Long token, long relationToken);
+
 
     default ProviderSendMessage createMessage(Long userId, Message message) {
         ProviderSendMessage frame = new ProviderSendMessage(message);

@@ -103,8 +103,7 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
     }
 
     public long nextToken() {
-        return
-                idGenerator.nextId();
+        return idGenerator.nextId();
     }
 
     //将客户端消息转发给具体的服务器
@@ -150,13 +149,53 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
             logger.warn("没有找到channel token {}", token);
         } else {
             GatewayLocalSendConsumerMessage frame = new GatewayLocalSendConsumerMessage(message);
-
             frame.setRequestId(requestId);
-
             if (consumerChannel.isWritable()) {
                 consumerChannel.writeAndFlush(frame);
             }
+        }
+    }
 
+    public void sendMessage2Consumer(GatewayReceiveProviderMessage message) {
+        if (message.getUserIds().length == 0) {
+            Channel consumerChannel = tokenChannel.get(message.getToken());
+            if (consumerChannel == null) {
+                logger.warn("没有找到channel token:{}", message.getToken());
+
+            } else {
+                if (consumerChannel.isWritable()) {
+                    consumerChannel.writeAndFlush(message);
+                }
+
+            }
+        } else {
+            for (Long userId : message.getUserIds()) {
+                //全消息
+                if (userId == 0L) {
+                    logger.debug("给所有客户端发送消息 {}", MessageIdReader.read(message.messageId()));
+                    for (Map.Entry<Long, Channel> entry : userClientChannel.entrySet()) {
+                        Channel consumerChannel = entry.getValue();
+                        //排除掉内部consumer连接
+                        if (ChannelAttributeUtil.isFramework(consumerChannel)) {
+                            continue;
+                        }
+                        if (consumerChannel.isWritable()) {
+                            consumerChannel.writeAndFlush(message);
+                        }
+                    }
+                    break;
+                } else {
+                    Channel consumerChannel = userClientChannel.get(userId);
+                    if (consumerChannel == null) {
+                        logger.warn("没有找到用户 :{}", userId);
+                    } else {
+                        if (consumerChannel.isWritable()) {
+                            consumerChannel.writeAndFlush(message);
+                        }
+
+                    }
+                }
+            }
         }
     }
 
@@ -236,46 +275,9 @@ public class GatewayMessageExecutor extends AbstractMessageExecutor {
                     if (handler.stopConsumer()) {
                         return;
                     }
+                    sendMessage2Consumer(message);
                 }
-                if (message.getUserIds().length == 0) {
-                    Channel consumerChannel = tokenChannel.get(token);
-                    if (consumerChannel == null) {
-                        logger.warn("没有找到channel token:{}", token);
 
-                    } else {
-                        if (consumerChannel.isWritable()) {
-                            consumerChannel.writeAndFlush(message);
-                        }
-
-                    }
-                } else {
-                    for (Long userId : message.getUserIds()) {
-                        //全消息
-                        if (userId == 0L) {
-                            logger.debug("给所有客户端发送消息 {}", MessageIdReader.read(message.messageId()));
-                            for (Map.Entry<Long, Channel> entry : userClientChannel.entrySet()) {
-                                Channel consumerChannel = entry.getValue();
-                                if (ChannelAttributeUtil.isFramework(consumerChannel)) {
-                                    continue;
-                                }
-                                if (consumerChannel.isWritable()) {
-                                    consumerChannel.writeAndFlush(message);
-                                }
-                            }
-                            break;
-                        } else {
-                            Channel consumerChannel = userClientChannel.get(userId);
-                            if (consumerChannel == null) {
-                                logger.warn("没有找到用户 :{}", userId);
-                            } else {
-                                if (consumerChannel.isWritable()) {
-                                    consumerChannel.writeAndFlush(message);
-                                }
-
-                            }
-                        }
-                    }
-                }
             } catch (Exception e) {
                 logger.error("处理服务器到网关的消息出错", e);
             }

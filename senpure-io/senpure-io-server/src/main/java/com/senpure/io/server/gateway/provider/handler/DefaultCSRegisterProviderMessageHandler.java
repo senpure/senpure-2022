@@ -20,15 +20,7 @@ import java.util.concurrent.ConcurrentMap;
 public class DefaultCSRegisterProviderMessageHandler extends AbstractGatewayProviderMessageHandler implements CSRegisterProviderMessageHandler {
 
     @Override
-    public synchronized void execute(Channel channel, GatewayReceiveProviderMessage frame) {
-        if (!ChannelAttributeUtil.isFramework(channel)) {
-            SCFrameworkErrorMessage returnMessage = new SCFrameworkErrorMessage();
-            returnMessage.setCode(Constant.ERROR_GATEWAY_ERROR);
-            returnMessage.setMessage("注册请求必须先经过认证");
-            messageExecutor.responseMessage2Producer(frame.requestId(), channel, returnMessage);
-            return;
-        }
-
+    public synchronized void executeFramework(Channel channel, GatewayReceiveProviderMessage frame) {
         //todo 一个服务只允许一个ask id
         StringBuilder sb = new StringBuilder();
         try {

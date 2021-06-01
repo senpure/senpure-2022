@@ -7,7 +7,7 @@ import io.netty.channel.Channel;
 
 public class DefaultCSKickOffMessageHandler extends AbstractGatewayProviderMessageHandler  implements CSKickOffMessageHandler{
     @Override
-    public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
+    public void executeFramework(Channel channel, GatewayReceiveProviderMessage frame) {
         CSKickOffMessage message = new CSKickOffMessage ();
         messageExecutor.readMessage(message, frame);
         long tempUserId = message.getUserId();

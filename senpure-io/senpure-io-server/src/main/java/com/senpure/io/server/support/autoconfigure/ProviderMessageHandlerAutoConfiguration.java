@@ -1,6 +1,8 @@
 package com.senpure.io.server.support.autoconfigure;
 
 
+import com.senpure.io.server.gateway.provider.handler.DefaultSCBreakUserGatewayMessageHandler;
+import com.senpure.io.server.gateway.provider.handler.SCBreakUserGatewayMessageHandler;
 import com.senpure.io.server.provider.handler.*;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -75,7 +77,10 @@ public class ProviderMessageHandlerAutoConfiguration {
 
     @Bean("providerSCHeartMessageHandler ")
     @ConditionalOnMissingBean(SCHeartMessageHandler.class)
-    private SCHeartMessageHandler scHeartMessageHandler() {
+    public SCHeartMessageHandler scHeartMessageHandler() {
         return new DefaultSCHeartMessageHandler();
     }
+
+
+
 }

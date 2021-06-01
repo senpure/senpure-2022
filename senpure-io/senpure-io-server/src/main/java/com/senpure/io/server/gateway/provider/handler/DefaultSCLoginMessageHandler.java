@@ -9,7 +9,7 @@ import io.netty.channel.Channel;
 public class DefaultSCLoginMessageHandler extends DefaultSCFrameworkVerifyMessageHandler implements  SCLoginMessageHandler {
 
     @Override
-    public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
+    public void executeFramework(Channel channel, GatewayReceiveProviderMessage frame) {
         if (frame.getUserIds().length == 0) {
             SCFrameworkErrorMessage errorMessage = new SCFrameworkErrorMessage();
             errorMessage.setCode(Constant.ERROR_VERIFY_FAILURE);

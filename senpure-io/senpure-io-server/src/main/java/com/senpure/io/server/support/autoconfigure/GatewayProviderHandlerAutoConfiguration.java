@@ -48,7 +48,7 @@ public class GatewayProviderHandlerAutoConfiguration {
         return new DefaultCSKickOffMessageHandler();
     }
 
-    @Bean("gatewayProviderCSBreakUserGatewayMessageHandle")
+    @Bean("gatewayProviderCSBreakUserGatewayMessageHandler")
     @ConditionalOnMissingBean(CSBreakUserGatewayMessageHandler.class)
     public CSBreakUserGatewayMessageHandler csBreakUserGatewayMessageHandler() {
         return new DefaultCSBreakUserGatewayMessageHandler();
@@ -66,7 +66,7 @@ public class GatewayProviderHandlerAutoConfiguration {
         return new DefaultCSStatisticMessageHandler();
     }
 
-    @Bean
+    @Bean("gatewayProviderSCLoginMessageHandler")
     @ConditionalOnMissingBean(SCLoginMessageHandler.class)
     public SCLoginMessageHandler scLoginMessageHandler() {
         return new DefaultSCLoginMessageHandler();
@@ -97,4 +97,27 @@ public class GatewayProviderHandlerAutoConfiguration {
         return new DefaultSCFrameworkVerifyMessageHandler();
     }
 
+    @Bean("gatewayProviderSCBreakUserGatewayMessageHandler")
+    @ConditionalOnMissingBean(SCBreakUserGatewayMessageHandler.class)
+    public SCBreakUserGatewayMessageHandler scBreakUserGatewayMessageHandler() {
+        return new DefaultSCBreakUserGatewayMessageHandler();
+    }
+
+    @Bean("gatewayProviderSCMatchingSuccessMessageHandler")
+    @ConditionalOnMissingBean(SCMatchingSuccessMessageHandler.class)
+    public SCMatchingSuccessMessageHandler scMatchingSuccessMessageHandler() {
+        return new DefaultSCMatchingSuccessMessageHandler();
+    }
+
+    @Bean("gatewayProviderSCFrameworkErrorMessageHandler")
+    @ConditionalOnMissingBean(SCFrameworkErrorMessageHandler.class)
+    public SCFrameworkErrorMessageHandler scFrameworkErrorMessageHandler() {
+        return new DefaultSCFrameworkErrorMessageHandler();
+    }
+
+    @Bean("gatewayProviderSCSuccessMessageHandler")
+    @ConditionalOnMissingBean(SCSuccessMessageHandler.class)
+    public SCSuccessMessageHandler scSuccessMessageHandler() {
+        return new DefaultSCSuccessMessageHandler();
+    }
 }

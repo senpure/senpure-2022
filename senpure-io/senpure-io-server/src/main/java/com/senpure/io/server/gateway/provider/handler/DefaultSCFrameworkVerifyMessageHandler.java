@@ -6,7 +6,7 @@ import io.netty.channel.Channel;
 
 public class DefaultSCFrameworkVerifyMessageHandler extends AbstractGatewayProviderMessageHandler implements SCFrameworkVerifyMessageHandler {
     @Override
-    public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
+    public void executeFramework(Channel channel, GatewayReceiveProviderMessage frame) {
 
 
         SCFrameworkVerifyMessage message = new SCFrameworkVerifyMessage();

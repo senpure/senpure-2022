@@ -71,6 +71,13 @@ public class GatewayManager extends AbstractSameServerMultipleInstanceMessageSen
         return gatewayMap.get(gatewayKey);
     }
 
+
+    @Nonnull
+    public List<Gateway> gateways() {
+        return new ArrayList<>(gatewayMap.values());
+    }
+
+
     @Nonnull
     public Gateway addGateway(@Nonnull Gateway gateway) {
 
@@ -246,6 +253,7 @@ public class GatewayManager extends AbstractSameServerMultipleInstanceMessageSen
         }
     }
 
+
     @Override
     public void dispatchMessage(Message message) {
         ProviderSendMessage frame = createMessage(new Long[]{0L}, message);
@@ -261,7 +269,7 @@ public class GatewayManager extends AbstractSameServerMultipleInstanceMessageSen
 
     @Override
     public void dispatchMessage(String serverName, String serverKey, Message message) {
-        CSMessageForwardMessage forwardMessage = new  CSMessageForwardMessage();
+        CSMessageForwardMessage forwardMessage = new CSMessageForwardMessage();
         forwardMessage.setServerName(serverName);
         forwardMessage.setServerKey(serverKey);
 
@@ -274,14 +282,14 @@ public class GatewayManager extends AbstractSameServerMultipleInstanceMessageSen
 
     @Override
     public void sendKickOffMessage(Long userId) {
-        CSKickOffMessage message = new CSKickOffMessage ();
+        CSKickOffMessage message = new CSKickOffMessage();
         message.setUserId(userId);
         sendMessage(userId, message, true);
     }
 
     @Override
     public void sendKickOffMessageByToken(Long token) {
-        CSKickOffMessage message = new CSKickOffMessage ();
+        CSKickOffMessage message = new CSKickOffMessage();
         message.setToken(token);
         sendMessageByToken(token, message, true);
     }

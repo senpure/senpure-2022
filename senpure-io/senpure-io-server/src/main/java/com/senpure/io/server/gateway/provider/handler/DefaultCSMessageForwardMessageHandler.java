@@ -7,7 +7,7 @@ import io.netty.channel.Channel;
 
 public class DefaultCSMessageForwardMessageHandler extends AbstractGatewayProviderMessageHandler implements  CSMessageForwardMessageHandler {
     @Override
-    public void execute(Channel channel, GatewayReceiveProviderMessage frame) {
+    public void executeFramework(Channel channel, GatewayReceiveProviderMessage frame) {
         CSMessageForwardMessage message = new CSMessageForwardMessage();
         messageExecutor.readMessage(message, frame);
         if (message.getServerName() != null) {
