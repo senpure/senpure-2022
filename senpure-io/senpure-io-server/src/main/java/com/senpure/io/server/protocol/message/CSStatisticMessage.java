@@ -8,7 +8,7 @@ import io.netty.buffer.ByteBuf;
  * 向网关上报统计信息
  * 
  * @author senpure
- * @time 2021-5-31 22:16:30
+ * @time 2021-6-1 19:22:23
  */
 public class CSStatisticMessage extends CompressMessage {
 

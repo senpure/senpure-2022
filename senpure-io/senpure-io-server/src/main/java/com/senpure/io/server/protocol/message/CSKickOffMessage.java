@@ -7,7 +7,7 @@ import io.netty.buffer.ByteBuf;
  * 请求网关将目标断开连接
  * 
  * @author senpure
- * @time 2021-5-31 22:16:30
+ * @time 2021-6-1 19:22:23
  */
 public class CSKickOffMessage extends CompressMessage {
 

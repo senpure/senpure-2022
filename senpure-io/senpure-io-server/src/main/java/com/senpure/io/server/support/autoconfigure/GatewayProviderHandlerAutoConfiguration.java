@@ -103,10 +103,10 @@ public class GatewayProviderHandlerAutoConfiguration {
         return new DefaultSCBreakUserGatewayMessageHandler();
     }
 
-    @Bean("gatewayProviderSCMatchingSuccessMessageHandler")
-    @ConditionalOnMissingBean(SCMatchingSuccessMessageHandler.class)
-    public SCMatchingSuccessMessageHandler scMatchingSuccessMessageHandler() {
-        return new DefaultSCMatchingSuccessMessageHandler();
+    @Bean("gatewayProviderCSBindProviderMessageHandler")
+    @ConditionalOnMissingBean(CSBindProviderMessageHandler.class)
+    public CSBindProviderMessageHandler scBindProviderMessageHandler() {
+        return new DefaultCSBindProviderMessageHandler();
     }
 
     @Bean("gatewayProviderSCFrameworkErrorMessageHandler")

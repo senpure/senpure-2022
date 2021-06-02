@@ -7,7 +7,7 @@ import io.netty.buffer.ByteBuf;
  * 向网关表示自己可以提供框架内部验证功能
  * 
  * @author senpure
- * @time 2021-5-31 22:16:30
+ * @time 2021-6-1 19:22:23
  */
 public class CSFrameworkVerifyProviderMessage extends CompressMessage {
 

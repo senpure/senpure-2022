@@ -141,26 +141,19 @@ message SC MatchingConsumer 122 {
     long   matchableId = 3;
 }
 
-message SC MatchingSuccess 124 {
-    String serverName = 1;
-    String serverKey  = 2;
-    int    dataId     = 3;
-    bytes  data       = 4;
-}
 
-message CS ConsumerDispatch 125 {
-    Consumer [] consumers = 1;
-    int         timeout   = 2;            //超时
-}
 
-message CS DispatchConfirm 127 {
-    long token  = 1;
-    long userId = 2;
-}
+
 
 message CS BindProvider 123 {
     String serverName = 1;
     String serverKey  = 2;
+    long   token      = 3;
+    long   userId     = 4;
+}
+
+message SC BindProvider 124 {
+
 }
 
 //成功消息

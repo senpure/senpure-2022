@@ -1,39 +1,25 @@
 package com.senpure.io.server.protocol.message;
 
-import com.senpure.io.server.protocol.bean.Consumer;
 import com.senpure.io.protocol.CompressMessage;
 import io.netty.buffer.ByteBuf;
 
-import java.util.List;
-import java.util.ArrayList;
-
 /**
  * @author senpure
- * @time 2021-5-31 20:56:51
+ * @time 2021-6-1 19:22:23
  */
 public class CSBindProviderMessage extends CompressMessage {
 
     public static final int MESSAGE_ID = 123;
     private String serverName;
     private String serverKey;
-    private List<Consumer> consumers = new ArrayList<>(16);
-    private int dataId;
-    private byte [] data;
+    private long token;
+    private long userId;
 
     public void copy(CSBindProviderMessage source) {
         this.serverName = source.getServerName();
         this.serverKey = source.getServerKey();
-        this.consumers.clear();
-        for (Consumer consumer : source.getConsumers()) {
-            Consumer tempConsumer = new Consumer();
-            tempConsumer.copy(consumer);
-        }
-        this.dataId = source.getDataId();
-        if (source.getData() != null) {
-            this.data = copyBytes(source.getData());
-        } else {
-            this.data = null;
-        }
+        this.token = source.getToken();
+        this.userId = source.getUserId();
     }
 
     /**
@@ -48,13 +34,8 @@ public class CSBindProviderMessage extends CompressMessage {
         if (serverKey != null) {
             writeString(buf, 19, serverKey);
         }
-        for (Consumer value : consumers) {
-             writeBean(buf, 27, value);
-        }
-        writeVar32(buf, 32, dataId);
-        if (data != null) {
-            writeBytes(buf, 43, data);
-        }
+        writeVar64(buf, 24, token);
+        writeVar64(buf, 32, userId);
     }
 
     /**
@@ -73,16 +54,11 @@ public class CSBindProviderMessage extends CompressMessage {
                 case 19:// 2 << 3 | 3
                     serverKey = readString(buf);
                     break;
-                case 27:// 3 << 3 | 3
-                    Consumer tempConsumersBean = new Consumer();
-                    readBean(buf,tempConsumersBean);
-                    consumers.add(tempConsumersBean);
+                case 24:// 3 << 3 | 0
+                    token = readVar64(buf);
                     break;
                 case 32:// 4 << 3 | 0
-                    dataId = readVar32(buf);
-                    break;
-                case 43:// 5 << 3 | 3
-                    data = readBytes(buf);
+                    userId = readVar64(buf);
                     break;
                 default://skip
                     skip(buf, tag);
@@ -108,15 +84,10 @@ public class CSBindProviderMessage extends CompressMessage {
              //tag size 19
              size += computeStringSize(1, serverKey);
         }
-        for (Consumer value : consumers) {
-            size += computeBeanSize(1, value);
-        }
+        //tag size 24
+        size += computeVar64Size(1, token);
         //tag size 32
-        size += computeVar32Size(1, dataId);
-        if (data != null) {
-             //tag size 43
-             size += computeBytesSize(1, data);
-        }
+        size += computeVar64Size(1, userId);
         serializedSize = size ;
         return size ;
     }
@@ -139,34 +110,21 @@ public class CSBindProviderMessage extends CompressMessage {
         return this;
     }
 
-    public List<Consumer> getConsumers() {
-        return consumers;
+    public long getToken() {
+        return token;
     }
 
-    public CSBindProviderMessage setConsumers(List<Consumer> consumers) {
-        if (consumers == null) {
-            this.consumers = new ArrayList<>(16);
-            return this;
-        }
-        this.consumers = consumers;
+    public CSBindProviderMessage setToken(long token) {
+        this.token = token;
         return this;
     }
 
-    public int getDataId() {
-        return dataId;
+    public long getUserId() {
+        return userId;
     }
 
-    public CSBindProviderMessage setDataId(int dataId) {
-        this.dataId = dataId;
-        return this;
-    }
-
-    public byte [] getData() {
-        return data;
-    }
-
-    public CSBindProviderMessage setData(byte [] data) {
-        this.data = data;
+    public CSBindProviderMessage setUserId(long userId) {
+        this.userId = userId;
         return this;
     }
 
@@ -185,16 +143,13 @@ public class CSBindProviderMessage extends CompressMessage {
         return "CSBindProviderMessage[123]{"
                 + "serverName=" + serverName
                 + ",serverKey=" + serverKey
-                + ",consumers=" + consumers
-                + ",dataId=" + dataId
-                + ",data=" + bytesToString(data)
+                + ",token=" + token
+                + ",userId=" + userId
                 + "}";
     }
 
     @Override
     public String toString(String indent) {
-        //10 + 3 = 13 个空格
-        String nextIndent = "             ";
         //最长字段长度 10
         indent = indent == null ? "" : indent;
         StringBuilder sb = new StringBuilder();
@@ -204,12 +159,9 @@ public class CSBindProviderMessage extends CompressMessage {
         sb.append("\n");
         sb.append(indent).append("serverKey  = ").append(serverKey);
         sb.append("\n");
-        sb.append(indent).append("consumers  = ");
-        appendBeans(sb,consumers,indent,nextIndent);
+        sb.append(indent).append("token      = ").append(token);
         sb.append("\n");
-        sb.append(indent).append("dataId     = ").append(dataId);
-        sb.append("\n");
-        sb.append(indent).append("data       = ").append(bytesToString(data));
+        sb.append(indent).append("userId     = ").append(userId);
         sb.append("\n");
         sb.append(indent).append("}");
         return sb.toString();
